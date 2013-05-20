@@ -1,0 +1,12 @@
+Version 1.2
+
+	- Fix problem with keyboard focus and fullscreen graphics.
+
+Version 1.1
+
+	- Fix problem with keyboard focus and key stealing.
+
+	- Reinstate alt-F12.
+
+Version 1.0
+

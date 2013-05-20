@@ -1,0 +1,14 @@
+Version 1.2
+
+	When you call "Matlab -nojvm" from the Cygwin command line, there
+	seems to be interaction between Cygwin and Matlab that causes
+	keystrokes to show up on the Matlab command line.
+
+	If you call Matlab from a shortcut, the problem goes away.  It may
+	be that Cygwin installs KbdHook's that interfere with the KBD
+	library's KbdHook.
+
+Version 1.1
+
+Version 1.0
+

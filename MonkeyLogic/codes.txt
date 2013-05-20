@@ -1,0 +1,118 @@
+Code	Description
+1   	Start trial
+2   	End trial
+3	Skipped movie frame
+4	Bar / Joystick up
+5	Bar / Joystick left
+6	Bar / Joystick right
+7	Bar / Joystick down
+8	fixation occurs
+9	Start inter-trial interval
+10	End inter-trial interval
+11	Start wait fixation
+12	End wait fixation
+13	undefined
+14	undefined
+15	Start pre-trial
+16	End pre-trial
+17	Start post-trial
+18	End post-trial
+19	Start pause
+20	End pause
+21	Start random pause
+22	End random pause
+23	TaskObject-1 ON
+24	TaskObject-1 OFF
+25	TaskObject-2 ON
+26	TaskObject-2 OFF
+27	TaskObject-3 ON
+28	TaskObject-3 OFF
+29	TaskObject-4 ON
+30	TaskObject-4 OFF
+31	TaskObject-5 ON
+32	TaskObject-5 OFF
+33	TaskObject-6 ON
+34	TaskObject-6 OFF
+35	Fixation spot ON
+36	Fixation spot OFF
+37	Dim fixation spot
+38	Start up lever
+39	End up lever
+40	Start left lever
+41	End left lever
+42	Start right lever
+43	End right lever
+44	Start eye1
+45	End eye1
+46	Start eye2
+47	End eye2
+48	TaskObject-7 ON
+49	TaskObject-7 OFF
+50	TaskObject-8 ON
+51	TaskObject-8 OFF
+52	TaskObject-9 ON
+53	TaskObject-9 OFF
+54	TaskObject-10 ON
+55	TaskObject-10 OFF
+56	Start scroll TaskObject-1
+57	End scroll TaskObject-1
+58	Start scroll TaskObject-2
+59	End scroll TaskObject-2
+60	Start scroll TaskObject-3
+61	EEnd scroll TaskObject-3
+62	Start scroll TaskObject-4
+63	End scroll TaskObject-4
+64	Start scroll TaskObject-5
+65	End scroll TaskObject-5
+66	Start scroll TaskObject-6
+67	End scroll TaskObject-6
+68	Start scroll TaskObject-7
+69	End scroll TaskObject-7
+70	Start scroll TaskObject-8
+71	End scroll TaskObject-8
+72	Start scroll TaskObject-9
+73	End scroll TaskObject-9
+74	Start scroll TaskObject-10
+75	End scroll TaskObject-10
+76  	Start move TaskObject-1
+77  	End move TaskObject-1
+78  	Start move TaskObject-2
+79  	End move TaskObject-2
+80  	Start move TaskObject-3
+81  	End move TaskObject-3
+82  	Start move TaskObject-4
+83  	End move TaskObject-4
+84  	Start move TaskObject-5
+85  	End move TaskObject-5
+86  	Start move TaskObject-6
+87  	End move TaskObject-6
+88  	Start move TaskObject-7
+89  	End move TaskObject-7
+90  	Start move TaskObject-8
+91  	End move TaskObject-8
+92  	Start move TaskObject-9
+93  	End move TaskObject-9
+94  	Start move TaskObject-10
+95  	End move TaskObject-10
+96	Reward delivered
+97  	broke fixation
+98  	Start joystick data collection
+99  	End joystick data collection
+100	Start eye data collection
+101	End eye data collection
+102 	undefined
+103 	undefined
+104 	undefined
+105 	undefined
+106 	undefined
+107 	undefined
+108 	undefined
+109 	undefined
+110 	Key press <Space>
+111 	Key press <Up>
+112 	Key press <Down>
+113 	Key press <Right>
+114 	Key press <Left>
+115	Key press <enter>
+116 	Key press (other)
+	
