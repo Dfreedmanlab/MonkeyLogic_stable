@@ -2299,22 +2299,23 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                         
         case 'runbutton',
             
-            if get(findobj(gcf, 'tag', 'blocklogic'), 'value') == 5 && isempty(get(findobj(gcf, 'tag', 'blockselectfun'), 'userdata')),
+			if get(findobj(gcf, 'tag', 'blocklogic'), 'value') == 5 && isempty(get(findobj(gcf, 'tag', 'blockselectfun'), 'userdata')),
                mlmessage('Must specify a block-selection function for user-controlled block transitions');
                return
-            end
-            if get(findobj(gcf, 'tag', 'condlogic'), 'value') == 5 && isempty(get(findobj(gcf, 'tag', 'condselectfun'), 'userdata')),
+			end
+			if get(findobj(gcf, 'tag', 'condlogic'), 'value') == 5 && isempty(get(findobj(gcf, 'tag', 'condselectfun'), 'userdata')),
                 mlmessage('Must specify a condition-selection function for user-controlled conditions');
                 return
-            end
-            if usejava('jvm'),
+			end
+			if usejava('jvm'),
                 mlmessage('*** Must disable JAVA: Run "Matlab -nojvm" from the command prompt ***');
                 return
-            end
+			end
             
+			set(findobj(gcf, 'tag', 'runbutton'), 'enable', 'off');			%this is a fail-safe in the case that a user hits the run button twice
             set(gcbo, 'hittest', 'off');
             nullstr = get(findobj(gcf, 'tag', 'totalconds'), 'string');
-            if ~strcmp(nullstr, '--'),
+			if ~strcmp(nullstr, '--'),
                 savecfg;
                 set(findobj(gcf, 'tag', 'savebutton'), 'enable', 'off');
                 set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'off');
@@ -2323,9 +2324,11 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     a = questdlg('Overwrite existing data file?', 'Data file already exists');
                     if strcmpi(a, 'No'),
                         mlmessage('Enter a new data file name to run the task');
+						set(findobj(gcf, 'tag', 'runbutton'), 'enable', 'on');			%this is a fail-safe in the case that a user hits the run button twice
                         return
                     elseif strcmpi(a, 'Cancel'),
                         mlmessage('');
+						set(findobj(gcf, 'tag', 'runbutton'), 'enable', 'on');			%this is a fail-safe in the case that a user hits the run button twice
                         return
                     end
                 end
@@ -2334,7 +2337,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 mlmessage('Running task...');
                 set(findobj(gcf, 'tag', 'loadbutton'), 'userdata', struct);
                 monkeylogic(condfile, datafile, testflag);
-            end
+			end
             set(gcbo, 'hittest', 'on');
             mlmessage('Done.');
 
