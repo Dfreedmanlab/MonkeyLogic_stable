@@ -89,6 +89,7 @@ switch mode,
         BHV.BlockSelectFunction = MLConfig.BlockSelectFunction;
         BHV.CondSelectFunction = MLConfig.CondSelectFunction;
         BHV.VideoRefreshRate = MLConfig.RefreshRate;
+		BHV.ActualVideoRefreshRate = MLConfig.ActualRefreshRate;
         BHV.VideoBufferPages = MLConfig.BufferPages;
         BHV.ScreenXresolution = MLConfig.ScreenX;
         BHV.ScreenYresolution = MLConfig.ScreenY;
@@ -227,6 +228,7 @@ switch mode,
         fwritetext(fidbhv, BHV.BlockSelectFunction, 64);
         fwritetext(fidbhv, BHV.CondSelectFunction, 64);
         fwrite(fidbhv, BHV.VideoRefreshRate, 'double');
+		fwrite(fidbhv, BHV.ActualVideoRefreshRate, 'double');
         fwrite(fidbhv, BHV.VideoBufferPages, 'uint16');
         fwrite(fidbhv, BHV.ScreenXresolution, 'uint16');
         fwrite(fidbhv, BHV.ScreenYresolution, 'uint16');

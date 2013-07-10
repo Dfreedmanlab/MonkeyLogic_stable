@@ -181,10 +181,9 @@ elseif stimuli == -2, %trial exit data
     return
 elseif stimuli == -3, %call from reposition_object or set_object_path
     stimnum = varargin{1};
-    TrialObject(stimnum).XPos = varargin{2}.XPos;
-	TrialObject(stimnum).YPos = varargin{2}.YPos;
-	TrialObject(stimnum).XsPos = varargin{2}.XsPos;
-	TrialObject(stimnum).YsPos = varargin{2}.YsPos;
+	status = TrialObject(stimnum).Status;
+    TrialObject(stimnum) = varargin{2};
+	TrialObject(stimnum).Status = status;
     statrec = double(cat(1, TrialObject.Status));
     if varargin{3}, %called from reposition_object, not set_object_path
         togglecount = togglecount + 1;

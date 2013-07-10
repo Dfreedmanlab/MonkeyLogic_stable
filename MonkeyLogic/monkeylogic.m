@@ -12,6 +12,7 @@ global MLHELPER_OFF
 % Modified 7/25/08 -WA (now stores absolute trial start time for each trial)
 % Modified 8/07/08 -WA (remote commands added)
 % Modified 2/04/13 -DF (editable variables bug fix)
+% Modified 10/7/13 -DF (actual refresh rate measurement loop added)
 
 % Syntax:
 %        monkeylogic(ConditionsFile, DataFile, TestFlag)
@@ -93,6 +94,83 @@ if exist(cfgfile, 'file'),
 else
     error('ML:NoCFG','Unable to find configuration file %s', cfgfile);
 end
+%Apparently, the actual refresh rate is sometimes different from
+%MLConfig.RefreshRate. Introducing a video test (same as the one in mlmenu)
+%to measure the actual refresh rate and store it in a field called
+%ActualRefreshRate.
+if usejava('jvm'),
+	mlmessage('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
+end
+mlmessage('Now testing for actual refresh rate');
+drawnow;
+
+bytesperpixel = 4;
+videodevice = get(findobj(gcf, 'tag', 'videodevice'), 'value');
+resval = get(findobj(gcf, 'tag', 'screenres'), 'value');
+validsizes = get(findobj(gcf, 'tag', 'screenres'), 'userdata');
+bufferpages = get(findobj(gcf, 'tag', 'bufferpages'), 'value');
+validrefresh = get(findobj(gcf, 'tag', 'refreshrate'), 'userdata');
+refreshrate = validrefresh(get(findobj(gcf, 'tag', 'refreshrate'), 'value'));
+validxsize = validsizes(:, 1);
+validysize = validsizes(:, 2);
+ScreenX = validxsize(resval);
+ScreenY = validysize(resval);
+numcycles = 10;
+halfx = ScreenX/2;
+halfy = ScreenY/2;
+[x y] = meshgrid(-halfx:halfx-1, -halfy:halfy-1);
+dist = sqrt((x.^2) + (y.^2));
+
+try
+	mlvideo('init');
+	mlvideo('initdevice', videodevice);
+	mlvideo('setmode', videodevice, ScreenX, ScreenY, bytesperpixel, refreshrate, bufferpages);
+	buffer = zeros(numcycles, 1);
+	mlmessage('Generating video frame data...');
+	for i = 1:numcycles,
+		buffer(i) = mlvideo('createbuffer', videodevice, ScreenX, ScreenY, bytesperpixel);
+		rpat = cos(dist./i+2);
+		gpat = cos(dist./(i+5));
+		bpat = cos(dist./(i+8));
+		testpattern = cat(3, rpat, gpat, bpat);
+		testpattern = (testpattern + 1)/2;
+		testpattern = round(255*testpattern);
+		testpattern = cat(3, testpattern, ones(ScreenY, ScreenX));
+		mlvideo('copybuffer', videodevice, buffer(i), testpattern);
+	end
+	mlmessage('Displaying test pattern...');
+	t1 = tic;
+	for j = 1:numcycles,
+		for i = 1:numcycles,
+			mlvideo('blit', videodevice, buffer(i));
+			mlvideo('flip', videodevice);
+		end
+		for i = numcycles:-1:1,
+			mlvideo('blit', videodevice, buffer(i));
+			mlvideo('flip', videodevice);
+		end
+	end
+	t2 = toc(t1);
+	for i = 1:numcycles,
+		mlvideo('releasebuffer', videodevice, buffer(i));
+	end
+	mlvideo('showcursor', videodevice, 1);
+	mlvideo('restoremode', videodevice);
+	mlvideo('releasedevice', videodevice);
+	mlvideo('release');
+	totalframes = 2*(numcycles^2);
+	framerate = 1/(t2/totalframes);
+	mlmessage(sprintf('Approximate video refresh rate = %3.2f Hz', framerate));
+catch
+	mlvideo('showcursor', videodevice, 1);
+	mlvideo('restoremode', videodevice);
+	mlvideo('releasedevice', videodevice);
+	mlvideo('release');
+	lasterr
+	mlmessage('*** Error encountered during application of selected video settings ***');
+end
+MLConfig.ActualRefreshRate  = framerate;
+clear bytesperpixel videodevice resval validsizes bufferpages validrefresh refreshrate validxsize validysize ScreenX ScreenY numcycles halfx halfy x y dist buffer rpat gpat bpat testpattern totalframes framerate
 MLConfig.ComputerName = lower(getenv('COMPUTERNAME'));
 MLHELPER_OFF = MLConfig.MLHelperOff;
 
@@ -2568,6 +2646,26 @@ g=uint32(g);
 b=uint32(b);
 z = 65536*r+256*g+b;
 rgb = z(:)';
+
+%%
+function mlmessage(str)
+
+h1 = findobj(gcf, 'tag', 'mlmessagebox');
+if isempty(str),
+    set(h1, 'string', '');
+    return
+end
+h2 = findobj(gcf, 'tag', 'mlmessageframe');
+if ~iscell(str),
+    str = {str};
+end
+for i = 1:length(str),
+    set(h1, 'string', str(i));
+    set([h1 h2], 'backgroundcolor', [1 1 0.5]);
+    pause(0.05);
+    set([h1 h2], 'backgroundcolor', [1 1 1]);
+    drawnow;
+end
 
 %% mlhelper.exe wrapper functions
 function disable_cursor
