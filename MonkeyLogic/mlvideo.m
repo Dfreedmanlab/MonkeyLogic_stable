@@ -193,7 +193,7 @@ switch fxn
         backbuffernum = 1;
         
         %xglclear(devicenum, backbuffernum, uint32(xglrgb8(bgcolor(1), bgcolor(2), bgcolor(3))));
-        if max(bgcolor)<=1,
+        if max(bgcolor)<=1 && max(bgcolor) > 0
             bgcolor = bgcolor*255;
         end
         xglclear(devicenum, backbuffernum, rgbval(bgcolor));

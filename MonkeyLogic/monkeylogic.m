@@ -101,7 +101,6 @@ end
 if usejava('jvm'),
 	mlmessage('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
 end
-mlmessage('Now testing for actual refresh rate');
 drawnow;
 
 bytesperpixel = 4;
@@ -115,51 +114,36 @@ validxsize = validsizes(:, 1);
 validysize = validsizes(:, 2);
 ScreenX = validxsize(resval);
 ScreenY = validysize(resval);
-numcycles = 10;
-halfx = ScreenX/2;
-halfy = ScreenY/2;
-[x y] = meshgrid(-halfx:halfx-1, -halfy:halfy-1);
-dist = sqrt((x.^2) + (y.^2));
 
 try
 	mlvideo('init');
 	mlvideo('initdevice', videodevice);
 	mlvideo('setmode', videodevice, ScreenX, ScreenY, bytesperpixel, refreshrate, bufferpages);
-	buffer = zeros(numcycles, 1);
-	mlmessage('Generating video frame data...');
-	for i = 1:numcycles,
-		buffer(i) = mlvideo('createbuffer', videodevice, ScreenX, ScreenY, bytesperpixel);
-		rpat = cos(dist./i+2);
-		gpat = cos(dist./(i+5));
-		bpat = cos(dist./(i+8));
-		testpattern = cat(3, rpat, gpat, bpat);
-		testpattern = (testpattern + 1)/2;
-		testpattern = round(255*testpattern);
-		testpattern = cat(3, testpattern, ones(ScreenY, ScreenX));
-		mlvideo('copybuffer', videodevice, buffer(i), testpattern);
+	mlvideo('showcursor', videodevice, 0);
+	mlvideo('clear', videodevice, [0 0 0]);
+	frames = 0;
+	t2 = 0;
+	
+	mlmessage('Now measuring actual screen refresh rate...');
+	while ~mlvideo('verticalblank', videodevice)
 	end
-	mlmessage('Displaying test pattern...');
 	t1 = tic;
-	for j = 1:numcycles,
-		for i = 1:numcycles,
-			mlvideo('blit', videodevice, buffer(i));
-			mlvideo('flip', videodevice);
+	mlvideo('flip', videodevice);
+	
+	while t2 < 0.2
+		mlvideo('clear', videodevice, [0 0 0]);
+		while ~mlvideo('verticalblank', videodevice)
 		end
-		for i = numcycles:-1:1,
-			mlvideo('blit', videodevice, buffer(i));
-			mlvideo('flip', videodevice);
-		end
+		mlvideo('flip', videodevice);
+		frames = frames + 1;
+		t2 = toc(t1);
 	end
-	t2 = toc(t1);
-	for i = 1:numcycles,
-		mlvideo('releasebuffer', videodevice, buffer(i));
-	end
+	
 	mlvideo('showcursor', videodevice, 1);
 	mlvideo('restoremode', videodevice);
 	mlvideo('releasedevice', videodevice);
 	mlvideo('release');
-	totalframes = 2*(numcycles^2);
-	framerate = 1/(t2/totalframes);
+	framerate = frames/t2;
 	mlmessage(sprintf('Approximate video refresh rate = %3.2f Hz', framerate));
 catch
 	mlvideo('showcursor', videodevice, 1);
@@ -170,7 +154,7 @@ catch
 	mlmessage('*** Error encountered during application of selected video settings ***');
 end
 MLConfig.ActualRefreshRate  = framerate;
-clear bytesperpixel videodevice resval validsizes bufferpages validrefresh refreshrate validxsize validysize ScreenX ScreenY numcycles halfx halfy x y dist buffer rpat gpat bpat testpattern totalframes framerate
+
 MLConfig.ComputerName = lower(getenv('COMPUTERNAME'));
 MLHELPER_OFF = MLConfig.MLHelperOff;
 
