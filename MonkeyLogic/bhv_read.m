@@ -185,7 +185,9 @@ BHV.BlockSelectFunction = deblank(char(fread(fidbhv, 64, 'uchar')'));
 BHV.CondSelectFunction = deblank(char(fread(fidbhv, 64, 'uchar')'));
 if BHV.FileVersion > 2.0,
     BHV.VideoRefreshRate = fread(fidbhv, 1, 'double');
-	BHV.ActualVideoRefreshRate = fread(fidbhv, 1, 'double');
+	if BHV.FileVersion > 3.0
+		BHV.ActualVideoRefreshRate = fread(fidbhv, 1, 'double');
+	end
     BHV.VideoBufferPages = fread(fidbhv, 1, 'uint16');
 end
 BHV.ScreenXresolution = fread(fidbhv, 1, 'uint16');

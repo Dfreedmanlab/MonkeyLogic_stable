@@ -18,12 +18,12 @@ function status = bhv_write(mode, fidbhv, WriteData, varargin)
 % Modified 8/13/08 -WA (added movie images to file; v2.5)
 % Modified 8/31/08 -WA (handles option to NOT store PICs and MOVs to file)
 % Modified 7/27/12 -WA (Increases possible trial duration to 2^32)
-% Modified 3/4/13 -RK (Now counts circles and squares as picture stimuli
+% Modified 7/16/13 -DF (New field: ActualVideoRefreshRate; v3.1)
 
 persistent numtrialpointer
 
 status = 0;
-bhvfileversion = 3.0;
+bhvfileversion = 3.1;
 
 switch mode,
     case 1, %write header
