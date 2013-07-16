@@ -122,9 +122,13 @@ hotkey('bksp', 'simulation_positions(2,5,Inf);');
 
 if isfield(TrialRecord, 'CurrentConditionInfo')
 	Info = TrialRecord.CurrentConditionInfo;       %#ok<NASGU>
+else
+	Info = []; %#ok<NASGU>
 end
 if isfield(TrialRecord, 'CurrentConditionStimulusInfo')
 	StimulusInfo = TrialRecord.CurrentConditionStimulusInfo; %#ok<NASGU>
+else
+	StimulusInfo = []; %#ok<NASGU>
 end
 user_text('');
 try
