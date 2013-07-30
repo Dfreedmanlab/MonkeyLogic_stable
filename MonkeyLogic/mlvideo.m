@@ -16,6 +16,8 @@ function result = mlvideo(fxn, varargin)
 %  vblank = mlvideo('verticalblank', devicenum);
 %  rasterline = mlvideo('rasterline', devicenum);
 %  rasterline = mlvideo('waitflip', devicenum, raster_threshold);
+%  mouseposition = mlvideo('getmouse')
+%  mlvideo('setmouse', P)
 %
 %  This function requires the following video operations to be available:
 %  1) Get the number of video devices
@@ -30,6 +32,8 @@ function result = mlvideo(fxn, varargin)
 % 10) Release a video buffer
 % 11) Release a video device
 % 12) Toggle the visibility of the mouse cursor
+% 13) Get the mouse's position
+% 14) Set the mouse's position
 %
 %  Created by WA January, 2008
 %  Modified 8/12/08 -WA (added 'waitflip' fxn)
@@ -214,7 +218,13 @@ switch fxn
             xglreleasedevice(devicenum);
         end
         xglrelease;
-                
+		
+	case 'getmouse'
+		result = xglgetcursor;
+		
+	case 'setmouse'
+		P = varargin{1};
+		xglsetcursor(P);
 end
 
 function rgb = rgbval(rgb_in)

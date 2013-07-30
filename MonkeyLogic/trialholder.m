@@ -183,19 +183,19 @@ if stimuli == -1, %initialize
 elseif stimuli == -2, %trial exit data
     tflip = ObjectStatusRecord;
     return
-elseif stimuli == -3, %call from reposition_object or set_object_path
+elseif stimuli == -3, %call from reposition_object or set_object_path or eyejoytrack(-7)
     stimnum = varargin{1};
 	status = TrialObject(stimnum).Status;
-    TrialObject(stimnum) = varargin{2};
+	TrialObject(stimnum) = varargin{2};
 	TrialObject(stimnum).Status = status;
     statrec = double(cat(1, TrialObject.Status));
-    if varargin{3}, %called from reposition_object, not set_object_path
+    if varargin{3}, %called from reposition_object, not set_object_path or eyejoytrack(-7)
         togglecount = togglecount + 1;
         statrec(stimnum) = 2;
         ObjectStatusRecord(togglecount).Time = round(trialtime);
         ObjectStatusRecord(togglecount).Status = statrec;
         ObjectStatusRecord(togglecount).Data{1} = [TrialObject(stimnum).XPos TrialObject(stimnum).YPos];
-        if TrialObject(stimnum).Status,
+        if TrialObject(stimnum).Status
             toggleobject([stimnum stimnum], 'drawmode', 'fast');
         end
     end
@@ -272,7 +272,9 @@ if ~isempty(varargin) && ~movie_advance_only,
                 error('Value for <Toggleobject: MovieStep> must be numeric');
             end
             if length(a) == 1 || length(a) == length(stimuli),
-                [TrialObject(stimuli).FrameStep] = deal(a);
+				for i = length(stimuli)
+					TrialObject(stimuli(i)).FrameStep = a(i);
+				end
                 if ~setstartframe && any(a < 0),
                     stimsubset = stimuli(a < 0);
                     for i = 1:length(stimsubset),
@@ -287,7 +289,9 @@ if ~isempty(varargin) && ~movie_advance_only,
                 error('Value for <Toggleobject: StartPosition> must be numeric');
             end
             if length(a) == 1 || length(a) == length(stimuli),
-                [TrialObject(stimuli).StartPosition] = deal(a);
+				for i = length(stimuli)
+					TrialObject(stimuli(i)).PositionStep = a(i);
+				end
             else
                 error('Number of values for <ToggleObject: StartPosition> must be equal to the number of specified stimuli, or scalar');
             end
@@ -602,7 +606,7 @@ global SIMULATION_MODE
 persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsamples ejt_totaltime min_cyclerate...
     joyx joyy eyex eyey joypresent eyepresent eyetarget_index eyetarget_record ...
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
-    lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax 
+    lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax rfmkeyflag rfmobpos
 
 t1 = trialtime;
 ontarget = 0;
@@ -730,6 +734,21 @@ elseif fxn1 == -6, %benchmarking
     ontarget{1} = benchdata(1:benchcount); %retrieve current benchmark data
     ontarget{2} = benchdata2(1:benchcount2);
     return
+elseif fxn1 == -7, %RFM
+    fxn1 = 'holdfix';
+    rfmob1 = varargin{1};
+    rfmkeyflag = 0; %initialize
+    rfmobpos_conds = [2 4 3 5 8]; %number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
+    rfmscreeninfo = get(0,'MonitorPosition');
+    xoffset = rfmscreeninfo(2,1);
+    yoffset = rfmscreeninfo(2,2);
+    l = xoffset;
+    t = yoffset;
+    r = rfmscreeninfo(2,3);
+    b = rfmscreeninfo(2,4);
+    dirs = getpref('MonkeyLogic', 'Directories');
+    system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
+    system(sprintf('%smlhelper --cursor-clip %i %i %i %i',dirs.BaseDirectory,l,t,r,b));
 end
 
 eyetrack = 0;
@@ -740,7 +759,6 @@ joystatus = 0;
 bstatus = 0;
 eyefirst = 0;
 joyfirst = 0;
-%buttonfirst = 0; %only need if can have fxn3... which one can't for now.
 
 idle = 0;
 if strcmp(fxn1, 'idle'),
@@ -755,9 +773,12 @@ if strcmp(fxn1, 'idle'),
 else
     tob1 = varargin{1};
     trad1 = varargin{2};
-    if length(trad1) < length(tob1),
+	if length(trad1) < length(tob1),
         trad1 = trad1 * ones(size(tob1));
-    end
+	end
+	if exist('rfmob1', 'var'), % Hardcode fixation point as object # 1 in timing file 
+        tob1 = 1;
+	end
     maxtime = varargin{3};
     if strcmpi(fxn1, 'acquirefix'),
         eyetrack = 1;
@@ -904,11 +925,11 @@ end
 moviesplaying = any(cat(1, TrialObject.Status) & cat(1, TrialObject.Modality) == 2);
 yesshowcursor = ScreenData.ShowCursor;
 if moviesplaying || yesshowcursor,
-    videoupdates = 1;
-    drawnowok = 0;
+	videoupdates = 1;
+	drawnowok = 0;
 else
-    videoupdates = 0;
-    drawnowok = 1;
+	videoupdates = 0;
+	drawnowok = 1;
 end
 
 %create button indicators
@@ -1005,10 +1026,10 @@ t2 = trialtime - t1;
 
 while t2 < maxtime,
     totalsamples = totalsamples + 1;
-    if ~isempty(AI),
+	if ~isempty(AI),
         data = getsample(AI);
-    end
-    if eyepresent,
+	end
+	if eyepresent,
         if SIMULATION_MODE,
             sim_vals = simulation_positions(0);
             xp_eye = sim_vals(3);
@@ -1032,9 +1053,9 @@ while t2 < maxtime,
                 eyestatus = eye_dist <= eyerad;
             end
         end
-    end
+	end
     
-    if joypresent,
+	if joypresent,
         if SIMULATION_MODE,
             sim_vals = simulation_positions(0);
             xp_joy = sim_vals(1);
@@ -1055,9 +1076,9 @@ while t2 < maxtime,
                 joystatus = joy_dist <= joyrad;
             end
         end
-    end
+	end
     
-    if any(buttonspresent),
+	if any(buttonspresent),
         if analogbuttons,
             allbvals = data(buttonx);
         else
@@ -1080,8 +1101,36 @@ while t2 < maxtime,
                 bstatus = bval > bthresh;
             end
         end
-    end
-
+	end
+	
+	if exist('rfmob1', 'var'),  % TODO: Drop Mouse button presses.   
+        rfmtarget = xglgetcursor;
+        Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
+        Ynew = -(rfmtarget(2) - yoffset - ScreenData.Half_ys)/ScreenData.PixelsPerDegree;
+        rfmkeyflag = mlkbd('getkey');
+        if isempty(rfmobpos)
+            rfmobpos = zeros(1,length(rfmobpos_conds)); %current shape, rotation, size ratio, size, color of rfm object
+        end
+        if rfmkeyflag == 16 | rfmkeyflag ==17 | rfmkeyflag == 18 | rfmkeyflag == 19 | rfmkeyflag == 20, %change shape, rotation, size ratio, size, color
+            rfmkeyflag = rfmkeyflag - 15; % subtract 15 to index by desired object trait
+            toggleobject(rfmob1, 'status', 'off');
+            rfmobpos(rfmkeyflag) = rfmobpos(rfmkeyflag) + 1;
+            if rfmobpos(rfmkeyflag) == rfmobpos_conds(rfmkeyflag),
+                rfmobpos(rfmkeyflag) = 0;
+            end
+        end
+        rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5); %index to desired frame
+        if rfmframe == 0,
+            rfmframe = 1;
+        end
+		success = reposition_object(rfmob1, Xnew, Ynew);
+        if success == 0,
+            toggleobject(rfmob1, 'status', 'off')
+        else
+            toggleobject(rfmob1,'MovieStep',0,'MovieStartFrame',rfmframe);
+        end
+	end
+	
     if any(eyestatus) || any(joystatus) || any(bstatus),
         t = trialtime - t1;
         rt = round(t);
