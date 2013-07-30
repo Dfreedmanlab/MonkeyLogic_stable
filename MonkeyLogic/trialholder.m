@@ -261,36 +261,50 @@ if ~isempty(varargin) && ~movie_advance_only,
             if ischar(a) || iscell(a),
                 error('Value for <Toggleobject: MovieStartFrame> must be numeric');
             end
-            if length(a) == 1 || length(a) == length(stimuli),
-                [TrialObject(stimuli).StartFrame] = deal(a);
+            if length(a) == 1
+				for i = stimuli
+					TrialObject(i).StartFrame = a;
+				end
+			elseif length(a) == length(stimuli)
+				for i = length(stimuli)
+					TrialObject(stimuli(i)).StartFrame = a(i);
+				end
             else
                 error('Number of values for <ToggleObject: MovieStartFrame> must be equal to the number of specified stimuli, or scalar');
             end
             setstartframe = 1;
         elseif strcmpi(v, 'moviestep'),
-            if ischar(a) || iscell(a),
+			if ischar(a) || iscell(a),
                 error('Value for <Toggleobject: MovieStep> must be numeric');
-            end
-            if length(a) == 1 || length(a) == length(stimuli),
+			end
+			if length(a) == 1
+				for i = stimuli
+					TrialObject(i).FrameStep = a;
+				end
+			elseif length(a) == length(stimuli)
 				for i = length(stimuli)
 					TrialObject(stimuli(i)).FrameStep = a(i);
 				end
-                if ~setstartframe && any(a < 0),
-                    stimsubset = stimuli(a < 0);
-                    for i = 1:length(stimsubset),
-                        TrialObject(stimsubset(i)).StartFrame = TrialObject(stimsubset(i)).NumFrames; %start playing backwards from last frame
-                    end
-                end
             else
                 error('Number of values for <ToggleObject: MovieStep> must be equal to the number of specified stimuli, or scalar');
-            end
+			end
+			if ~setstartframe && any(a < 0),
+				stimsubset = stimuli(a < 0);
+				for i = 1:length(stimsubset),
+					TrialObject(stimsubset(i)).StartFrame = TrialObject(stimsubset(i)).NumFrames; %start playing backwards from last frame
+				end
+			end
         elseif strcmpi(v, 'startposition'),
             if ischar(a) || iscell(a),
                 error('Value for <Toggleobject: StartPosition> must be numeric');
             end
-            if length(a) == 1 || length(a) == length(stimuli),
+            if length(a) == 1
+				for i = stimuli
+					TrialObject(i).StartPosition = a;
+				end
+			elseif length(a) == length(stimuli)
 				for i = length(stimuli)
-					TrialObject(stimuli(i)).PositionStep = a(i);
+					TrialObject(stimuli(i)).StartPosition = a(i);
 				end
             else
                 error('Number of values for <ToggleObject: StartPosition> must be equal to the number of specified stimuli, or scalar');
@@ -301,7 +315,9 @@ if ~isempty(varargin) && ~movie_advance_only,
                 error('Value for <Toggleobject: PositionStep> must be numeric');
 			end
 			if length(a) == 1
-				[TrialObject(stimuli).PositionStep] = deal(a);
+				for i = 1 : stimuli
+					TrialObject(i).PositionStep = a;
+				end
 			elseif length(a) == length(stimuli)
 				for i = length(stimuli)
 					TrialObject(stimuli(i)).PositionStep = a(i);
@@ -738,7 +754,7 @@ elseif fxn1 == -7, %RFM
     fxn1 = 'holdfix';
     rfmob1 = varargin{1};
     rfmkeyflag = 0; %initialize
-    rfmobpos_conds = [2 4 3 5 8]; %number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
+    rfmobpos_conds = [1 8 3 5 3]; %number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
     rfmscreeninfo = get(0,'MonitorPosition');
     xoffset = rfmscreeninfo(2,1);
     yoffset = rfmscreeninfo(2,2);
@@ -1108,10 +1124,13 @@ while t2 < maxtime,
         Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
         Ynew = -(rfmtarget(2) - yoffset - ScreenData.Half_ys)/ScreenData.PixelsPerDegree;
         rfmkeyflag = mlkbd('getkey');
+		if isempty(rfmkeyflag)
+			rfmkeyflag = 0;
+		end
         if isempty(rfmobpos)
             rfmobpos = zeros(1,length(rfmobpos_conds)); %current shape, rotation, size ratio, size, color of rfm object
         end
-        if rfmkeyflag == 16 | rfmkeyflag ==17 | rfmkeyflag == 18 | rfmkeyflag == 19 | rfmkeyflag == 20, %change shape, rotation, size ratio, size, color
+        if rfmkeyflag == 16 || rfmkeyflag ==17 || rfmkeyflag == 18 || rfmkeyflag == 19 || rfmkeyflag == 20, %change shape, rotation, size ratio, size, color
             rfmkeyflag = rfmkeyflag - 15; % subtract 15 to index by desired object trait
             toggleobject(rfmob1, 'status', 'off');
             rfmobpos(rfmkeyflag) = rfmobpos(rfmkeyflag) + 1;
@@ -1119,13 +1138,13 @@ while t2 < maxtime,
                 rfmobpos(rfmkeyflag) = 0;
             end
         end
-        rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5); %index to desired frame
+        rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5) + 1; %index to desired frame
         if rfmframe == 0,
             rfmframe = 1;
         end
 		success = reposition_object(rfmob1, Xnew, Ynew);
         if success == 0,
-            toggleobject(rfmob1, 'status', 'off')
+            toggleobject(rfmob1, 'status', 'off');
         else
             toggleobject(rfmob1,'MovieStep',0,'MovieStartFrame',rfmframe);
         end
