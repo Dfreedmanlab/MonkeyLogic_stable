@@ -753,8 +753,12 @@ elseif fxn1 == -6, %benchmarking
 elseif fxn1 == -7, %RFM
     fxn1 = 'holdfix';
     rfmob1 = varargin{1};
+	TrialObject(rfmob1).FrameStep = 0;
+	reposition_object(-1, TrialObject, ScreenData);
+	
     rfmkeyflag = 0; %initialize
     rfmobpos_conds = [1 8 3 5 3]; %number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
+	
     rfmscreeninfo = get(0,'MonitorPosition');
     xoffset = rfmscreeninfo(2,1);
     yoffset = rfmscreeninfo(2,2);
@@ -1130,8 +1134,8 @@ while t2 < maxtime,
         if isempty(rfmobpos)
             rfmobpos = zeros(1,length(rfmobpos_conds)); %current shape, rotation, size ratio, size, color of rfm object
         end
-        if rfmkeyflag == 16 || rfmkeyflag ==17 || rfmkeyflag == 18 || rfmkeyflag == 19 || rfmkeyflag == 20, %change shape, rotation, size ratio, size, color
-            rfmkeyflag = rfmkeyflag - 15; % subtract 15 to index by desired object trait
+        if rfmkeyflag == 20 || rfmkeyflag == 21 || rfmkeyflag == 22 || rfmkeyflag == 23 || rfmkeyflag == 24, %change shape, rotation, size ratio, size, color
+            rfmkeyflag = rfmkeyflag - 19; % subtract 15 to index by desired object trait
             toggleobject(rfmob1, 'status', 'off');
             rfmobpos(rfmkeyflag) = rfmobpos(rfmkeyflag) + 1;
             if rfmobpos(rfmkeyflag) == rfmobpos_conds(rfmkeyflag),
@@ -1146,7 +1150,7 @@ while t2 < maxtime,
         if success == 0,
             toggleobject(rfmob1, 'status', 'off');
         else
-            toggleobject(rfmob1,'MovieStep',0,'MovieStartFrame',rfmframe);
+            toggleobject(rfmob1,'MovieStartFrame',rfmframe);
         end
 	end
 	
