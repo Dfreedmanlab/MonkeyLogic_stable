@@ -1,2 +1,0 @@
-Condition	Frequency	Block	Timing File		TaskObject#1	TaskObject#2		
-1		1		1 	rfm 	fix(0,0)	mov(rfm_mov,0,0)	
