@@ -756,8 +756,10 @@ elseif fxn1 == -7, %RFM
 	TrialObject(rfmob1).FrameStep = 0;
 	reposition_object(-1, TrialObject, ScreenData);
 	
-    rfmkeyflag = 0; %initialize
-    rfmobpos_conds = [1 8 3 5 3]; %number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
+    rfmkeyflag = 0;					%initialize
+    rfmobpos_conds = [1 8 3 5 3];	%number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
+	Xnew = 0;
+	Ynew = 0;						%variables to store mouse position
 	
     rfmscreeninfo = get(0,'MonitorPosition');
     xoffset = rfmscreeninfo(2,1);
@@ -1125,33 +1127,44 @@ while t2 < maxtime,
 	
 	if exist('rfmob1', 'var'),  % TODO: Drop Mouse button presses.   
         rfmtarget = xglgetcursor;
+		Xold = Xnew;
+		Yold = Ynew;
         Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
         Ynew = -(rfmtarget(2) - yoffset - ScreenData.Half_ys)/ScreenData.PixelsPerDegree;
+		
         rfmkeyflag = mlkbd('getkey');
 		if isempty(rfmkeyflag)
 			rfmkeyflag = 0;
 		end
         if isempty(rfmobpos)
-            rfmobpos = zeros(1,length(rfmobpos_conds)); %current shape, rotation, size ratio, size, color of rfm object
+            rfmobpos = zeros(1,length(rfmobpos_conds));						%current shape, rotation, size ratio, size, color of rfm object
         end
         if rfmkeyflag == 20 || rfmkeyflag == 21 || rfmkeyflag == 22 || rfmkeyflag == 23 || rfmkeyflag == 24, %change shape, rotation, size ratio, size, color
-            rfmkeyflag = rfmkeyflag - 19; % subtract 15 to index by desired object trait
+			changestim = 1;
+            rfmkeyflag = rfmkeyflag - 19;									%subtract 15 to index by desired object trait
             toggleobject(rfmob1, 'status', 'off');
             rfmobpos(rfmkeyflag) = rfmobpos(rfmkeyflag) + 1;
-            if rfmobpos(rfmkeyflag) == rfmobpos_conds(rfmkeyflag),
+			if rfmobpos(rfmkeyflag) == rfmobpos_conds(rfmkeyflag),
                 rfmobpos(rfmkeyflag) = 0;
-            end
+			end
+		else
+			changestim = 0;
         end
         rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5) + 1; %index to desired frame
-        if rfmframe == 0,
+		if rfmframe == 0,
             rfmframe = 1;
-        end
-		success = reposition_object(rfmob1, Xnew, Ynew);
-        if success == 0,
-            toggleobject(rfmob1, 'status', 'off');
-        else
-            toggleobject(rfmob1,'MovieStartFrame',rfmframe);
-        end
+		end
+		
+		updaterfmob = (Xold ~= Xnew && Yold ~= Ynew) || changestim;			%does the object need to be updated?
+		if updaterfmob
+			toggleobject(rfmob1, 'status', 'off');
+			success = reposition_object(rfmob1, Xnew, Ynew);
+			if success == 0,
+				toggleobject(rfmob1, 'status', 'off');
+			else
+				toggleobject(rfmob1,'MovieStartFrame',rfmframe);
+			end
+		end
 	end
 	
     if any(eyestatus) || any(joystatus) || any(bstatus),
