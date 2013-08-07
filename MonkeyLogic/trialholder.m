@@ -1126,20 +1126,22 @@ while t2 < maxtime,
 	end
 	
 	if exist('rfmob1', 'var'),  % TODO: Drop Mouse button presses.   
-        rfmtarget = xglgetcursor;
+        rfmtarget = mlvideo('getmouse');
 		Xold = Xnew;
 		Yold = Ynew;
         Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
         Ynew = -(rfmtarget(2) - yoffset - ScreenData.Half_ys)/ScreenData.PixelsPerDegree;
+		changepos = Xold ~= Xnew && Yold ~= Ynew;
 		
         rfmkeyflag = mlkbd('getkey');
 		if isempty(rfmkeyflag)
 			rfmkeyflag = 0;
 		end
-        if isempty(rfmobpos)
+		if isempty(rfmobpos)
             rfmobpos = zeros(1,length(rfmobpos_conds));						%current shape, rotation, size ratio, size, color of rfm object
-        end
-        if rfmkeyflag == 20 || rfmkeyflag == 21 || rfmkeyflag == 22 || rfmkeyflag == 23 || rfmkeyflag == 24, %change shape, rotation, size ratio, size, color
+			mlvideo('setmouse', [(l + r)/2 (t + b)/2]);						%set the mouse to the center of the screen on the first trial
+		end
+		if rfmkeyflag == 20 || rfmkeyflag == 21 || rfmkeyflag == 22 || rfmkeyflag == 23 || rfmkeyflag == 24, %change shape, rotation, size ratio, size, color
 			changestim = 1;
             rfmkeyflag = rfmkeyflag - 19;									%subtract 15 to index by desired object trait
             toggleobject(rfmob1, 'status', 'off');
@@ -1149,13 +1151,13 @@ while t2 < maxtime,
 			end
 		else
 			changestim = 0;
-        end
+		end
         rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5) + 1; %index to desired frame
 		if rfmframe == 0,
             rfmframe = 1;
 		end
 		
-		updaterfmob = (Xold ~= Xnew && Yold ~= Ynew) || changestim;			%does the object need to be updated?
+		updaterfmob = changepos || changestim;								%does the object need to be updated?
 		if updaterfmob
 			toggleobject(rfmob1, 'status', 'off');
 			success = reposition_object(rfmob1, Xnew, Ynew);

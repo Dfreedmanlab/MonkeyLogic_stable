@@ -662,13 +662,6 @@ end
 %%%%%
 
 for trial = 1:MLConfig.MaxTrials,
-    
-    TrialRecord.CurrentTrialNumber = trial;
-    TrialRecord.CurrentCondition = [];
-    TrialRecord.CurrentBlock = [];
-    TrialRecord.CurrentBlockCount = [];
-    TrialRecord.ConditionsThisBlock = [];
-    
     if ~userdefinedtaskloop,
         %% Select Block
         if trial == 1,
@@ -705,7 +698,7 @@ for trial = 1:MLConfig.MaxTrials,
                             trialsperblock = trialsperblock + 1;
                         end
                 end
-            end
+			end
 
             if ~isempty(MLConfig.BlockChangeFunctionName) && trial > 1 && ~pausechangeblock,
                 try
@@ -747,7 +740,7 @@ for trial = 1:MLConfig.MaxTrials,
                 trialcount = trialsthisblock;
             end
             %%%%%
-            if ((~repeatflag && trialcount == trialsperblock && ~userblockalreadychosen) || trial == 1) || (bswitchflag && ~userblockalreadychosen), %if block > 0, FirstBlock was set, so use that...
+			if ((~repeatflag && trialcount == trialsperblock && ~userblockalreadychosen) || trial == 1) || (bswitchflag && ~userblockalreadychosen), %if block > 0, FirstBlock was set, so use that...
                 switch MLConfig.BlockLogic,
                     case 1 % Random with replacement
                         if trial > 1 || (trial == 1 && block == 0),
@@ -853,13 +846,13 @@ for trial = 1:MLConfig.MaxTrials,
                     monkeylogic_alert(1, TrialRecord, MLConfig.Alerts);
                 end
 
-            end
+			end
             
-            if pausechangeblock,
+			if pausechangeblock,
                 BlockPerformance = NaN*zeros(MLConfig.MaxTrials, 1);
                 trialsperblock = MLConfig.BlockLength(block);
                 possconds = BlockTypes{block};
-            end
+			end
 
             TrialRecord.CurrentBlock = block;
             TrialRecord.CurrentTrialWithinBlock = trialsthisblock + 1;
