@@ -662,6 +662,13 @@ end
 %%%%%
 
 for trial = 1:MLConfig.MaxTrials,
+	
+	TrialRecord.CurrentTrialNumber = trial;
+    %TrialRecord.CurrentCondition = [];
+    %TrialRecord.CurrentBlock = [];
+    %TrialRecord.CurrentBlockCount = [];
+    %TrialRecord.ConditionsThisBlock = [];
+	
     if ~userdefinedtaskloop,
         %% Select Block
         if trial == 1,
