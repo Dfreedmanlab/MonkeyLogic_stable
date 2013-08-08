@@ -622,7 +622,7 @@ global SIMULATION_MODE
 persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsamples ejt_totaltime min_cyclerate...
     joyx joyy eyex eyey joypresent eyepresent eyetarget_index eyetarget_record ...
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
-    lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax rfmkeyflag rfmobpos
+    lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax
 
 t1 = trialtime;
 ontarget = 0;
@@ -750,27 +750,6 @@ elseif fxn1 == -6, %benchmarking
     ontarget{1} = benchdata(1:benchcount); %retrieve current benchmark data
     ontarget{2} = benchdata2(1:benchcount2);
     return
-elseif fxn1 == -7, %RFM
-    fxn1 = 'holdfix';
-    rfmob1 = varargin{1};
-	TrialObject(rfmob1).FrameStep = 0;
-	reposition_object(-1, TrialObject, ScreenData);
-	
-    rfmkeyflag = 0;					%initialize
-    rfmobpos_conds = [1 8 3 5 3];	%number of shapes, rotations, size ratios, sizes, colors in rfm object. TODO make soft-coded
-	Xnew = 0;
-	Ynew = 0;						%variables to store mouse position
-	
-    rfmscreeninfo = get(0,'MonitorPosition');
-    xoffset = rfmscreeninfo(2,1);
-    yoffset = rfmscreeninfo(2,2);
-    l = xoffset;
-    t = yoffset;
-    r = rfmscreeninfo(2,3);
-    b = rfmscreeninfo(2,4);
-    dirs = getpref('MonkeyLogic', 'Directories');
-    system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
-    system(sprintf('%smlhelper --cursor-clip %i %i %i %i',dirs.BaseDirectory,l,t,r,b));
 end
 
 eyetrack = 0;
@@ -797,9 +776,6 @@ else
     trad1 = varargin{2};
 	if length(trad1) < length(tob1),
         trad1 = trad1 * ones(size(tob1));
-	end
-	if exist('rfmob1', 'var'), % Hardcode fixation point as object # 1 in timing file 
-        tob1 = 1;
 	end
     maxtime = varargin{3};
     if strcmpi(fxn1, 'acquirefix'),
@@ -1123,50 +1099,6 @@ while t2 < maxtime,
                 bstatus = bval > bthresh;
             end
         end
-	end
-	
-	if exist('rfmob1', 'var'),  % TODO: Drop Mouse button presses.   
-        rfmtarget = mlvideo('getmouse');
-		Xold = Xnew;
-		Yold = Ynew;
-        Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
-        Ynew = -(rfmtarget(2) - yoffset - ScreenData.Half_ys)/ScreenData.PixelsPerDegree;
-		changepos = Xold ~= Xnew && Yold ~= Ynew;
-		
-        rfmkeyflag = mlkbd('getkey');
-		if isempty(rfmkeyflag)
-			rfmkeyflag = 0;
-		end
-		if isempty(rfmobpos)
-            rfmobpos = zeros(1,length(rfmobpos_conds));						%current shape, rotation, size ratio, size, color of rfm object
-			mlvideo('setmouse', [(l + r)/2 (t + b)/2]);						%set the mouse to the center of the screen on the first trial
-		end
-		if rfmkeyflag == 20 || rfmkeyflag == 21 || rfmkeyflag == 22 || rfmkeyflag == 23 || rfmkeyflag == 24, %change shape, rotation, size ratio, size, color
-			changestim = 1;
-            rfmkeyflag = rfmkeyflag - 19;									%subtract 15 to index by desired object trait
-            toggleobject(rfmob1, 'status', 'off');
-            rfmobpos(rfmkeyflag) = rfmobpos(rfmkeyflag) + 1;
-			if rfmobpos(rfmkeyflag) == rfmobpos_conds(rfmkeyflag),
-                rfmobpos(rfmkeyflag) = 0;
-			end
-		else
-			changestim = 0;
-		end
-        rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5) + 1; %index to desired frame
-		if rfmframe == 0,
-            rfmframe = 1;
-		end
-		
-		updaterfmob = changepos || changestim;								%does the object need to be updated?
-		if updaterfmob
-			toggleobject(rfmob1, 'status', 'off');
-			success = reposition_object(rfmob1, Xnew, Ynew);
-			if success == 0,
-				toggleobject(rfmob1, 'status', 'off');
-			else
-				toggleobject(rfmob1,'MovieStartFrame',rfmframe);
-			end
-		end
 	end
 	
     if any(eyestatus) || any(joystatus) || any(bstatus),
