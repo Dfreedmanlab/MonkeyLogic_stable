@@ -664,10 +664,6 @@ end
 for trial = 1:MLConfig.MaxTrials,
 	
 	TrialRecord.CurrentTrialNumber = trial;
-    %TrialRecord.CurrentCondition = [];
-    %TrialRecord.CurrentBlock = [];
-    %TrialRecord.CurrentBlockCount = [];
-    %TrialRecord.ConditionsThisBlock = [];
 	
     if ~userdefinedtaskloop,
         %% Select Block
@@ -747,7 +743,7 @@ for trial = 1:MLConfig.MaxTrials,
                 trialcount = trialsthisblock;
             end
             %%%%%
-			if ((~repeatflag && trialcount == trialsperblock && ~userblockalreadychosen) || trial == 1) || (bswitchflag && ~userblockalreadychosen), %if block > 0, FirstBlock was set, so use that...
+			if ((~repeatflag && trialcount == trialsperblock && ~userblockalreadychosen) || trial == 1) || bswitchflag %if block > 0, FirstBlock was set, so use that...
                 switch MLConfig.BlockLogic,
                     case 1 % Random with replacement
                         if trial > 1 || (trial == 1 && block == 0),
@@ -2426,6 +2422,7 @@ if ~isempty(kb) || remotecommand,
                 xycalibrate(ScreenInfo, targetlist, DaqInfo, MLConfig.EyeTransform, MLHELPER_OFF);
                 fig = findobj('tag', 'xycalibrate');
                 enable_cursor;
+				unclip_cursor;					%required for rfm
                 clip_cursor(get(fig,'position'));
                 waitfor(fig);
                 unclip_cursor;
@@ -2441,6 +2438,7 @@ if ~isempty(kb) || remotecommand,
                 xycalibrate(ScreenInfo, targetlist, DaqInfo, MLConfig.JoyTransform, MLHELPER_OFF);
                 fig = findobj('tag', 'xycalibrate');
                 enable_cursor;
+				unclip_cursor;					%required for rfm
                 clip_cursor(get(fig,'position'));
                 waitfor(fig);
                 unclip_cursor;
@@ -2473,6 +2471,7 @@ if ~isempty(kb) || remotecommand,
                 mlkbd('release');
                 ScreenInfo = close_video(ScreenInfo);
                 enable_cursor;
+				unclip_cursor;					%required for rfm
                 VV = get(findobj('tag', 'loadbutton'), 'userdata');
                 changevars(VV);
                 uiwait(findobj('tag', 'edittfvars'));
@@ -2486,6 +2485,7 @@ if ~isempty(kb) || remotecommand,
                 mlkbd('release');
                 ScreenInfo = close_video(ScreenInfo);
                 enable_cursor;
+				unclip_cursor;					%required for rfm
                 chooseblock;
                 uiwait(findobj('tag', 'chooseblock'));
                 disable_cursor;
@@ -2512,6 +2512,7 @@ if ~isempty(kb) || remotecommand,
                 mlkbd('release');
                 ScreenInfo = close_video(ScreenInfo);
                 enable_cursor;
+				unclip_cursor;					%required for rfm
                 chooseerrorhandling;
                 uiwait(findobj('tag', 'chooseerrorhandling'));
                 disable_cursor;
