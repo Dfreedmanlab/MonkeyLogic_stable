@@ -2422,7 +2422,6 @@ if ~isempty(kb) || remotecommand,
                 xycalibrate(ScreenInfo, targetlist, DaqInfo, MLConfig.EyeTransform, MLHELPER_OFF);
                 fig = findobj('tag', 'xycalibrate');
                 enable_cursor;
-				unclip_cursor;					%required for rfm
                 clip_cursor(get(fig,'position'));
                 waitfor(fig);
                 unclip_cursor;
@@ -2438,7 +2437,6 @@ if ~isempty(kb) || remotecommand,
                 xycalibrate(ScreenInfo, targetlist, DaqInfo, MLConfig.JoyTransform, MLHELPER_OFF);
                 fig = findobj('tag', 'xycalibrate');
                 enable_cursor;
-				unclip_cursor;					%required for rfm
                 clip_cursor(get(fig,'position'));
                 waitfor(fig);
                 unclip_cursor;
@@ -2471,7 +2469,6 @@ if ~isempty(kb) || remotecommand,
                 mlkbd('release');
                 ScreenInfo = close_video(ScreenInfo);
                 enable_cursor;
-				unclip_cursor;					%required for rfm
                 VV = get(findobj('tag', 'loadbutton'), 'userdata');
                 changevars(VV);
                 uiwait(findobj('tag', 'edittfvars'));
@@ -2485,7 +2482,6 @@ if ~isempty(kb) || remotecommand,
                 mlkbd('release');
                 ScreenInfo = close_video(ScreenInfo);
                 enable_cursor;
-				unclip_cursor;					%required for rfm
                 chooseblock;
                 uiwait(findobj('tag', 'chooseblock'));
                 disable_cursor;
@@ -2512,7 +2508,6 @@ if ~isempty(kb) || remotecommand,
                 mlkbd('release');
                 ScreenInfo = close_video(ScreenInfo);
                 enable_cursor;
-				unclip_cursor;					%required for rfm
                 chooseerrorhandling;
                 uiwait(findobj('tag', 'chooseerrorhandling'));
                 disable_cursor;
