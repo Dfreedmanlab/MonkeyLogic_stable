@@ -394,8 +394,8 @@ while txt ~= -1,
                         dot = find(sndfile == '.');
                         ftype = 0;
                         if isempty(dot),
-                            guesswav = [MLPrefs.Directories.ExperimentDirectory name '.wav'];
-                            guessmat = [MLPrefs.Directories.ExperimentDirectory name '.mat'];
+                            guesswav = [MLPrefs.Directories.ExperimentDirectory sndfile '.wav'];
+                            guessmat = [MLPrefs.Directories.ExperimentDirectory sndfile '.mat'];
                             if exist(guesswav, 'file'),
                                 sndfile = guesswav;
                                 ftype = 1;
@@ -414,9 +414,9 @@ while txt ~= -1,
                             end
                         end
                         if ftype == 1,
-                            [y fs nbits] = wavread([MLPrefs.Directories.ExperimentDirectory sndfile]);
+                            [y fs nbits] = wavread(sndfile);
                         elseif ftype == 2,
-                            snddata = load([MLPrefs.Directories.ExperimentDirectory sndfile]);
+                            snddata = load(sndfile);
                             try
                                 y = snddata.y;
                                 fs = snddata.fs;
