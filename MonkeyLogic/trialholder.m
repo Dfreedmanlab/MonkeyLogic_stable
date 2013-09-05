@@ -359,12 +359,14 @@ end
 
 videochange = 0;
 
-if stimuli == -4
+if stimuli == -4 || stimuli == 0
 	stimuli_fortoggle = find([TrialObject.Status] ~= 0);
 else
-	stimuli_fortoggle = union(stimuli, find([TrialObject.Status] ~= 0));
+	temp = find([TrialObject.Status] ~= 0);									%all objects with non-zero status
+	temp = setdiff(temp, stimuli);											%all objects with non-zero status excluding stimuli objects
+																			%this is in case the same stimulus is called multiple times
+	stimuli_fortoggle = sort([stimuli temp], 1, 'descend');
 end
-stimuli_fortoggle = fliplr(stimuli_fortoggle);
 
 for i = stimuli_fortoggle,
 	ob = TrialObject(i);
