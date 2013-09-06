@@ -160,6 +160,7 @@ return
 %%
 function [tflip, framenumber] = toggleobject(stimuli, varargin)
 persistent TrialObject ScreenData DAQ togglecount ObjectStatusRecord yrasterthresh ltb lastframe activemovies % %taken from TaskObject & ScreenInfo
+
 tflip = [];
 framenumber = [];
 movie_advance_only = 0;
@@ -183,20 +184,20 @@ if stimuli == -1, %initialize
 elseif stimuli == -2, %trial exit data
     tflip = ObjectStatusRecord;
     return
-elseif stimuli == -3, %call from reposition_object or set_object_path or eyejoytrack(-7)
+elseif stimuli == -3, %call from reposition_object or set_object_path
     stimnum = varargin{1};
 	status = TrialObject(stimnum).Status;
 	TrialObject(stimnum) = varargin{2};
 	TrialObject(stimnum).Status = status;
     statrec = double(cat(1, TrialObject.Status));
-    if varargin{3}, %called from reposition_object, not set_object_path or eyejoytrack(-7)
+    if varargin{3}, %called from reposition_object, not set_object_path
         togglecount = togglecount + 1;
         statrec(stimnum) = 2;
         ObjectStatusRecord(togglecount).Time = round(trialtime);
         ObjectStatusRecord(togglecount).Status = statrec;
         ObjectStatusRecord(togglecount).Data{1} = [TrialObject(stimnum).XPos TrialObject(stimnum).YPos];
         if TrialObject(stimnum).Status
-            toggleobject([stimnum stimnum], 'drawmode', 'fast');
+            toggleobject(stimnum, 'Status', 'On', 'drawmode', 'fast');
         end
     end
     return
@@ -359,7 +360,7 @@ end
 
 videochange = 0;
 
-if stimuli == -4 || stimuli == 0
+if any(stimuli == -4 | stimuli == 0)										%the bitwise or takes care of cases where stimuli is a vector
 	stimuli_fortoggle = find([TrialObject.Status] ~= 0);
 	stimuli_fortoggle = fliplr(stimuli_fortoggle);
 else
@@ -389,13 +390,16 @@ for i = stimuli_fortoggle,
                     user_warning('Skipped %i frame(s) of %s at %3.1f ms', (currentframe - lastframe - 1), ob.Name, trialtime);
 				end
 				
-				if ~activemovies(i)			%This is for when an object is toggled back on after being toggled off in one trial
+				if ~activemovies(i)			%this is for when an object is toggled back on after being toggled off in one trial
 					activemovies(i) = 1;
 				end
 				
-                indx = round(ob.FrameStep*(currentframe - ob.InitFrame)) + ob.StartFrame;
+                indx = round(ob.FrameStep*(currentframe + 1 - ob.InitFrame)) + ob.StartFrame;	%the +1 should take care of the first frame being repeated issue
                 modulus = max(length(ob.FrameOrder),ob.NumFrames);
-                indx = mod(indx, modulus) + 1;
+                indx = mod(indx, modulus);
+				if indx == 0
+					indx = 1;
+				end
                 
 				if ~isempty(ob.FrameEvents),
                     f_list = ob.FrameEvents(1,:);
@@ -407,17 +411,16 @@ for i = stimuli_fortoggle,
 				end
                 
 				if indx > length(ob.FrameOrder),
-                    ob.Status = indx;
+                    ob.Status = indx - 1;									%the -1 negates the +1 that comes a few lines later
+																			%that +1 is required to take care of set_object_path
                 else
                     ob.Status = ob.FrameOrder(indx);
 				end
-				
 				
 				ob.Status = mod(ob.Status, ob.NumFrames) + 1;
 				ob.CurrFrame = ob.CurrFrame + (currentframe - lastframe) * ob.PositionStep;
 				indx = round(ob.CurrFrame - ob.InitFrame) + ob.StartPosition;
 				ob.CurrentPosition = mod(indx, ob.NumPositions) + 1;
-				
             end
             mlvideo('blit', ScreenData.Device, ob.Buffer(ob.Status), ob.XsPos(ob.CurrentPosition), ob.YsPos(ob.CurrentPosition), ob.Xsize, ob.Ysize);
             TrialObject(i) = ob; %update persistent TrialObject array
