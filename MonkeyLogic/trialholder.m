@@ -361,6 +361,7 @@ videochange = 0;
 
 if stimuli == -4 || stimuli == 0
 	stimuli_fortoggle = find([TrialObject.Status] ~= 0);
+	stimuli_fortoggle = fliplr(stimuli_fortoggle);
 else
 	temp = find([TrialObject.Status] ~= 0);									%all objects with non-zero status
 	temp = setdiff(temp, stimuli);											%all objects with non-zero status excluding stimuli objects
