@@ -394,7 +394,7 @@ for i = stimuli_fortoggle,
 					activemovies(i) = 1;
 				end
 				
-                indx = round(ob.FrameStep*(currentframe + 1 - ob.InitFrame)) + ob.StartFrame;	%the +1 should take care of the first frame being repeated issue
+                indx = round(ob.FrameStep*(currentframe - ob.InitFrame)) + ob.StartFrame;	%the +1 should take care of the first frame being repeated issue
                 modulus = max(length(ob.FrameOrder),ob.NumFrames);
                 indx = mod(indx, modulus);
 				if indx == 0
