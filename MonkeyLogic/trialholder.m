@@ -367,7 +367,7 @@ else
 	temp = find([TrialObject.Status] ~= 0);									%all objects with non-zero status
 	temp = setdiff(temp, stimuli);											%all objects with non-zero status excluding stimuli objects
 																			%this is in case the same stimulus is called multiple times
-	stimuli_fortoggle = sort([stimuli temp], 1, 'descend');
+	stimuli_fortoggle = sort([stimuli temp], 2, 'descend');
 end
 
 for i = stimuli_fortoggle,
