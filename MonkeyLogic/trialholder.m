@@ -1240,21 +1240,21 @@ if ~earlybreak && ~idle,
     else %numsigs == 2
         if eyetrack && joytrack,
             if eyefirst,
-                ontarget = [eyeop*find(~eyestatus) joyop*find(~joystatus)];
+                ontarget = [eyeop*(find(~eyestatus))' joyop*(find(~joystatus))'];
             else
-                ontarget = [joyop*find(~joystatus) eyeop*find(~eyestatus)];
+                ontarget = [joyop*(find(~joystatus))' eyeop*(find(~eyestatus))'];
             end
         elseif eyetrack && buttontrack,
             if eyefirst,
-                ontarget = [eyeop*find(~eyestatus) buttonop*find(~bstatus)];
+                ontarget = [eyeop*(find(~eyestatus))' buttonop*(find(~bstatus))'];
             else
-                ontarget = [buttonop*find(~bstatus) eyeop*find(~eyestatus)];
+                ontarget = [buttonop*(find(~bstatus))' eyeop*(find(~eyestatus))'];
             end
         elseif joytrack && buttontrack,
             if joyfirst,
-                ontarget = [joyop*find(~joystatus) buttonop*find(~bstatus)];
+                ontarget = [joyop*(find(~joystatus))' buttonop*(find(~bstatus))'];
             else
-                ontarget = [buttonop*find(~bstatus) joyop*find(~joystatus)];
+                ontarget = [buttonop*(find(~bstatus))' joyop*(find(~joystatus))'];
             end
         end
     end
