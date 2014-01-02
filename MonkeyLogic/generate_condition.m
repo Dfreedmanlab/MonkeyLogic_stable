@@ -76,9 +76,10 @@ for pnum = 1:numpairs,
 		end
         numTO = pval;
         textline = sprintf('Condition\tInfo\tFrequency\tBlock\tTiming File');
-		for i = 1:numTO,
+        for i = 1:numTO,
             textline = sprintf('%s\tTaskObject#%i', textline, i);
-		end
+        end
+        textline = strcat(textline, '\n');
 		if isempty(fid),
 			try
 				pstring = varargin{2 * pnum + 1};

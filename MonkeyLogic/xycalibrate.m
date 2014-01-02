@@ -371,8 +371,8 @@ elseif ismember(gcbo, get(fig, 'children')),
                 yfix = targetlist(i, 2);
                 set(tgt, 'xdata', xfix, 'ydata', yfix);
                             
-                xp = round((ScreenInfo.Xsize/2) + (xfix*pixperdeg));
-                yp = round((ScreenInfo.Ysize/2) - (yfix*pixperdeg));
+                xp = round((ScreenInfo.Xsize/2) + (xfix*pixperdeg)) - FixXsize/2;
+                yp = round((ScreenInfo.Ysize/2) - (yfix*pixperdeg)) - FixYsize/2;
                 mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
                 mlvideo('blit', ScreenInfo.Device, FixBuffer, xp, yp, FixXsize, FixYsize);
                 mlvideo('flip', ScreenInfo.Device);

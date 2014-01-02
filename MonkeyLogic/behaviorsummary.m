@@ -956,7 +956,7 @@ elseif strcmp(obtype, 'crc'),
     imdata = ceil(255*makecircle(diameter, rgb, fillflag));
 
 elseif strcmp(obtype, 'sqr'),
-    diameter = bhv.PixelsPerDegree*str2double(att{1});
+    diameter = bhv.PixelsPerDegree*str2num(att{1}); %#ok<ST2NM>
     rgb = eval(att{2});
     fillflag = str2double(att{3});
     xpos = str2double(att{4});
