@@ -298,7 +298,11 @@ for i = 1:length(fnames),
             end
             hwlines = IO.CodesDigOut.Line;
             try
-                DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, hwlines, portnumber, 'out', 'BehaviorCodes');
+                % no need to specify the port number. Lines are coded in
+                % the following manner:
+                % e.g. for 3 ports with 8 lines in each port:
+                % Port0->Lines 0-7, Port1->Lines 8-15, Port2->Lines 16-23
+                DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, hwlines, 'out', 'BehaviorCodes');
             catch
                 DaqError{1} = '*** Unable to assign output digital lines for Behavioral Codes ***';
                 disp(DaqError{1});

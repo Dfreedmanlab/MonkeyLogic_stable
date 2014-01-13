@@ -2914,17 +2914,42 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     mlmessage('*** TTLs and Digital Codes must be assigned to a digital output ***');
                     return
                 end
+                
+                avports = AdatorInfo(boardnum).AvailablePorts{subsysnum};
                 avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
+                
+                nlines = length(avlines);
                 if strcmp('CodesDigOut', iovar),
-                    choose_dio_line(avlines, 1);
+                    % first select ports (allows user to select multiple
+                    % ports)
+                    choose_dio_port(avports, 1);
+                    portindx = get(findobj('tag', 'availablechannels'), 'userdata');
+                    if isempty(portindx)
+                        return
+                    end
+                    InputOutput.(iovar).Channel = avports(portindx);
+                    linestoadd = [];
+                    for portindx = portindx(1) : portindx(end)
+                        thisport = avports(portindx);
+                        choose_dio_line(avlines, 1, thisport);
+                        indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                        if isempty(indx)
+                            return
+                        end
+                        % e.g. nports = 3, nlines = 8: Port0->Lines 0-7,
+                        % Port1->Lines 8-15, Port2->Lines 16-23
+                        linestoadd = [linestoadd avlines(indx) + nlines * thisport]; %#ok<AGROW>
+                    end
+                    InputOutput.(iovar).Line = linestoadd;
                 else
                     choose_dio_line(avlines);
+                    indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                    if isempty(indx),
+                        return
+                    end
+                    InputOutput.(iovar).Line = avlines(indx);
                 end
-                indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                if isempty(indx),
-                    return
-                end
-                InputOutput.(iovar).Line = avlines(indx);
+                
             elseif strcmp('Reward', iovar) && strcmpi(AdaptorInfo(boardnum).SubSystemsNames(subsysnum), 'digitalio'),
                 avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
                 choose_dio_line(avlines);
@@ -3210,6 +3235,7 @@ xymouse = get(0, 'PointerLocation');
 xpos = xymouse(1) - 230;
 ypos = xymouse(2) - 100;
 f = figure;
+
 set(f, 'position', [xpos ypos 175 150], 'menubar', 'none', 'numbertitle', 'off', 'name', 'Select Line', 'color', [.76 .76 .8], 'tag', 'lineselectfig');
 uicontrol('style', 'frame', 'position', [5 5 165 140]);
 h = uicontrol('style', 'listbox', 'position', [15 15 70 120], 'string', avlines, 'userdata', avlines, 'tag', 'avlines', 'backgroundcolor', [1 1 1]);
@@ -3218,7 +3244,32 @@ uicontrol('style', 'pushbutton', 'position', [92 35 70 30], 'string', 'Cancel', 
 set(gcf, 'closerequestfcn', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', []); delete(gcf)');
 if ~isempty(varargin) && varargin{1},
     set(h, 'max', 2); %enable multi-select
-    set(f, 'name', 'Select Lines');
+    if varargin{2}
+        portnum = varargin{2};
+        set(f, 'name', ['Select Lines for Port ', num2str(portnum)]);
+    else
+        set(f, 'name', 'Select Lines');
+    end
+end
+waitfor(gcf);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function choose_dio_port(avports, varargin)
+
+xymouse = get(0, 'PointerLocation');
+xpos = xymouse(1) - 230;
+ypos = xymouse(2) - 100;
+f = figure;
+
+set(f, 'position', [xpos ypos 175 150], 'menubar', 'none', 'numbertitle', 'off', 'name', 'Select Ports', 'color', [.76 .76 .8], 'tag', 'portselectfig');
+uicontrol('style', 'frame', 'position', [5 5 165 140]);
+h = uicontrol('style', 'listbox', 'position', [15 15 70 120], 'string', avports, 'userdata', avports, 'tag', 'avports', 'backgroundcolor', [1 1 1]);
+uicontrol('style', 'pushbutton', 'position', [92 80 70 30], 'string', 'Ok', 'callback', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', get(findobj(''tag'', ''avports''), ''value'')); delete(gcf)');
+uicontrol('style', 'pushbutton', 'position', [92 35 70 30], 'string', 'Cancel', 'callback', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', []); delete(gcf)');
+set(gcf, 'closerequestfcn', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', []); delete(gcf)');
+if ~isempty(varargin) && varargin{1}
+    set(h, 'max', 2);   % enable multi-select
+    set(f, 'name', 'Select Ports');
 end
 waitfor(gcf);
 
@@ -3565,7 +3616,11 @@ function iotxt = create_io_description(io, iovar)
 if strcmpi(io.Subsystem, 'DigitalIO') && ~isempty(strmatch('TTL', iovar)),
     iotxt = sprintf('%s %s Port %i Line %i', io.Adaptor, io.Subsystem, io.Channel, io.Line);
 elseif strcmpi(io.Subsystem, 'DigitalIO'),
-    iotxt = sprintf('%s %s Port %i', io.Adaptor, io.Subsystem, io.Channel);
+    if length(io.Channel) == 1
+        iotxt = sprintf('%s %s Port %i', io.Adaptor, io.Subsystem, io.Channel);
+    elseif length(io.Channel) > 1    % added by Panos Sapountzis
+        iotxt = sprintf('%s %s Ports %i-%i', io.Adaptor, io.Subsystem, io.Channel(1), io.Channel(end));
+    end
 else
     iotxt = sprintf('%s  %s  Channel %i', io.Adaptor, io.Subsystem, io.Channel);
 end
