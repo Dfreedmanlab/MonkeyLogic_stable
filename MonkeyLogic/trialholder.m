@@ -758,6 +758,7 @@ elseif fxn1 == -6, %benchmarking
     ontarget{1} = benchdata(1:benchcount); %retrieve current benchmark data
     ontarget{2} = benchdata2(1:benchcount2);
     return
+end
 
 eyetrack = 0;
 joytrack = 0;
