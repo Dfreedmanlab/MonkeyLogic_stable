@@ -278,7 +278,7 @@ elseif ismember(gcbo, get(fig, 'children')),
             col_gray = get(gcbo, 'backgroundcolor');
             col_green = [.5 .75 .5];
             set(gcbo, 'backgroundcolor', col_green);
-            axes(findobj(gcf, 'tag', 'ioplot'));
+            set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'ioplot'));
             h = plot(mean(get(gca, 'xlim')), mean(get(gca, 'ylim')), 'o');
             set(h, 'markersize', 50, 'markerfacecolor', col_green/3, 'markeredgecolor', col_green, 'linewidth', 7);
             drawnow;

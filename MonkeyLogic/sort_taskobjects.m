@@ -108,7 +108,11 @@ for i = 1:length(UniqueTaskObjects),
 %             numframes = length(mov);
 %             txt = sprintf('Mov: %s [%i x %i] %i Frames', obname, xs, ys, numframes);
             
-            reader = mmreader(UOB.Name);
+            if verLessThan('matlab', '8')
+                reader = mmreader(UOB.Name); %#ok<DMMR>
+            else
+                reader = VideoReader(UOB.Name);  %#ok<TNMLP>
+            end
             txt = sprintf('Mov: %s [%i x %i] %i Frames', obname, get(reader, 'width'), get(reader, 'height'), get(reader, 'numberOfFrames'));
         case 'snd',
             dur = length(UOB.WaveForm) / UOB.Freq;

@@ -154,7 +154,7 @@ elseif ~isempty(varargin),
     
     if strcmp(varargin{1}, 'selectpoint'),
        
-        axes(findobj(gcf, 'tag', 'monitor'));
+        set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'monitor'));
         hxdd = get(gca, 'xlim');
         hxd = max(hxdd);
         hydd = get(gca, 'ylim');
@@ -227,9 +227,9 @@ elseif ismember(gcbo, get(fig, 'children')),
 
         case 'startcal',
                         
-            if usejava('jvm'),
-                error('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-            end
+%             if usejava('jvm'),
+%                 error('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
+%             end
             
             maxduration = 600000; %continue in 60 seconds if no input
             u = get(gca, 'userdata');
@@ -310,7 +310,7 @@ elseif ismember(gcbo, get(fig, 'children')),
             FixXsize = xis;
             FixYsize = yis;
             
-            axes(findobj('tag', 'monitor'));
+            set(gcf, 'CurrentAxes', findobj('tag', 'monitor'));
             targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
             numtargets = size(targetlist, 1);
             
@@ -610,7 +610,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function tform = updategrid(cp, targetlist)
 
-axes(findobj('tag', 'matrix'));
+set(gcf, 'CurrentAxes', findobj('tag', 'matrix'));
 cla;
 numtargets = size(targetlist, 1);
 maxtick = max(max(abs(targetlist)));
@@ -654,7 +654,7 @@ h = plot(cp(:, 1), cp(:, 2), 'r.');
 set(h, 'markersize', 15);
 set(gca, 'color', [0 0 0], 'xtick', [], 'ytick', [], 'tag', 'matrix');
 drawnow;
-axes(findobj('tag', 'monitor'));
+set(gcf, 'CurrentAxes', findobj('tag', 'monitor'));
 
 function disable_cursor
 global MLHELPER_OFF

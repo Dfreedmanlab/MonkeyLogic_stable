@@ -6,7 +6,11 @@ sourcefile = [P.Directories.BaseDirectory fname];
 [pname fname ext] = fileparts(sourcefile);
 processedfile = [pname filesep fname '_preprocessed.mat'];
 if strcmpi(ext, '.avi'),
-    reader = mmreader(sourcefile);
+    if verLessThan('matlab', '8')
+        reader = mmreader(sourcefile); %#ok<DMMR>
+    else
+        reader = VideoReader(sourcefile); 
+    end
     numframes = get(reader,'numberOfFrames');
     MOV = read(reader);
     

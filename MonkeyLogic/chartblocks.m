@@ -65,7 +65,7 @@ end
 
 fig = findobj('tag', 'chartblocksfigure');
 if ~isempty(fig),
-    figure(fig);
+    set(0, 'CurrentFigure', fig);
     clf;
 else
     figure

@@ -590,12 +590,16 @@ if ~nummovs,
     movsizes = [];
     movs = [];
 else
-    [movnames i] = unique(movnames);
+    [movnames, i] = unique(movnames);
     movfiles = movfiles(i);
     nummovs = length(movnames);
     movsizes = cell(nummovs, 1);
     for movnum = 1:nummovs,
-        reader = mmreader(movfiles{movnum}); %#ok<TNMLP>
+        if verLessThan('matlab', '8')
+            reader = mmreader(movfiles{movnum}); %#ok<DMMR>
+        else
+            reader = VideoReader(movfiles{movnum}); %#ok<TNMLP>
+        end
         numframes = get(reader, 'numberOfFrames');
         M = squeeze(read(reader,1));
         movs{movnum} = M;

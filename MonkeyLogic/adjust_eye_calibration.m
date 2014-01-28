@@ -180,7 +180,7 @@ newTform = cp2tform(ip, cp, 'projective');
 
 if ~thisisonlyatest,
     %plot original fix locations (red) and adjusted locations (green)
-    axes(findobj('tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
     [xfixraw yfixraw] = tforminv(oldTform, xfix, yfix);
     [xfixnew yfixnew] = tformfwd(newTform, xfixraw, yfixraw);
     h = zeros(1, 3);
@@ -204,5 +204,5 @@ else
     newTform.StartFixation = startfix;
     newTform.EndFixation = endfix;
     %save('c:\data\aec.mat');
-    %pause(5);
+    pause(5);
 end

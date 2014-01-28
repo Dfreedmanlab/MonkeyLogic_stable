@@ -237,13 +237,13 @@ if procnum == 1, %create window
     htext = text(mean(get(gca, 'xlim')), 0.9, 'Reaction Times');
     set(htext, 'color', [1 1 1], 'horizontalalignment', 'center', 'fontweight', 'bold', 'fontsize', 11);
 
-    axes(findobj(gcf, 'tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'replica'));
     output = csh; %return figure window handle
 
 elseif procnum == 2, %update window with task objects
 
     fig = findobj('tag', 'mlmonitor');
-    figure(fig);
+    set(0, 'CurrentFigure', fig);
     xyratio = get(gcf, 'userdata');
     delete(get(gca, 'children'));
 
@@ -296,7 +296,7 @@ elseif procnum == 2, %update window with task objects
     elseif length(warnings)==1,
         wstr = sprintf('Warning: %s',warnings{1});
     else
-        wstr = sprintf('Warnings (%i): %s',length(warnings),warnings{end});
+        wstr = sprintf('Warnings {%i}: %s',length(warnings),warnings{end});
     end
     set(wtext, 'String', wstr);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -352,7 +352,7 @@ elseif procnum == 3, %update performance bars
     numcolors = size(colororder, 1);
     shadestep = 0.12;
 
-    axes(findobj('tag', 'overallchart'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'overallchart'));
     cla;
     if isnan(perf(1, 1)),
         col = [1 1 1];
@@ -385,8 +385,8 @@ elseif procnum == 3, %update performance bars
             end
         end
     end
-
-    axes(findobj('tag', 'blockchart'));
+    
+    set(gcf, 'CurrentAxes', findobj('tag', 'blockchart'));
     cla;
     if isnan(perf(1, 2)),
         col = [1 1 1];
@@ -420,7 +420,7 @@ elseif procnum == 3, %update performance bars
         end
     end
 
-    axes(findobj('tag', 'conditionchart'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'conditionchart'));
     cla;
     if isnan(perf(1, 3)),
         col = [1 1 1];
@@ -454,7 +454,7 @@ elseif procnum == 3, %update performance bars
         end
     end
     
-    axes(findobj('tag', 'recentchart'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'recentchart'));
     cla;
     if isnan(perf(1, 4)),
         col = [1 1 1];
@@ -488,11 +488,11 @@ elseif procnum == 3, %update performance bars
         end
     end
 
-    axes(findobj(gcf, 'tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'replica'));
 
 elseif procnum == 4, %update timeline
 
-    axes(findobj('tag', 'timeline'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'timeline'));
     delete(findobj(gca, 'tag', 'eventobject'));
 
     Bcodesandtimes = ScreenInfo;
@@ -541,12 +541,12 @@ elseif procnum == 4, %update timeline
         set(htext1, 'tag', 'eventobject', 'color', [1 1 1], 'fontsize', 8, 'horizontalalignment', 'right');
         set(htext3, 'tag', 'eventobject', 'color', [1 1 1], 'fontsize', 8, 'horizontalalignment', 'center');
     end
-    axes(findobj('tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
 
 elseif procnum == 5, %update RT graphs
     
     rtg = findobj('tag', 'rtgraph');
-    axes(rtg);
+    set(gcf, 'CurrentAxes', rtg);
     userplot = ischar(ScreenInfo);
     if userplot,
         fxn = ScreenInfo;
@@ -601,7 +601,7 @@ elseif procnum == 5, %update RT graphs
         end
     end
 
-    axes(findobj('tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
 
 elseif procnum == 6, %update user text
     
@@ -649,7 +649,7 @@ perf = [.5 .6 .2 .5; 0 0 0 0; 0 0 0 0; .1 .1 .1 .1; .05 .05 .05 .05; .05 .05 .05
 initcontrolscreen(3, perf);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% SCREEN SPEED TEST
-axes(findobj(gcf, 'tag', 'replica'))
+set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'replica'))
 t = 0:pi/20:2*pi;
 y = exp(sin(t));
 h = plot(t,y,'YDataSource','y');
@@ -660,7 +660,7 @@ for k = 1:.1:10,
 	y = exp(sin(t.*k));
 	refreshdata(h,'caller') % Evaluate y in the function workspace
     tic
-	drawnow
+	drawnow;
     z(count) = toc;
 end
 mean(z)

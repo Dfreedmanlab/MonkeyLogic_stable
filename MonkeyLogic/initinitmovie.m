@@ -14,7 +14,11 @@ C.NumFrames = 61; C.InitFrame = 0; C.StartFrame = 1; C.Status = 0; C.NumPosition
 if ~exist(processedfile, 'file'),
     str = '.';
     fprintf('First time movie initialization (will not encounter again)\n');
-    reader = mmreader(sourcefile);
+    if verLessThan('matlab', '8')
+        reader = mmreader(sourcefile); %#ok<DMMR>
+    else
+        reader = VideoReader(sourcefile); 
+    end
     MOV = read(reader);
     for framenumber = 1:length(MOV),
         str = [str '.']; %#ok<AGROW>

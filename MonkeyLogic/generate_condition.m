@@ -79,7 +79,7 @@ for pnum = 1:numpairs,
         for i = 1:numTO,
             textline = sprintf('%s\tTaskObject#%i', textline, i);
         end
-        textline = strcat(textline, '\n');
+        textline = strcat(textline, '\n');                          % add new line
 		if isempty(fid),
 			try
 				pstring = varargin{2 * pnum + 1};

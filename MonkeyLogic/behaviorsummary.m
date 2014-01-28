@@ -16,7 +16,7 @@ function behaviorsummary(varargin)
 f = findobj('tag', 'BehaviorSummary');
 localcallback = 0;
 if ~isempty(f),
-    figure(f);
+    set(0, 'CurrentFigure', f);
     localcallback = ~isempty(gcbo) && (ismember(gcbo, get(gcf, 'children')) || ismember(gcbo, get(gca, 'children')));
 end
 
@@ -59,7 +59,7 @@ if ~localcallback,
     for i = 1:length(f),
         bhv = get(f(i), 'userdata');
         if strcmp(fname, bhv.DataFileName),
-            figure(f(i));
+            set(0, 'CurrentFigure', f(i));
             return
         end
     end
@@ -210,7 +210,7 @@ else
             hinvisible = get(findobj(bhvfig, 'tag', 'behaviorovertime'), 'children');
             set(hinvisible, 'visible', 'off');
             trial = get(findobj(bhvfig, 'tag', 'trialselector'), 'value');
-            axes(findobj(bhvfig, 'tag', 'screenrepresentation'));
+            set(gcf, 'CurrentAxes', findobj(bhvfig, 'tag', 'screenrepresentation'));
             hobject = get(gca, 'userdata');
             set(hobject, 'visible', 'off');
             delete(findobj(gca, 'tag', 'eyetrace'));
@@ -319,7 +319,7 @@ else
                     figure
                     set(gcf, 'position', [soffsetx soffsety b(3)-(2*soffsetx) b(4)-(2*soffsety)], 'color', [.3 .3 .3], 'tag', 'mlbiggerscreenfig', 'menubar', 'none', 'numbertitle', 'off', 'name', sprintf('Playing Trial #%i', trial));
                 else
-                    figure(ffig);
+                    set(0, 'CurrentFigure', 'ffig');
                 end
                 hax = axes;
                 set(hax, 'nextplot', 'add', 'box', 'on', 'color', [0 0 0], 'xlim', xlim, 'ylim', ylim, 'xtick', [], 'ytick', [], 'position', [0 0 1 1]);
@@ -746,7 +746,7 @@ set(findobj(gcf, 'tag', 'codesbox'), 'string', cd, 'userdata', ct);
 %line on behavior-over-time plot
 bot = findobj(gcf, 'tag', 'behaviorovertime');
 if ~isempty(bot),
-    axes(bot);
+    set(gcf, 'CurrentAxes', bot);
     h = findobj(gca, 'tag', 'thistrialmarker');
     if isempty(h),
         h = plot([trialnumber trialnumber], [0 1]);
@@ -762,7 +762,7 @@ end
 %screen representation
 tob = bhv.TaskObject(bhv.ConditionNumber(trialnumber), :);
 numobjects = length(tob);
-axes(findobj(gcf, 'tag', 'screenrepresentation'));
+set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'screenrepresentation'));
 cla;
 for i = numobjects:-1:1,
     ob = tob{i};
@@ -896,7 +896,7 @@ warning on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function embedded_rtgraph(bhv)
 
-axes(findobj(gcf, 'tag', 'rtgraph'));
+set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'rtgraph'));
 if any(~isnan(bhv.ReactionTime)),
     binsize = max(bhv.ReactionTime)/20;
     [n x] = hist(bhv.ReactionTime, 0:binsize:max(bhv.ReactionTime+binsize));
@@ -957,7 +957,7 @@ elseif strcmp(obtype, 'crc'),
 
 elseif strcmp(obtype, 'sqr'),
     diameter = bhv.PixelsPerDegree*str2num(att{1}); %#ok<ST2NM>
-    rgb = eval(att{2});
+	rgb = eval(att{2});
     fillflag = str2double(att{3});
     xpos = str2double(att{4});
     ypos = str2double(att{5});

@@ -13,7 +13,7 @@ lastupdate = 'September, 2012';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
-    figure(mlf);
+    set(0, 'CurrentFigure', mlf);
 end
 
 if ~ispref('MonkeyLogic', 'Directories'),
@@ -156,9 +156,9 @@ if isempty(mlf),
     cfgname = cfgfile(f+1:length(cfgfile));
     uicontrol('style', 'text', 'position', [14 ybase+25 92 18], 'string', 'Configuration Data:', 'backgroundcolor', 0.85*figbg, 'horizontalalignment', 'right');
     h = uicontrol('style', 'pushbutton', 'position', [110 ybase+26 175 22], 'string', cfgname, 'tag', 'configfilename', 'callback', 'mlmenu');
-    if ~usejava('jvm'),
+%     if ~usejava('jvm'),
         set(h, 'enable', 'off');
-    end
+%     end
     h = subplot('position', [9/figsize(3) (ybase+105)/figsize(4) 280/figsize(3) 83/figsize(4)]);
     image(imread('threemonkeys.jpg'));
     set(h, 'xtick', [], 'ytick', [], 'box', 'on');
@@ -327,11 +327,11 @@ if isempty(mlf),
     uicontrol('style', 'popupmenu', 'position', [400 ybase+55 145 20], 'string', {'Normal' 'High' 'Highest'}, 'backgroundcolor', [1 1 1], 'tag', 'priority', 'callback', 'mlmenu');
 
     uicontrol('style', 'frame', 'position', [559 ybase+27 157 50], 'backgroundcolor', figbg, 'foregroundcolor', [.5 .5 .5]);
-    if usejava('jvm'),
-        pic = 'runbuttonoff.jpg';
-    else
+%     if usejava('jvm'),
+%         pic = 'runbuttonoff.jpg';
+%     else
         pic = 'runbuttondim.jpg';
-    end
+%     end
     uicontrol('style', 'pushbutton', 'position', [560 ybase+28 155 48], 'string', '', 'callback', 'mlmenu', 'tag', 'runbutton', 'backgroundcolor', [0.9 0.6 0.6], 'enable', 'inactive', 'cdata', imread(pic));
     disp('<<< MonkeyLogic >>> Initialized Task Menu...')
     
@@ -838,7 +838,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 set(findobj(gcf, 'tag', 'maxtrials'), 'enable', 'off');
                 set(findobj(gcf, 'tag', 'maxblocks'), 'enable', 'off');
                 set(findobj(gcf, 'tag', 'totalconds'), 'string', 'n/a');
-                axes(findobj(gcf, 'tag', 'stimax'));
+                set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'stimax'));
                 image(imread('earth.jpg'));
                 set(gca, 'tag', 'stimax', 'xtick', [], 'ytick', [], 'box', 'on', 'ycolor', [1 1 1], 'xcolor', [1 1 1]);
             end
@@ -1579,10 +1579,10 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                         
         case 'mltimetest',
                         
-            if usejava('jvm'), %#ok<UNRCH>
-                mlmessage('*** Must run MATLAB without JAVA enabled ***');
-                return
-            end
+%             if usejava('jvm')
+%                 mlmessage('*** Must run MATLAB without JAVA enabled ***');
+%                 return
+%             end
             
             nullstr = get(findobj(gcf, 'tag', 'totalconds'), 'string');
             if ~strcmp(nullstr, '--'),
@@ -1941,9 +1941,9 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'videotest',
 
-            if usejava('jvm'),
-                mlmessage('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-            end
+%             if usejava('jvm'),
+%                 mlmessage('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
+%             end
             mlmessage('Initializing video...');
             drawnow;
             
@@ -2307,10 +2307,10 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 mlmessage('Must specify a condition-selection function for user-controlled conditions');
                 return
 			end
-			if usejava('jvm'),
-                mlmessage('*** Must disable JAVA: Run "Matlab -nojvm" from the command prompt ***');
-                return
-			end
+% 			if usejava('jvm'),
+%                 mlmessage('*** Must disable JAVA: Run "Matlab -nojvm" from the command prompt ***');
+%                 return
+% 			end
             
 			set(findobj(gcf, 'tag', 'runbutton'), 'enable', 'off');			%this is a fail-safe in the case that a user hits the run button twice
             set(gcbo, 'hittest', 'off');
@@ -2518,7 +2518,11 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
 
             elseif strcmpi(t, 'mov'), %movie
                 
-                reader = mmreader(ob.Name);
+                if verLessThan('matlab', '8')
+                    reader = mmreader(ob.Name); %#ok<DMMR>
+                else
+                    reader = VideoReader(ob.Name); 
+                end
                 numframes = get(reader, 'numberOfFrames');
                 
                 imdata = squeeze(read(reader, 1));
@@ -2714,7 +2718,11 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                             processedfile = [pname filesep fname sprintf('_preprocessed%i.mat',j)];
                         end
                         
-                        reader = mmreader(sourcefile); %#ok<TNMLP>
+                        if verLessThan('matlab', '8')
+                            reader = mmreader(sourcefile); %#ok<DMMR>
+                        else
+                            reader = VideoReader(sourcefile);  %#ok<TNMLP>
+                        end
                         numframes = get(reader, 'numberOfFrames');
                         bpp       = get(reader, 'bitsPerPixel');
                         height    = get(reader, 'height');
@@ -2931,7 +2939,6 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     linestoadd = [];
                     for portindx = portindx(1) : portindx(end)
                         thisport = avports(portindx);
-                        choose_dio_line(avlines, 1, thisport);
                         indx = get(findobj('tag', 'availablechannels'), 'userdata');
                         if isempty(indx)
                             return
@@ -3333,7 +3340,7 @@ if isempty(stimax), %sometimes doesn't seem to find the stim axis if user clicks
         return
     end
 end
-axes(stimax);
+set(gcf, 'CurrentAxes', stimax);
 if strcmpi(TOB.Type, 'fix') || strcmpi(TOB.Type, 'pic') || strcmpi(TOB.Type, 'crc') || strcmpi(TOB.Type, 'sqr') || strcmpi(TOB.Type, 'mov') || strcmpi(TOB.Type, 'gen'),
     if strcmpi(TOB.Type, 'fix') || strcmpi(TOB.Type, 'dot'),
         fixspot = get(findobj(gcf, 'tag', 'fixationfilename'), 'userdata');
@@ -3376,7 +3383,11 @@ if strcmpi(TOB.Type, 'fix') || strcmpi(TOB.Type, 'pic') || strcmpi(TOB.Type, 'cr
         imdata = imread('genimgsample.jpg');
         imdata = double(imdata)/255;
     elseif strcmpi(TOB.Type, 'mov'),
-        reader = mmreader(TOB.Name);
+        if verLessThan('matlab', '8')
+            reader = mmreader(TOB.Name); %#ok<DMMR>
+        else
+            reader = VideoReader(TOB.Name); 
+        end
         numframes = get(reader, 'numberOfFrames');
         imdata = squeeze(read(reader, 1));
     elseif strcmpi(TOB.Type, 'crc'),
@@ -3453,7 +3464,7 @@ elseif strcmpi(TOB.Type, 'ttl'),
     minpos = 0;
     maxpos = 1;
     bgcolor = [0 0 0];
-    axes(findobj(gcf, 'tag', 'stimax'));
+    set(gcf, 'CurrentAxes', findobj(gcf, 'tag', 'stimax'));
     cla;
     set(gca, 'xlim', [0 1], 'ylim', [0 1], 'ydir', 'normal');
     h = line([0 .25 .25 .75 .75 1], [.2 .2 .8 .8 .2 .2]);

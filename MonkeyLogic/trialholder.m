@@ -20,7 +20,7 @@ global SIMULATION_MODE
 % modified 10/2/12 -DF (to fix bug that caused first movie frame to be
 % displayed twice)
 % modified 3/18/13 -DF (set_object_path bug fix)
-% modified 3/28/13 -DF (ttl buf fix/ modify/improve toggleobject)
+% modified 3/28/13 -DF (ttl bug fix/ modify/improve toggleobject)
 
 Codes = []; %#ok<NASGU>
 rt = NaN; %#ok<NASGU>
@@ -35,7 +35,7 @@ if ~isempty(DaqInfo.AnalogInput),
     start(DaqInfo.AnalogInput);
     while ~isrunning(DaqInfo.AnalogInput), end
     trialtime(-1, ScreenInfo); %initialize trial timer
-    axes(findobj(ScreenInfo.ControlScreenHandle, 'tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj(ScreenInfo.ControlScreenHandle, 'tag', 'replica'));
     drawnow; %flush all pending graphics
     while ~DaqInfo.AnalogInput.SamplesAvailable, end
 else
@@ -394,11 +394,11 @@ for i = stimuli_fortoggle,
 					activemovies(i) = 1;
 				end
 				
-                indx = round(ob.FrameStep*(currentframe - ob.InitFrame)) + ob.StartFrame;	%the +1 should take care of the first frame being repeated issue
+                indx = round(ob.FrameStep*(currentframe - ob.InitFrame)) + ob.StartFrame;
                 modulus = max(length(ob.FrameOrder),ob.NumFrames);
                 indx = mod(indx, modulus);
 				if indx == 0
-					indx = 1;
+					indx = modulus;			%don't want the last frame to be skipped
 				end
                 
 				if ~isempty(ob.FrameEvents),
@@ -723,7 +723,9 @@ elseif fxn1 == -2, %call from showcursor
     return
 elseif fxn1 == -3, %update from reposition_object or set_object_path
     stimnum = varargin{1};
+	status = TrialObject(stimnum).Status;
     TrialObject(stimnum) = varargin{2};
+	TrialObject(stimnum).Status = status;
     return
 elseif fxn1 == -4, %call from end_trial
     if eyetarget_index,
@@ -756,7 +758,6 @@ elseif fxn1 == -6, %benchmarking
     ontarget{1} = benchdata(1:benchcount); %retrieve current benchmark data
     ontarget{2} = benchdata2(1:benchcount2);
     return
-end
 
 eyetrack = 0;
 joytrack = 0;
@@ -780,9 +781,9 @@ if strcmp(fxn1, 'idle'),
 else
     tob1 = varargin{1};
     trad1 = varargin{2};
-	if length(trad1) < length(tob1),
+    if length(trad1) < length(tob1),
         trad1 = trad1 * ones(size(tob1));
-	end
+    end
     maxtime = varargin{3};
     if strcmpi(fxn1, 'acquirefix'),
         eyetrack = 1;
@@ -1105,7 +1106,7 @@ while t2 < maxtime,
                 bstatus = bval > bthresh;
             end
         end
-	end
+    end
 	
     if any(eyestatus) || any(joystatus) || any(bstatus),
         t = trialtime - t1;
@@ -2179,7 +2180,7 @@ if ~isempty(DAQ.AnalogInput),
     while DAQ.AnalogInput.SamplesAvailable < MinSamplesExpected, end %changed by NS (03/28/2012)
     stop(DAQ.AnalogInput);
     data = getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable);
-    axes(findobj('tag', 'replica'));
+    set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
     if ~isempty(DAQ.Joystick) && ~SIMULATION_MODE,
         joyx = DAQ.Joystick.XChannelIndex;
         joyy = DAQ.Joystick.YChannelIndex;
