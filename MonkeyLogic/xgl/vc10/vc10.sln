@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_xgl", "test_xgl\test_xgl.vcxproj", "{41264B6E-4C48-4DF2-B30F-626849839D5C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xgl", "xgl\xgl.vcxproj", "{A65C76B9-B2A6-4860-A6C0-DCBE55EDFF62}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{41264B6E-4C48-4DF2-B30F-626849839D5C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41264B6E-4C48-4DF2-B30F-626849839D5C}.Debug|Win32.Build.0 = Debug|Win32
+		{41264B6E-4C48-4DF2-B30F-626849839D5C}.Release|Win32.ActiveCfg = Release|Win32
+		{41264B6E-4C48-4DF2-B30F-626849839D5C}.Release|Win32.Build.0 = Release|Win32
+		{A65C76B9-B2A6-4860-A6C0-DCBE55EDFF62}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A65C76B9-B2A6-4860-A6C0-DCBE55EDFF62}.Debug|Win32.Build.0 = Debug|Win32
+		{A65C76B9-B2A6-4860-A6C0-DCBE55EDFF62}.Release|Win32.ActiveCfg = Release|Win32
+		{A65C76B9-B2A6-4860-A6C0-DCBE55EDFF62}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
