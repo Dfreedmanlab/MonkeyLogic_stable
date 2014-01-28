@@ -54,6 +54,7 @@ if procnum == 1, %create window
     csh = figure;
     fbgc = [0.9 0.9 0.85];
     figcol = [.7 .7 .85];
+    set(csh, 'WindowStyle', 'modal')        % keeps control screen figure on top
     set(csh, 'position', [wxp wyp xs+cpsize+cp3size ys+cp2size+cp4size], 'name', sprintf('MonkeyLogic     %s', datestr(date)), 'tag', 'mlmonitor', 'userdata', [xratio yratio], 'menubar', 'none', 'backingstore', 'off', 'resize', 'off', 'numbertitle', 'off', 'doublebuffer', 'on', 'color', figcol, 'renderer', 'painters');
     framevsize = 350;
 
