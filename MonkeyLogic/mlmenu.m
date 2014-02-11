@@ -156,9 +156,7 @@ if isempty(mlf),
     cfgname = cfgfile(f+1:length(cfgfile));
     uicontrol('style', 'text', 'position', [14 ybase+25 92 18], 'string', 'Configuration Data:', 'backgroundcolor', 0.85*figbg, 'horizontalalignment', 'right');
     h = uicontrol('style', 'pushbutton', 'position', [110 ybase+26 175 22], 'string', cfgname, 'tag', 'configfilename', 'callback', 'mlmenu');
-%     if ~usejava('jvm'),
-        set(h, 'enable', 'off');
-%     end
+    set(h, 'enable', 'off');
     h = subplot('position', [9/figsize(3) (ybase+105)/figsize(4) 280/figsize(3) 83/figsize(4)]);
     image(imread('threemonkeys.jpg'));
     set(h, 'xtick', [], 'ytick', [], 'box', 'on');
@@ -327,11 +325,7 @@ if isempty(mlf),
     uicontrol('style', 'popupmenu', 'position', [400 ybase+55 145 20], 'string', {'Normal' 'High' 'Highest'}, 'backgroundcolor', [1 1 1], 'tag', 'priority', 'callback', 'mlmenu');
 
     uicontrol('style', 'frame', 'position', [559 ybase+27 157 50], 'backgroundcolor', figbg, 'foregroundcolor', [.5 .5 .5]);
-%     if usejava('jvm'),
-%         pic = 'runbuttonoff.jpg';
-%     else
-        pic = 'runbuttondim.jpg';
-%     end
+    pic = 'runbuttondim.jpg';
     uicontrol('style', 'pushbutton', 'position', [560 ybase+28 155 48], 'string', '', 'callback', 'mlmenu', 'tag', 'runbutton', 'backgroundcolor', [0.9 0.6 0.6], 'enable', 'inactive', 'cdata', imread(pic));
     disp('<<< MonkeyLogic >>> Initialized Task Menu...')
     
@@ -1578,11 +1572,6 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'on');
                         
         case 'mltimetest',
-                        
-%             if usejava('jvm')
-%                 mlmessage('*** Must run MATLAB without JAVA enabled ***');
-%                 return
-%             end
             
             nullstr = get(findobj(gcf, 'tag', 'totalconds'), 'string');
             if ~strcmp(nullstr, '--'),
@@ -1941,9 +1930,6 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'videotest',
 
-%             if usejava('jvm'),
-%                 mlmessage('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-%             end
             mlmessage('Initializing video...');
             drawnow;
             
@@ -2306,11 +2292,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
 			if get(findobj(gcf, 'tag', 'condlogic'), 'value') == 5 && isempty(get(findobj(gcf, 'tag', 'condselectfun'), 'userdata')),
                 mlmessage('Must specify a condition-selection function for user-controlled conditions');
                 return
-			end
-% 			if usejava('jvm'),
-%                 mlmessage('*** Must disable JAVA: Run "Matlab -nojvm" from the command prompt ***');
-%                 return
-% 			end
+            end
             
 			set(findobj(gcf, 'tag', 'runbutton'), 'enable', 'off');			%this is a fail-safe in the case that a user hits the run button twice
             set(gcbo, 'hittest', 'off');

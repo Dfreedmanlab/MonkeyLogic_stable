@@ -43,10 +43,6 @@ if isempty(varargin),
     return
 end
 
-% if usejava('jvm'),
-%     error('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-% end
-
 if length(varargin) > 2,
     thisisonlyatest = varargin{3};
 end
@@ -102,9 +98,6 @@ end
 %MLConfig.RefreshRate. Introducing a video test (same as the one in mlmenu)
 %to measure the actual refresh rate and store it in a field called
 %ActualRefreshRate.
-% if usejava('jvm'),
-% 	mlmessage('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-% end
 drawnow;
 
 bytesperpixel = 4;
@@ -2298,6 +2291,7 @@ clear DaqInfo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ScreenInfo, MLConfig, UserChanges] = check_keyboard(MLConfig, EyeSignalInUse, JoystickInUse, ScreenInfo, DaqInfo, TrialRecord, Instruction)
 global MLHELPER_OFF
+global RFM_TASK
 
 startmenu    = TrialRecord.CurrentTrialNumber == 0;
 escapequeued = 0;
@@ -2357,6 +2351,14 @@ if ~isempty(kb) || remotecommand,
     if kb == 19, % "r" for reward
         goodmonkey(100);
     elseif kb == 25 || kb == 1 || remotecommand, % "p" or esc for pause
+        
+		if ~isempty(RFM_TASK)
+			RFM_TASK = 2;
+			unclip_cursor;
+			enable_clicks;
+			disable_cursor;
+		end
+		
         delete(get(gca, 'children'));
         texth = text(0, 0.22*max(get(gca, 'ylim')), '- Paused -');
         set(texth, 'color', [1 1 1], 'fontsize', 24, 'horizontalalignment', 'center');

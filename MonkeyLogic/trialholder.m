@@ -625,10 +625,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ontarget, rt] = eyejoytrack(fxn1, varargin)
 global SIMULATION_MODE
+global RFM_TASK
 persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsamples ejt_totaltime min_cyclerate...
     joyx joyy eyex eyey joypresent eyepresent eyetarget_index eyetarget_record ...
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
-    lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax
+    lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax ...
+	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys
 
 t1 = trialtime;
 ontarget = 0;
@@ -758,6 +760,48 @@ elseif fxn1 == -6, %benchmarking
     ontarget{1} = benchdata(1:benchcount); %retrieve current benchmark data
     ontarget{2} = benchdata2(1:benchcount2);
     return
+elseif fxn1 == -7, %RFM
+    fxn1 = 'holdfix';
+    if isempty(rfmmov)
+        rfmmov = varargin{1};
+    end
+    movs = 2 : 6;                   % taskobject indices for the rfm movies
+    for i = movs
+        TrialObject(i).FrameStep = 0;
+    end
+	reposition_object(-1, TrialObject, ScreenData); % update reposition_object's copy of TrialObject
+	toggleobject(-1, TrialObject, ScreenData, DAQ); % update toggleobject's copy of TrialObject
+	
+    rfmkeyflag = 0;					% initialize
+    rfmobpos_conds = [1 5 8 3 3];	% number of shapes, sizes, rotations, size ratios, colors in rfm object. TODO make soft-coded
+    numframespermov = prod(rfmobpos_conds) / rfmobpos_conds(2);   % number of frames per movie
+	Xnew = 0;
+	Ynew = 0;						% variables to store mouse position
+    
+    rfmkeys = 20 : 24;              % key codes for keys used for changing stimuli
+	
+    rfmscreeninfo = get(0, 'MonitorPosition');
+    xoffset = rfmscreeninfo(2, 1);
+    yoffset = rfmscreeninfo(2, 2);
+    l = xoffset;
+    t = yoffset;
+    r = rfmscreeninfo(2, 3);
+    b = rfmscreeninfo(2, 4);
+% 	edge = 300;
+% 	clipl = l + edge;
+% 	clipr = r - edge;
+% 	clipt = t + edge;
+% 	clipb = b - edge;
+    dirs = getpref('MonkeyLogic', 'Directories');
+    system(sprintf('%smlhelper --cursor-enable', dirs.BaseDirectory));
+%     system(sprintf('%smlhelper --cursor-clip %i %i %i %i', dirs.BaseDirectory, clipl, clipt, clipr, clipb));
+	system(sprintf('%smlhelper --clicks-disable', dirs.BaseDirectory));
+	
+	if ~isempty(RFM_TASK) && RFM_TASK == 2								%return from escape screen
+		mlvideo('setmouse', [(l + r)/2 (t + b)/2]);						%set the mouse to the center of the screen on returning from escape screen
+	end
+	RFM_TASK = 1;					%required for check_keyboard
+	FIRST_FRAME = 1;
 end
 
 eyetrack = 0;
@@ -782,9 +826,12 @@ if strcmp(fxn1, 'idle'),
 else
     tob1 = varargin{1};
     trad1 = varargin{2};
-    if length(trad1) < length(tob1),
+	if length(trad1) < length(tob1),
         trad1 = trad1 * ones(size(tob1));
-    end
+	end
+	if exist('Xnew', 'var')     % Hardcode fixation point as object # 1 in timing file 
+        tob1 = 1;
+	end
     maxtime = varargin{3};
     if strcmpi(fxn1, 'acquirefix'),
         eyetrack = 1;
@@ -1107,7 +1154,73 @@ while t2 < maxtime,
                 bstatus = bval > bthresh;
             end
         end
-    end
+	end
+	
+	if exist('Xnew', 'var')
+        rfmtarget = mlvideo('getmouse');
+		Xold = Xnew;
+		Yold = Ynew;
+        Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
+        Ynew = -(rfmtarget(2) - yoffset - ScreenData.Half_ys)/ScreenData.PixelsPerDegree;
+		changepos = Xold ~= Xnew || Yold ~= Ynew;
+		
+		if isempty(rfmobpos)                                                % which it is for the first trial
+			rfmobpos = zeros(1,length(rfmobpos_conds));						% current shape, rotation, size ratio, size, color of rfm object
+			mlvideo('setmouse', [(l + r)/2 (t + b)/2]);						% set the mouse to the center of the screen on the first trial
+		end
+		
+        rfmkeyflag = mlkbd('getkey');
+		if isempty(rfmkeyflag)
+			rfmkeyflag = 0;
+		end
+		if any(rfmkeyflag == rfmkeys)                                       %change shape, rotation, size ratio, size, color
+			changestim = 1;
+            rfmkeyflag = rfmkeyflag - 19;									% subtract 19 to index by desired object trait
+            if rfmkeyflag == 1
+				rfmobpos(3) = rfmobpos(3) - 1;                              % counter-clockwise rotation
+                if rfmobpos(3) < 0
+					rfmobpos(3) = rfmobpos_conds(3) - 1;                    % if not rotated, then rfmobpos(2) = 0
+                end
+            else
+                rfmobpos(rfmkeyflag) = rfmobpos(rfmkeyflag) + 1;                % advance desired property
+                if rfmobpos(rfmkeyflag) == rfmobpos_conds(rfmkeyflag)
+                rfmobpos(rfmkeyflag) = 0;
+                end
+            end
+		else
+			changestim = 0;
+		end
+		rfmframe = rfmobpos(1)*prod(rfmobpos_conds(2:5)) + rfmobpos(2)*prod(rfmobpos_conds(3:5)) + rfmobpos(3)*prod(rfmobpos_conds(4:5)) + rfmobpos(4)*rfmobpos_conds(5) + rfmobpos(5) + 1; %index to desired frame
+		
+		if FIRST_FRAME
+			reposition_object(rfmmov, Xnew, Ynew);
+            rfmframe = mod(rfmframe, numframespermov);
+			toggleobject(rfmmov, 'MovieStartFrame', rfmframe);				%frame ended on in previous trial/first frame for first trial
+			reposition_object(-1, TrialObject, ScreenData);					%convey start frame and position to reposition_object
+			videoupdates = 1;
+			FIRST_FRAME = 0;
+		end
+
+		if changepos
+			reposition_object(rfmmov, Xnew, Ynew);
+		end
+		
+		if changestim
+            mov = ceil(rfmframe / numframespermov) + 1;                     % +1 because fixation point is 1. Movies start at 2 in TrialObject structure.
+            rfmframe = mod(rfmframe, numframespermov);
+            if rfmmov == mov                                                % movie need not be changed
+                toggleobject(rfmmov, 'MovieStartFrame', rfmframe, 'Status', 'On');
+                reposition_object(-1, TrialObject, ScreenData);				% convey start frame to reposition_object
+            else                                                            % movie needs to be changed
+                reposition_object(rfmmov, Xnew, Ynew);                      % even thought it will be turned off, its position still needs to be updated.
+                toggleobject(rfmmov, 'Status', 'Off');                      % turn off old movie
+                rfmmov = mov;
+                reposition_object(rfmmov, Xnew, Ynew);                      % reposition new movie and turn it on
+                toggleobject(rfmmov, 'MovieStartFrame', rfmframe, 'Status', 'On');
+                reposition_object(-1, TrialObject, ScreenData);
+            end
+		end
+	end
 	
     if any(eyestatus) || any(joystatus) || any(bstatus),
         t = trialtime - t1;

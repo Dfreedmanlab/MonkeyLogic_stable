@@ -226,15 +226,11 @@ elseif ismember(gcbo, get(fig, 'children')),
     switch callertag,
 
         case 'startcal',
-                        
-%             if usejava('jvm'),
-%                 error('*** Must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-%             end
             
             maxduration = 600000; %continue in 60 seconds if no input
             u = get(gca, 'userdata');
-            xs = u(1);
-            ys = u(2);
+            xs = u(1); %#ok<NASGU>
+            ys = u(2); %#ok<NASGU>
             pixperdeg = u(3);
             
             xy = findobj(gcf,'tag', 'xy');
@@ -288,14 +284,14 @@ elseif ismember(gcbo, get(fig, 'children')),
                     mlvideo('flip', ScreenInfo.Device);
                     mlvideo('showcursor', ScreenInfo.Device, 0);
                     
-                catch
+                catch %#ok<CTCH>
                     mlvideo('showcursor', ScreenInfo.Device, 1);
                     mlvideo('restoremode', ScreenInfo.Device)
                     mlvideo('releasedevice', ScreenInfo.Device);
                     mlvideo('release');
                     
                     disp('*** Error initializing Video ***')
-                    lasterr
+                    lasterr %#ok<LERR>
                     return
                 end
             end
