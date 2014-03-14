@@ -7,9 +7,10 @@ function mlmenu(varargin)
 % Modified 8/13/08 -WA (to include display of movies in stimulus menu)
 % Modified 8/27/08 -WA (to allow pre-processing of visual stimuli)
 % Modified 9/08/08 -SM (to use appropriate analog input-type when testing those inputs)
-% Modified 2/01/12 -WA (to remove overwrite_hardware_cfg subfunction - had broken the ability to write new cfg files when none present.
+% Modified 2/01/12 -WA (to remove overwrite_hardware_cfg subfunction - had broken the ability to write new cfg files when none present)
+% Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
 
-lastupdate = 'September, 2012';
+lastupdate = '3-14-2014 build 1.0.22';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -156,7 +157,7 @@ if isempty(mlf),
     cfgname = cfgfile(f+1:length(cfgfile));
     uicontrol('style', 'text', 'position', [14 ybase+25 92 18], 'string', 'Configuration Data:', 'backgroundcolor', 0.85*figbg, 'horizontalalignment', 'right');
     h = uicontrol('style', 'pushbutton', 'position', [110 ybase+26 175 22], 'string', cfgname, 'tag', 'configfilename', 'callback', 'mlmenu');
-    set(h, 'enable', 'off');
+        set(h, 'enable', 'off');
     h = subplot('position', [9/figsize(3) (ybase+105)/figsize(4) 280/figsize(3) 83/figsize(4)]);
     image(imread('threemonkeys.jpg'));
     set(h, 'xtick', [], 'ytick', [], 'box', 'on');
@@ -325,7 +326,7 @@ if isempty(mlf),
     uicontrol('style', 'popupmenu', 'position', [400 ybase+55 145 20], 'string', {'Normal' 'High' 'Highest'}, 'backgroundcolor', [1 1 1], 'tag', 'priority', 'callback', 'mlmenu');
 
     uicontrol('style', 'frame', 'position', [559 ybase+27 157 50], 'backgroundcolor', figbg, 'foregroundcolor', [.5 .5 .5]);
-    pic = 'runbuttondim.jpg';
+        pic = 'runbuttondim.jpg';
     uicontrol('style', 'pushbutton', 'position', [560 ybase+28 155 48], 'string', '', 'callback', 'mlmenu', 'tag', 'runbutton', 'backgroundcolor', [0.9 0.6 0.6], 'enable', 'inactive', 'cdata', imread(pic));
     disp('<<< MonkeyLogic >>> Initialized Task Menu...')
     
@@ -492,7 +493,7 @@ if isempty(mlf),
     uicontrol('style', 'listbox', 'position', [990 ybase-5 100 110], 'string', AdaptorInfo(1).SubSystemsNames, 'backgroundcolor', [1 1 1], 'tag', 'subsystems', 'callback', 'mlmenu');
     
     uicontrol('style', 'text', 'position', [1092 ybase+105 90 15], 'string', 'Channels / Ports', 'backgroundcolor', fbg);
-    uicontrol('style', 'listbox', 'position', [1096 ybase-5 83 110], 'string', AdaptorInfo(1).AvailableChannels{1}, 'tag', 'availablechannels', 'backgroundcolor', [1 1 1]);
+    uicontrol('style', 'listbox', 'position', [1096 ybase-5 83 110], 'string', AdaptorInfo(1).AvailableChannels{1}, 'tag', 'availablechannels', 'backgroundcolor', [1 1 1],  'Min', 1, 'Max', length(AdaptorInfo(1).AvailableChannels{1}));
     
     ybase = 525;
     xbase = 745;
@@ -1572,7 +1573,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'on');
                         
         case 'mltimetest',
-            
+                        
             nullstr = get(findobj(gcf, 'tag', 'totalconds'), 'string');
             if ~strcmp(nullstr, '--'),
                 mlmessage('Testing MonkeyLogic latencies...');
@@ -2292,7 +2293,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
 			if get(findobj(gcf, 'tag', 'condlogic'), 'value') == 5 && isempty(get(findobj(gcf, 'tag', 'condselectfun'), 'userdata')),
                 mlmessage('Must specify a condition-selection function for user-controlled conditions');
                 return
-            end
+			end
             
 			set(findobj(gcf, 'tag', 'runbutton'), 'enable', 'off');			%this is a fail-safe in the case that a user hits the run button twice
             set(gcbo, 'hittest', 'off');
@@ -2772,7 +2773,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             if isempty(chanports),
                 chanports = AdaptorInfo(boardnum).AvailablePorts{1};
             end
-            set(findobj(gcf, 'tag', 'availablechannels'), 'string', chanports, 'value', 1);
+            set(findobj(gcf, 'tag', 'availablechannels'), 'string', chanports, 'value', 1, 'Min', 1, 'Max', length(chanports));
             
         case 'subsystems',
             
@@ -2932,11 +2933,11 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     InputOutput.(iovar).Line = linestoadd;
                 else
                     choose_dio_line(avlines);
-                    indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                    if isempty(indx),
-                        return
-                    end
-                    InputOutput.(iovar).Line = avlines(indx);
+                indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                if isempty(indx),
+                    return
+                end
+                InputOutput.(iovar).Line = avlines(indx);
                 end
                 
             elseif strcmp('Reward', iovar) && strcmpi(AdaptorInfo(boardnum).SubSystemsNames(subsysnum), 'digitalio'),
@@ -3224,7 +3225,6 @@ xymouse = get(0, 'PointerLocation');
 xpos = xymouse(1) - 230;
 ypos = xymouse(2) - 100;
 f = figure;
-
 set(f, 'position', [xpos ypos 175 150], 'menubar', 'none', 'numbertitle', 'off', 'name', 'Select Line', 'color', [.76 .76 .8], 'tag', 'lineselectfig');
 uicontrol('style', 'frame', 'position', [5 5 165 140]);
 h = uicontrol('style', 'listbox', 'position', [15 15 70 120], 'string', avlines, 'userdata', avlines, 'tag', 'avlines', 'backgroundcolor', [1 1 1]);
@@ -3237,8 +3237,8 @@ if ~isempty(varargin) && varargin{1},
         portnum = varargin{2};
         set(f, 'name', ['Select Lines for Port ', num2str(portnum)]);
     else
-        set(f, 'name', 'Select Lines');
-    end
+    set(f, 'name', 'Select Lines');
+end
 end
 waitfor(gcf);
 
@@ -3610,7 +3610,7 @@ if strcmpi(io.Subsystem, 'DigitalIO') && ~isempty(strmatch('TTL', iovar)),
     iotxt = sprintf('%s %s Port %i Line %i', io.Adaptor, io.Subsystem, io.Channel, io.Line);
 elseif strcmpi(io.Subsystem, 'DigitalIO'),
     if length(io.Channel) == 1
-        iotxt = sprintf('%s %s Port %i', io.Adaptor, io.Subsystem, io.Channel);
+    iotxt = sprintf('%s %s Port %i', io.Adaptor, io.Subsystem, io.Channel);
     elseif length(io.Channel) > 1    % added by Panos Sapountzis
         iotxt = sprintf('%s %s Ports %i-%i', io.Adaptor, io.Subsystem, io.Channel(1), io.Channel(end));
     end

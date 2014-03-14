@@ -1,5 +1,6 @@
 function SigTransform = xycalibrate(varargin)
 global MLHELPER_OFF
+global DEBUG_ON;
 %
 %
 % Created by WA 7/06
@@ -7,13 +8,20 @@ global MLHELPER_OFF
 % modified 4/09/08 -VY (to fix bug preventing digital reward delivery)
 % modified 9/11/08 -WA (to fix aspect ratio and center fixation points properly)
 % modified 9/19/08 -SM (to allow inverted reward polarity)
-
+% modified 1/09/12 -VDC(changed nanmean(xv) starting on line 436)
+% modified 3/03/14 -ER (automatically increments to next stimulus target when a calibration point is accepted by pressing the space bar. 
+%					   (allows calibration to run even in java mode by disabling the XGL Graphics routines)
+% modified 3/04/14 -ER (tried to reduce the amount of keyboard and mouse functionality that is disabled in order to simplify program debugging)
+% modified 3/14/14 -ER (added ability to disable XGL using the DEBUG_ON variables. Set to true will disable XGL and allow setting breakpoints regardless of jvm)
+						
 fig = findobj('tag', 'xycalibrate');
 SigTransform = [];
 
+DEBUG_ON = 0;
+
 if isempty(fig),
     if isempty(varargin),
-        disp('*** XY-Calibrate must be called from the MonkeyLogic menu or during task performance with appropriate parameters ***');
+        disp('<<< MonkeyLogic >>> *** XY-Calibrate must be called from the MonkeyLogic menu or during task performance with appropriate parameters ***');
         return
     end
     figure;
@@ -80,8 +88,10 @@ if isempty(fig),
 
     xy = plot(0,0, 'o');
     tgt = plot(0,0, 'o');
+    tgt_all = plot(0,0, 'o');
     set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'erasemode', 'xor', 'tag', 'xy');
     set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt');
+    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt_all');
 
     uicontrol('style', 'pushbutton', 'position', [50 ys-35 150 25], 'string', 'Start Calibration', 'tag', 'startcal', 'callback', 'xycalibrate;');
     
@@ -93,10 +103,10 @@ if isempty(fig),
     uicontrol('style', 'text', 'position', [60 ys2-257 50 18], 'string', 'Edit:', 'backgroundcolor', bg, 'horizontalalignment', 'left');
     uicontrol('style', 'edit', 'position', [83 ys2-254 100 20], 'backgroundcolor', [1 1 1], 'tag', 'editbox', 'callback', 'xycalibrate;');
     targetstring = cell(size(targetlist, 1), 1);
-    for i = 1:size(targetlist, 1),
-        targetstring{i} = sprintf('%i:  [%i     %i]', i, targetlist(i, 1), targetlist(i, 2));
+    for targetNum = 1:size(targetlist, 1),
+        targetstring{targetNum} = sprintf('%i:  [%i     %i]', targetNum, targetlist(targetNum, 1), targetlist(targetNum, 2));
     end
-    targetstring{i+1} = 'Add...';
+    targetstring{targetNum+1} = 'Add...';
     set(h, 'string', targetstring, 'userdata', targetlist);
     
     ys2 = ys+3;
@@ -147,9 +157,19 @@ if isempty(fig),
     end
     
     if ScreenInfo.IsActive,
-        mlvideo('showcursor', ScreenInfo.Device, 1);
+		if (DEBUG_ON)
+        	mlvideo('showcursor', ScreenInfo.Device, 1);
+		end
     end
 
+	targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+    tgt_all = findobj(gcf, 'tag', 'tgt_all');   
+     
+    set(tgt_all, 'xdata', targetlist(:, 1), 'ydata', targetlist(:, 2));
+
+            
+    disp('<<< MonkeyLogic >>> Calibration ready...');
+    
 elseif ~isempty(varargin),
     
     if strcmp(varargin{1}, 'selectpoint'),
@@ -219,42 +239,64 @@ elseif ismember(gcbo, get(fig, 'children')),
     
     callertag = get(gcbo, 'tag');
     BasicData = get(gcf, 'userdata');
-    DAQ = BasicData.IO;
+	DAQ = BasicData.IO;
     ScreenInfo = BasicData.ScreenInfo;
     cp = BasicData.ControlPoints;
     
-    switch callertag,
+	switch callertag,
 
         case 'startcal',
+                        
+            disp('<<< MonkeyLogic >>> Started calibrating...');
+
+            if usejava('jvm'),
+                %Users no longer need to disable Java.
+                %disp('<<< MonkeyLogic >>> *** You must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
+            end
+
+            if (DEBUG_ON)
+                disp('<<< MonkeyLogic >>> *** Video Stimulus will not be displayed during the calibration routine because DEBUG_ON is true***');
+            end
+                       
+            set(findobj(gcf, 'tag', 'startcal'), 'backgroundcolor', [0.5 0.8 0.5], 'string', 'Calibration Running...');
+            set(findobj(gcf, 'tag', 'savequit'), 'backgroundcolor', [0.95 0.95 0.95], 'string', 'Press Q/Esc', 'enable', 'off');
+            mlkbd('release');
             
-            maxduration = 600000; %continue in 60 seconds if no input
+          	maxduration = 600000; %continue in 60 seconds if no input
             u = get(gca, 'userdata');
             xs = u(1); %#ok<NASGU>
             ys = u(2); %#ok<NASGU>
             pixperdeg = u(3);
             
+            targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+            numtargets = size(targetlist, 1);
+            targetCalibrated = zeros(1, numtargets);
             xy = findobj(gcf,'tag', 'xy');
             tgt = findobj(gcf, 'tag', 'tgt');
-            
+            tgt_all = findobj(gcf, 'tag', 'tgt_all');
+
             if isfield(DAQ, 'EyeX'), %i.e., DAQ is uninitialized
-                resetDAQflag = 1;
-                mlkbd('init');
-                [DAQ DaqError] = initio(DAQ);
+				disp('<<< MonkeyLogic >>> Initializing I/O ... (please wait a while)');
+          	  	resetDAQflag = 1;
+           	 	mlkbd('init'); % disables the keyboard
+            	[DAQ DaqError] = initio(DAQ);
+				disp('<<< MonkeyLogic >>> Initializing I/O ... (completed)');
+                
                 if ~isempty(DaqError),
                     for i = 1:length(DaqErrror),
                         disp(DaqError{i})
                     end
-                    error('*** I/O Initialization Error ***');
+                    error('<<< MonkeyLogic >>> *** I/O Initialization Error ***');
                 end
                 if BasicData.EyeOrJoy == 1,
                     if isempty(DAQ.EyeSignal),
-                        error('*** No eye signal inputs defined ***');
+                        error('<<< MonkeyLogic >>> *** No eye signal inputs defined ***');
                     end
                     xchan = DAQ.EyeSignal.XChannelIndex;
                     ychan = DAQ.EyeSignal.YChannelIndex;
                 elseif BasicData.EyeOrJoy == 2,
                     if isempty(DAQ.Joystick),
-                        error('*** No joystick inputs defined ***');
+                        error('<<< MonkeyLogic >>> *** No joystick inputs defined ***');
                     end
                     xchan = DAQ.Joystick.XChannelIndex;
                     ychan = DAQ.Joystick.YChannelIndex;
@@ -269,6 +311,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                     ychan = DAQ.Joystick.YChannelIndex;
                 end
             end
+            
             ms_to_take = 250;
             ms_to_use = 100; %when user presses space, take -250:-150 ms of data
             samples_to_take = round(DAQ.AnalogInput.SampleRate * ms_to_take/1000);
@@ -276,22 +319,26 @@ elseif ismember(gcbo, get(fig, 'children')),
             
             if ~ScreenInfo.IsActive, %initialize I/O and Video
                 try
-                    mlvideo('init');
-                    mlvideo('initdevice', ScreenInfo.Device);
-                    mlvideo('setmode', ScreenInfo.Device, ScreenInfo.Xsize, ScreenInfo.Ysize, ScreenInfo.BytesPerPixel, ScreenInfo.RefreshRate, ScreenInfo.BufferPages);
-                    pause(1);
-                    mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
-                    mlvideo('flip', ScreenInfo.Device);
-                    mlvideo('showcursor', ScreenInfo.Device, 0);
+                    if (~DEBUG_ON)
+                        mlvideo('init');
+                        mlvideo('initdevice', ScreenInfo.Device);
+                        mlvideo('setmode', ScreenInfo.Device, ScreenInfo.Xsize, ScreenInfo.Ysize, ScreenInfo.BytesPerPixel, ScreenInfo.RefreshRate, ScreenInfo.BufferPages);
+                        pause(1);
+                        mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
+                        mlvideo('flip', ScreenInfo.Device);
+                        mlvideo('showcursor', ScreenInfo.Device, 0);
+                    end
                     
                 catch %#ok<CTCH>
-                    mlvideo('showcursor', ScreenInfo.Device, 1);
-                    mlvideo('restoremode', ScreenInfo.Device)
-                    mlvideo('releasedevice', ScreenInfo.Device);
-                    mlvideo('release');
-                    
-                    disp('*** Error initializing Video ***')
-                    lasterr %#ok<LERR>
+                    if (~DEBUG_ON)
+                        mlvideo('showcursor', ScreenInfo.Device, 1);
+                        mlvideo('restoremode', ScreenInfo.Device)
+                        mlvideo('releasedevice', ScreenInfo.Device);
+                        mlvideo('release');
+
+                        disp('<<< MonkeyLogic >>> *** Error initializing Video ***')
+                   		lasterr %#ok<LERR>
+                    end
                     return
                 end
             end
@@ -301,8 +348,10 @@ elseif ismember(gcbo, get(fig, 'children')),
             fixspot = BasicData.FixSpot;
             modval = 16;
             [fixspot xis yis xisbuf yisbuf] = pad_image(fixspot, modval);
-            FixBuffer = mlvideo('createbuffer', ScreenInfo.Device, xisbuf, yisbuf, ScreenInfo.BytesPerPixel);
-            mlvideo('copybuffer', ScreenInfo.Device, FixBuffer, fixspot);
+			if (~DEBUG_ON)
+            	FixBuffer = mlvideo('createbuffer', ScreenInfo.Device, xisbuf, yisbuf, ScreenInfo.BytesPerPixel);
+            	mlvideo('copybuffer', ScreenInfo.Device, FixBuffer, fixspot);
+			end
             FixXsize = xis;
             FixYsize = yis;
             
@@ -317,14 +366,14 @@ elseif ismember(gcbo, get(fig, 'children')),
             end
             
             quitflag = 0;
-            i = 1;
+            targetNum = 1;
                         
             givereward = get(findobj('tag', 'givereward'), 'value');
             if givereward,
                 if isempty(DAQ.AnalogOutput) && isempty(DAQ.Reward),
                     givereward = 0;
                     set(findobj('tag', 'givereward'), 'value', 0);
-                    disp('*** Warning: No reward output identified ***')
+                    disp('<<< MonkeyLogic >>> *** Warning: No reward output identified ***')
                 else
                     rewarddurlist = get(findobj(gcf, 'tag', 'pulseduration'), 'userdata');
                     rewardduration = rewarddurlist(get(findobj(gcf, 'tag', 'pulseduration'), 'value'));
@@ -361,17 +410,21 @@ elseif ismember(gcbo, get(fig, 'children')),
             
             while quitflag == 0,
                 
-                set(findobj(gcf, 'tag', 'targetlist'), 'value', i);
+                set(findobj(gcf, 'tag', 'targetlist'), 'value', targetNum);
                 
-                xfix = targetlist(i, 1);
-                yfix = targetlist(i, 2);
+                xfix = targetlist(targetNum, 1);
+                yfix = targetlist(targetNum, 2);
                 set(tgt, 'xdata', xfix, 'ydata', yfix);
                             
-                xp = round((ScreenInfo.Xsize/2) + (xfix*pixperdeg)) - FixXsize/2;
-                yp = round((ScreenInfo.Ysize/2) - (yfix*pixperdeg)) - FixYsize/2;
-                mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
-                mlvideo('blit', ScreenInfo.Device, FixBuffer, xp, yp, FixXsize, FixYsize);
-                mlvideo('flip', ScreenInfo.Device);
+                xp = round((ScreenInfo.Xsize/2) + (xfix*pixperdeg));
+                yp = round((ScreenInfo.Ysize/2) - (yfix*pixperdeg));
+
+                if (~DEBUG_ON)
+                    mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
+                    mlvideo('blit', ScreenInfo.Device, FixBuffer, xp, yp, FixXsize, FixYsize);
+                    mlvideo('flip', ScreenInfo.Device);
+                end
+                
                 dotison = 1;
 
                 tic;
@@ -384,7 +437,8 @@ elseif ismember(gcbo, get(fig, 'children')),
                     set(xy, 'xdata', xp, 'ydata', yp);
                     drawnow;
                     t2 = toc*1000;
-                    kb = mlkbd('getkey');
+                    kb = mlkbd('getkey'); % disable to debug code with keyboard functionality
+                    %kb = 57; % enable if disabling command directly above
                     if ~isempty(kb),
                         maxduration = maxduration + t2;
                         if kb == 57 && dotison, %space: process target
@@ -397,11 +451,20 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 end
                                 firstsample = numsamples - samples_to_take;
                                 lastsample = firstsample + samples_to_use;
-                                xv = data(firstsample:lastsample, xchan);
-                                yv = data(firstsample:lastsample, ychan);
-                                xv = nanmean(xv);
-                                yv = nanmean(yv);
-                                cp(i, 1:2) = [xv yv];
+                                
+                                % Added 1/9/2012 VDC
+                                zi = find(isnan(xv) == 0);
+                                yi = find(isnan(yv) == 0);
+                                xv = mean(xv(zi));
+                                yv = mean(yv(yi));
+                                % Resolves version bug for eye calibration
+                                
+                                %xv = data(firstsample:lastsample, xchan);
+                                %yv = data(firstsample:lastsample, ychan);
+                                %xv = nanmean(xv);
+                                %yv = nanmean(yv);
+
+                                cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
                                 [xp yp] = tformfwd(SigTransform, xv, yv);
                                 set(xy, 'xdata', xp, 'ydata', yp, 'markerfacecolor', [1 .3 .3]);
@@ -435,25 +498,54 @@ elseif ismember(gcbo, get(fig, 'children')),
                                     end
                                 end
                             else
-                                disp('No data available... Must re-try')
+                                disp('<<< MonkeyLogic >>> No data available... Must re-try')
                             end
-                            mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
-                            mlvideo('flip', ScreenInfo.Device);
+                            
+                            if (~DEBUG_ON)
+                                mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
+                                mlvideo('flip', ScreenInfo.Device);
+                            end
+                            
                             dotison = 0;
                             pause(0.25);
                             set(xy, 'markerfacecolor', [0.5 0.5 0.5]);
                             set(tgt, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+                            
+                            t2 = maxduration;
+                            
+                            targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
+
+                            tries = numtargets;
+                            % automatically step to the next stimulus
+                            % target location after user accepts a
+                            % calibration point by pressing the space bar
+                            % (continue to allow the user to press 'p' or
+                            % 'n' if they wish to cycle through the targets
+                            % manually. Does not repeat already calibrated
+                            % targets.
+                            while (targetCalibrated(targetNum) == 1)
+                                targetNum = targetNum + 1;
+                                if targetNum > numtargets,
+                                    targetNum = 1;
+                                end
+                                tries = tries - 1;
+                                if (tries == 0)
+                                    % all targets have been calibrated
+                                    break;
+                                end
+                            end
+                                                        
                         elseif kb == 25, %p for previous
                             t2 = maxduration;
-                            i = i - 1;
-                            if i < 1,
-                                i = numtargets;
+                            targetNum = targetNum - 1;
+                            if targetNum < 1,
+                                targetNum = numtargets;
                             end
                         elseif kb == 49, %n for next
                             t2 = maxduration;
-                            i = i + 1;
-                            if i > numtargets,
-                                i = 1;
+                            targetNum = targetNum + 1;
+                            if targetNum > numtargets,
+                                targetNum = 1;
                             end
                         elseif kb == 16 || kb == 1, %esc or q for quit
                             stop(DAQ.AnalogInput);
@@ -468,20 +560,25 @@ elseif ismember(gcbo, get(fig, 'children')),
             BasicData.ControlPoints = cp;
             set(gcf, 'userdata', BasicData);
             set(findobj(gcf, 'tag', 'savequit'), 'backgroundcolor', [0.5 0.8 0.5], 'string', 'Save and Exit', 'enable', 'on');
+            set(findobj(gcf, 'tag', 'startcal'), 'backgroundcolor', [0.95 0.95 0.95], 'string', 'Start Calibration');
 
             if resetDAQflag,
                 mlkbd('release');
                 delete(DAQ.AnalogInput);
                 clear DAQ
                 daqreset;
+                disp('<<< MonkeyLogic >>> *** reset DAQ and keyboard ***');
             end
 
             if ~ScreenInfo.IsActive,
-                mlvideo('releasebuffer', ScreenInfo.Device, FixBuffer);
-                mlvideo('showcursor', ScreenInfo.Device, 1);
-                mlvideo('restoremode', ScreenInfo.Device);
-                mlvideo('releasedevice', ScreenInfo.Device);
-                mlvideo('release');
+                if (~DEBUG_ON)
+                    mlvideo('releasebuffer', ScreenInfo.Device, FixBuffer);
+                    mlvideo('showcursor', ScreenInfo.Device, 1);
+                    mlvideo('restoremode', ScreenInfo.Device);
+                    mlvideo('releasedevice', ScreenInfo.Device);
+                    mlvideo('release');
+                end
+                
                 
             end
             enable_cursor;
@@ -526,7 +623,8 @@ elseif ismember(gcbo, get(fig, 'children')),
             end
             
         case 'editbox',
-
+          
+            tgt_all = findobj(gcf, 'tag', 'tgt_all');   
             targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
             tstring = get(findobj(gcf, 'tag', 'targetlist'), 'string');
             tval = get(findobj(gcf, 'tag', 'targetlist'), 'value');
@@ -536,14 +634,18 @@ elseif ismember(gcbo, get(fig, 'children')),
             if isempty(t_item) && tval < length(tstring) && numtargets > 4,
                 targetlist = targetlist(1:numtargets ~= tval, :);
                 numtargets = size(targetlist, 1);
-                for i = 1:numtargets,
-                    tstring{i} = sprintf('%i:  [%2.1f     %2.1f]', i, targetlist(i, 1), targetlist(i, 2));
+                for targetNum = 1:numtargets,
+                    tstring{targetNum} = sprintf('%i:  [%2.1f     %2.1f]', targetNum, targetlist(targetNum, 1), targetlist(targetNum, 2));
                 end
-                tstring{i+1} = 'Add...';
-                tstring = tstring(1:i+1);
+                tstring{targetNum+1} = 'Add...';
+                tstring = tstring(1:targetNum+1);
                 set(findobj(gcf, 'tag', 'targetlist'), 'string', tstring, 'userdata', targetlist);
+                targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+                set(tgt_all, 'xdata', targetlist(:, 1), 'ydata', targetlist(:, 2));
                 return
             elseif isempty(t_item) && tval == length(tstring),
+                targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+                set(tgt_all, 'xdata', targetlist(:, 1), 'ydata', targetlist(:, 2));
                 return
             end
             
@@ -556,6 +658,8 @@ elseif ismember(gcbo, get(fig, 'children')),
                 coords = [coords coords];
             elseif isempty(coords) || length(coords) > 2,
                 set(gcbo, 'string', ['[ ' num2str(get(gcbo, 'userdata')) ' ]']);
+                targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+                set(tgt_all, 'xdata', targetlist(:, 1), 'ydata', targetlist(:, 2));
                 return
             end
 
@@ -573,6 +677,8 @@ elseif ismember(gcbo, get(fig, 'children')),
             set(gcf, 'userdata', BasicData);
             updategrid(targetlist, targetlist);
 
+            targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+            set(tgt_all, 'xdata', targetlist(:, 1), 'ydata', targetlist(:, 2));
         case 'savequit',
 
             BasicData = get(gcf, 'userdata');
@@ -626,7 +732,7 @@ if tval == 3, %polynomial
         set(findobj('tag', 'ttype'), 'value', 2);
         ttype = 'projective';
         porder = [];
-        disp('*** Warning: Not enough target points for polynomial fit ***');
+        disp('<<< MonkeyLogic >>> *** Warning: Not enough target points for polynomial fit ***');
     end
     if ~isempty(porder),
         tform = cp2tform(cp, targetlist, ttype, porder);
@@ -663,6 +769,11 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','custom');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
+%fix, but why bother! Better to leave broken.
+%current_dir = pwd;
+%cd(dirs.BaseDirectory);
+%system('mlhelper --cursor-disable');
+%cd(current_dir);
 system(sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory));
 
 function enable_cursor
@@ -675,4 +786,9 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','arrow');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
+%fix, but why bother! Better to leave broken.
+%current_dir = pwd;
+%cd(dirs.BaseDirectory);
+%system('mlhelper --cursor-enable');
+%cd(current_dir);
 system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
