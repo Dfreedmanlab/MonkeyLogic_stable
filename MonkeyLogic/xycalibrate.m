@@ -1,6 +1,7 @@
 function SigTransform = xycalibrate(varargin)
 global MLHELPER_OFF
-global DEBUG_ON;
+global DEBUG_ON_VIDEO;
+global DEBUG_ON_KEYBOARD;
 %
 %
 % Created by WA 7/06
@@ -17,7 +18,8 @@ global DEBUG_ON;
 fig = findobj('tag', 'xycalibrate');
 SigTransform = [];
 
-DEBUG_ON = 0;
+DEBUG_ON_VIDEO = 0;
+DEBUG_ON_KEYBOARD = 0;
 
 if isempty(fig),
     if isempty(varargin),
@@ -157,7 +159,7 @@ if isempty(fig),
     end
     
     if ScreenInfo.IsActive,
-		if (DEBUG_ON)
+		if (DEBUG_ON_VIDEO)
         	mlvideo('showcursor', ScreenInfo.Device, 1);
 		end
     end
@@ -249,18 +251,15 @@ elseif ismember(gcbo, get(fig, 'children')),
                         
             disp('<<< MonkeyLogic >>> Started calibrating...');
 
-            if usejava('jvm'),
-                %Users no longer need to disable Java.
-                %disp('<<< MonkeyLogic >>> *** You must disable JAVA by running "Matlab -nojvm" from the command prompt ***');
-            end
-
-            if (DEBUG_ON)
-                disp('<<< MonkeyLogic >>> *** Video Stimulus will not be displayed during the calibration routine because DEBUG_ON is true***');
+            if (DEBUG_ON_VIDEO)
+                disp('<<< MonkeyLogic >>> *** Video Stimulus will not be displayed during the calibration routine because DEBUG_ON_VIDEO is true***');
             end
                        
             set(findobj(gcf, 'tag', 'startcal'), 'backgroundcolor', [0.5 0.8 0.5], 'string', 'Calibration Running...');
             set(findobj(gcf, 'tag', 'savequit'), 'backgroundcolor', [0.95 0.95 0.95], 'string', 'Press Q/Esc', 'enable', 'off');
-            mlkbd('release');
+            if (~DEBUG_ON_KEYBOARD)
+                mlkbd('release');
+            end
             
           	maxduration = 600000; %continue in 60 seconds if no input
             u = get(gca, 'userdata');
@@ -278,7 +277,9 @@ elseif ismember(gcbo, get(fig, 'children')),
             if isfield(DAQ, 'EyeX'), %i.e., DAQ is uninitialized
 				disp('<<< MonkeyLogic >>> Initializing I/O ... (please wait a while)');
           	  	resetDAQflag = 1;
-           	 	mlkbd('init'); % disables the keyboard
+                if (~DEBUG_ON_KEYBOARD)
+               	 	mlkbd('init'); % disables the keyboard
+                end
             	[DAQ DaqError] = initio(DAQ);
 				disp('<<< MonkeyLogic >>> Initializing I/O ... (completed)');
                 
@@ -319,7 +320,7 @@ elseif ismember(gcbo, get(fig, 'children')),
             
             if ~ScreenInfo.IsActive, %initialize I/O and Video
                 try
-                    if (~DEBUG_ON)
+                    if (~DEBUG_ON_VIDEO)
                         mlvideo('init');
                         mlvideo('initdevice', ScreenInfo.Device);
                         mlvideo('setmode', ScreenInfo.Device, ScreenInfo.Xsize, ScreenInfo.Ysize, ScreenInfo.BytesPerPixel, ScreenInfo.RefreshRate, ScreenInfo.BufferPages);
@@ -330,7 +331,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                     end
                     
                 catch %#ok<CTCH>
-                    if (~DEBUG_ON)
+                    if (~DEBUG_ON_VIDEO)
                         mlvideo('showcursor', ScreenInfo.Device, 1);
                         mlvideo('restoremode', ScreenInfo.Device)
                         mlvideo('releasedevice', ScreenInfo.Device);
@@ -343,12 +344,14 @@ elseif ismember(gcbo, get(fig, 'children')),
                 end
             end
             
-            disable_cursor;
+            if (~DEBUG_ON_KEYBOARD)
+                disable_cursor;
+            end
             %create fixation spot:
             fixspot = BasicData.FixSpot;
             modval = 16;
             [fixspot xis yis xisbuf yisbuf] = pad_image(fixspot, modval);
-			if (~DEBUG_ON)
+			if (~DEBUG_ON_VIDEO)
             	FixBuffer = mlvideo('createbuffer', ScreenInfo.Device, xisbuf, yisbuf, ScreenInfo.BytesPerPixel);
             	mlvideo('copybuffer', ScreenInfo.Device, FixBuffer, fixspot);
 			end
@@ -419,7 +422,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                 xp = round((ScreenInfo.Xsize/2) + (xfix*pixperdeg));
                 yp = round((ScreenInfo.Ysize/2) - (yfix*pixperdeg));
 
-                if (~DEBUG_ON)
+                if (~DEBUG_ON_VIDEO)
                     mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
                     mlvideo('blit', ScreenInfo.Device, FixBuffer, xp, yp, FixXsize, FixYsize);
                     mlvideo('flip', ScreenInfo.Device);
@@ -437,8 +440,13 @@ elseif ismember(gcbo, get(fig, 'children')),
                     set(xy, 'xdata', xp, 'ydata', yp);
                     drawnow;
                     t2 = toc*1000;
-                    kb = mlkbd('getkey'); % disable to debug code with keyboard functionality
-                    %kb = 57; % enable if disabling command directly above
+                    
+                    if (~DEBUG_ON_KEYBOARD)
+                        kb = mlkbd('getkey'); % disable to debug code with keyboard functionality
+                    else
+                        kb = 57; % enable if disabling command directly above
+                    end
+                    
                     if ~isempty(kb),
                         maxduration = maxduration + t2;
                         if kb == 57 && dotison, %space: process target
@@ -449,6 +457,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 if numsamples < samples_to_take,
                                     data = cat(1, NaN*zeros(samples_to_take - numsamples, numchans), data);
                                 end
+                                
                                 firstsample = numsamples - samples_to_take;
                                 lastsample = firstsample + samples_to_use;
                                 
@@ -463,6 +472,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 %yv = data(firstsample:lastsample, ychan);
                                 %xv = nanmean(xv);
                                 %yv = nanmean(yv);
+
 
                                 cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
@@ -501,7 +511,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 disp('<<< MonkeyLogic >>> No data available... Must re-try')
                             end
                             
-                            if (~DEBUG_ON)
+                            if (~DEBUG_ON_VIDEO)
                                 mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
                                 mlvideo('flip', ScreenInfo.Device);
                             end
@@ -563,15 +573,18 @@ elseif ismember(gcbo, get(fig, 'children')),
             set(findobj(gcf, 'tag', 'startcal'), 'backgroundcolor', [0.95 0.95 0.95], 'string', 'Start Calibration');
 
             if resetDAQflag,
-                mlkbd('release');
+                if (~DEBUG_ON_KEYBOARD)
+                    mlkbd('release');
+                end
+                
                 delete(DAQ.AnalogInput);
                 clear DAQ
                 daqreset;
-                disp('<<< MonkeyLogic >>> *** reset DAQ and keyboard ***');
+                disp('<<< MonkeyLogic >>> reset DAQ and keyboard');
             end
 
             if ~ScreenInfo.IsActive,
-                if (~DEBUG_ON)
+                if (~DEBUG_ON_VIDEO)
                     mlvideo('releasebuffer', ScreenInfo.Device, FixBuffer);
                     mlvideo('showcursor', ScreenInfo.Device, 1);
                     mlvideo('restoremode', ScreenInfo.Device);
@@ -581,7 +594,9 @@ elseif ismember(gcbo, get(fig, 'children')),
                 
                 
             end
-            enable_cursor;
+            if (~DEBUG_ON_KEYBOARD)
+                enable_cursor;
+            end
 
         case 'ttype',
 
@@ -769,12 +784,14 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','custom');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-%fix, but why bother! Better to leave broken.
-%current_dir = pwd;
-%cd(dirs.BaseDirectory);
-%system('mlhelper --cursor-disable');
-%cd(current_dir);
-system(sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory));
+%Below system() doesn't work properly if the directory is "too long"
+%system(sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory));
+
+%fix for a long directory, but why bother! Better to leave broken and mouse stays enabled.
+current_dir = pwd;
+cd(dirs.BaseDirectory);
+system('mlhelper --cursor-disable');
+cd(current_dir);
 
 function enable_cursor
 global MLHELPER_OFF
@@ -786,9 +803,11 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','arrow');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-%fix, but why bother! Better to leave broken.
-%current_dir = pwd;
-%cd(dirs.BaseDirectory);
-%system('mlhelper --cursor-enable');
-%cd(current_dir);
-system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
+%Below system() doesn't work properly if the directory is "too long"
+%system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
+
+%fix for a long directory, but why bother! Better to leave broken and mouse stays enabled.
+current_dir = pwd;
+cd(dirs.BaseDirectory);
+system('mlhelper --cursor-enable');
+cd(current_dir);

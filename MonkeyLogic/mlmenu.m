@@ -10,7 +10,7 @@ function mlmenu(varargin)
 % Modified 2/01/12 -WA (to remove overwrite_hardware_cfg subfunction - had broken the ability to write new cfg files when none present)
 % Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
 
-lastupdate = '3-14-2014 build 1.0.22';
+lastupdate = '3-18-2014 build 1.0.23';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
