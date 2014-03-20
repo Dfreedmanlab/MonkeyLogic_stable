@@ -9,8 +9,9 @@ function mlmenu(varargin)
 % Modified 9/08/08 -SM (to use appropriate analog input-type when testing those inputs)
 % Modified 2/01/12 -WA (to remove overwrite_hardware_cfg subfunction - had broken the ability to write new cfg files when none present)
 % Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
+% Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 
-lastupdate = '3-18-2014 build 1.0.23';
+lastupdate = '3-20-2014 build 1.0.25';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -78,7 +79,7 @@ if isempty(mlf),
     disp(' ')
     disp(' ')
     disp(' ')
-    disp(sprintf('<<< MonkeyLogic >>> Revision Date: %s...', lastupdate))
+    disp(sprintf('<<< MonkeyLogic >>> Revision Date: %s', lastupdate))
     chknewupdates(lastupdate);
     envOS = getenv('OS');
     envCN = getenv('COMPUTERNAME');
@@ -478,6 +479,8 @@ if isempty(mlf),
     % INPUT / OUTPUT ######################################  
     disp('<<< MonkeyLogic >>> Gathering I/O board info...')
     hwinfo = daqhwinfo;
+    disp(sprintf('<<< MonkeyLogic >>> DAQ Toolbox Version: %s %s', hwinfo.ToolboxName, hwinfo.ToolboxVersion));
+    disp(sprintf('<<< MonkeyLogic >>> DAQ Driver Version: %s %s', daq.getVendors().FullName, daq.getVendors().DriverVersion));
     AdaptorInfo = ioscan(hwinfo.InstalledAdaptors);
     adaptors = {AdaptorInfo(:).Name};
     disp(sprintf('<<< MonkeyLogic >>> Found %i I/O adaptors:', length(adaptors)))
