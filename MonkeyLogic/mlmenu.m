@@ -11,7 +11,8 @@ function mlmenu(varargin)
 % Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 
-lastupdate = '3-20-2014 build 1.0.25';
+lastupdate = 'April 2014';
+currentversion = '4-05-2014 build 1.0.26';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -79,7 +80,7 @@ if isempty(mlf),
     disp(' ')
     disp(' ')
     disp(' ')
-    disp(sprintf('<<< MonkeyLogic >>> Revision Date: %s', lastupdate))
+    disp(sprintf('<<< MonkeyLogic >>> Revision Date: %s', currentversion))
     chknewupdates(lastupdate);
     envOS = getenv('OS');
     envCN = getenv('COMPUTERNAME');
@@ -844,7 +845,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'aboutbutton',
             
-            mlmessage(sprintf('MonkeyLogic Revision Date: %s', lastupdate));
+            mlmessage(sprintf('MonkeyLogic Revision Date: %s', currentversion));
             try
                 f = wavread('science.wav');
                 sound(f, 48000);

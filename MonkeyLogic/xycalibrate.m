@@ -1,7 +1,8 @@
 function SigTransform = xycalibrate(varargin)
-global MLHELPER_OFF
+global MLHELPER_OFF;
 global DEBUG_ON_VIDEO;
 global DEBUG_ON_KEYBOARD;
+global DEBUG_ON_MOUSE;
 %
 %
 % Created by WA 7/06
@@ -14,12 +15,14 @@ global DEBUG_ON_KEYBOARD;
 %					   (allows calibration to run even in java mode by disabling the XGL Graphics routines)
 % modified 3/04/14 -ER (tried to reduce the amount of keyboard and mouse functionality that is disabled in order to simplify program debugging)
 % modified 3/14/14 -ER (added ability to disable XGL using the DEBUG_ON variables. Set to true will disable XGL and allow setting breakpoints regardless of jvm)
+% modified 4/05/14 -ER (added additional statistics used to accept a calibration target)
 						
 fig = findobj('tag', 'xycalibrate');
 SigTransform = [];
 
 DEBUG_ON_VIDEO = 0;
 DEBUG_ON_KEYBOARD = 0;
+DEBUG_ON_MOUSE = 0;
 
 if isempty(fig),
     if isempty(varargin),
@@ -28,7 +31,7 @@ if isempty(fig),
     end
     figure;
     ScreenInfo = varargin{1};
-    targetlist = varargin{2};
+    targetlist = varargin{2};    
     BasicData.ScreenInfo = ScreenInfo;
     BasicData.IO = varargin{3};
     if length(varargin) > 3,
@@ -259,6 +262,7 @@ elseif ismember(gcbo, get(fig, 'children')),
             set(findobj(gcf, 'tag', 'savequit'), 'backgroundcolor', [0.95 0.95 0.95], 'string', 'Press Q/Esc', 'enable', 'off');
             if (~DEBUG_ON_KEYBOARD)
                 mlkbd('release');
+                disp('<<< MonkeyLogic >>> Released Keyboard');
             end
             
           	maxduration = 600000; %continue in 60 seconds if no input
@@ -279,6 +283,7 @@ elseif ismember(gcbo, get(fig, 'children')),
           	  	resetDAQflag = 1;
                 if (~DEBUG_ON_KEYBOARD)
                	 	mlkbd('init'); % disables the keyboard
+                    disp('<<< MonkeyLogic >>> Disabled Keyboard');
                 end
             	[DAQ DaqError] = initio(DAQ);
 				disp('<<< MonkeyLogic >>> Initializing I/O ... (completed)');
@@ -328,6 +333,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                         mlvideo('clear', ScreenInfo.Device, ScreenInfo.BackgroundColor);
                         mlvideo('flip', ScreenInfo.Device);
                         mlvideo('showcursor', ScreenInfo.Device, 0);
+                        disp('<<< MonkeyLogic >>> *** Success Initializing Video ***')
                     end
                     
                 catch %#ok<CTCH>
@@ -337,15 +343,16 @@ elseif ismember(gcbo, get(fig, 'children')),
                         mlvideo('releasedevice', ScreenInfo.Device);
                         mlvideo('release');
 
-                        disp('<<< MonkeyLogic >>> *** Error initializing Video ***')
+                        disp('<<< MonkeyLogic >>> *** Error Initializing Video ***')
                    		lasterr %#ok<LERR>
                     end
                     return
                 end
             end
             
-            if (~DEBUG_ON_KEYBOARD)
+            if (~DEBUG_ON_MOUSE)
                 disable_cursor;
+                disp('<<< MonkeyLogic >>> Disabled Cursor');
             end
             %create fixation spot:
             fixspot = BasicData.FixSpot;
@@ -408,6 +415,13 @@ elseif ismember(gcbo, get(fig, 'children')),
                 set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [0.5 1 0.5], 'tag', 'xytxt');
             end
             
+            if isempty(findobj(gcf, 'tag', 'xytxt_real_time')),
+                xlim = get(gca, 'xlim');
+                ylim = get(gca, 'ylim');
+                h = text(0.9*min(xlim), 0.9*min(ylim), 'Current Input: X= ---- V   Y= ---- V');
+                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [0.2 0.2 0.2], 'tag', 'xytxt_real_time');
+            end
+            
             start(DAQ.AnalogInput);
             while ~DAQ.AnalogInput.SamplesAvailable, end
             
@@ -432,13 +446,41 @@ elseif ismember(gcbo, get(fig, 'children')),
 
                 tic;
                 t2 = 0;
+                refresh_time = 0;
+                % data_buffer = zeros(2, 200);
+                
                 while t2 < maxduration,
+                    % current real-time voltage value
                     data = getsample(DAQ.AnalogInput);
+                    
+                    % record the current data sample
                     xv = data(xchan);
                     yv = data(ychan);
+                    
+                    % add the data sample to the end of a a rolling buffer
+                    % (similar to yT plot in i/o test)
+                    %data_buffer(length(data_buffer), 1) = xv;
+                    %data_buffer(length(data_buffer), 2) = yv;
+                    %data_buffer(1:length(data_buffer)-1, 1) = data_buffer(2:length(data_buffer), 1);
+                    %data_buffer(1:length(data_buffer)-1, 2) = data_buffer(2:length(data_buffer), 2);
+                    
+                    % average the rolling buffer and use that as your
+                    % current gaze position
+                    %xv = nanmean(data_buffer(1:length(data_buffer)-1,1));
+                    %yv = nanmean(data_buffer(1:length(data_buffer)-1,2));
+                    
                     [xp yp] = tformfwd(SigTransform, xv, yv);
                     set(xy, 'xdata', xp, 'ydata', yp);
+                    if (refresh_time == 200)
+                        xystr = sprintf('Current Input: X= %2.1f V   Y= %2.1f V', xp, yp);
+                        set(findobj(gcf, 'tag', 'xytxt_real_time'), 'string', xystr);
+                        refresh_time = 0;
+                    else 
+                        refresh_time = refresh_time + 1;
+                    end
+                    
                     drawnow;
+                    
                     t2 = toc*1000;
                     
                     if (~DEBUG_ON_KEYBOARD)
@@ -462,24 +504,53 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 lastsample = firstsample + samples_to_use;
                                 
                                 % Added 1/9/2012 VDC
-                                zi = find(isnan(xv) == 0);
-                                yi = find(isnan(yv) == 0);
-                                xv = mean(xv(zi));
-                                yv = mean(yv(yi));
+                                %zi = find(isnan(xv) == 0);
+                                %yi = find(isnan(yv) == 0);
+                                %xv = mean(xv(zi));
+                                %yv = mean(yv(yi));
                                 % Resolves version bug for eye calibration
                                 
-                                %xv = data(firstsample:lastsample, xchan);
-                                %yv = data(firstsample:lastsample, ychan);
-                                %xv = nanmean(xv);
-                                %yv = nanmean(yv);
-
-
+                                xv = data(firstsample:lastsample, xchan);
+                                yv = data(firstsample:lastsample, ychan);
+                                                                
+                                xv = nanmean(xv);
+                                yv = nanmean(yv);
+                                
+                                % same as with real-time gaze position, add
+                                % the new current sample to the rolling
+                                % buffer. But, this time add the mean
+                                % real-time sample!
+                                
+                                % add the data sample to the end of a a rolling buffer
+                                % (similar to yT plot in i/o test)
+                                % data_buffer(length(data_buffer), 1) = mean_xv;
+                                % data_buffer(length(data_buffer), 2) = mean_yv;
+                                % data_buffer(1:length(data_buffer)-1, 1) = data_buffer(2:length(data_buffer), 1);
+                                % data_buffer(1:length(data_buffer)-1, 2) = data_buffer(2:length(data_buffer), 2);
+                                
+                                % xv = nanmean(data_buffer(1:length(data_buffer)-1,1));
+                                % yv = nanmean(data_buffer(1:length(data_buffer)-1,2));
+                    
+                                max_xv = min(xv);
+                                min_xv = max(xv);
+                                max_yv = min(yv);
+                                min_yv = max(yv);
+                                median_xv = median(xv);
+                                median_yv = median(yv);
+                                
                                 cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
-                                [xp yp] = tformfwd(SigTransform, xv, yv);
-                                set(xy, 'xdata', xp, 'ydata', yp, 'markerfacecolor', [1 .3 .3]);
+                                [xp1 yp1] = tformfwd(SigTransform, xv, yv);
+                                [xp2 yp2] = tformfwd(SigTransform, min_xv, min_yv);
+                                [xp3 yp3] = tformfwd(SigTransform, max_xv, max_yv);
+                                [xp4 yp4] = tformfwd(SigTransform, median_xv, median_yv);
+
+                                % update the location of the calibrated target
+                                set(xy, 'xdata', [xp1 xp2 xp3 xp4], 'ydata', [yp1 yp2 yp3 yp4], 'markerfacecolor', [1 .3 .3]);
+
                                 xystr = sprintf('Last Input: X= %2.1f V   Y= %2.1f V', xv, yv);
                                 set(findobj(gcf, 'tag', 'xytxt'), 'string', xystr);
+                                
                                 drawnow;
                                 if givereward,
                                     for nreward = 1:numreward,
@@ -575,12 +646,13 @@ elseif ismember(gcbo, get(fig, 'children')),
             if resetDAQflag,
                 if (~DEBUG_ON_KEYBOARD)
                     mlkbd('release');
+                    disp('<<< MonkeyLogic >>> Released Keyboard');
                 end
                 
                 delete(DAQ.AnalogInput);
                 clear DAQ
                 daqreset;
-                disp('<<< MonkeyLogic >>> reset DAQ and keyboard');
+                disp('<<< MonkeyLogic >>> Reset DAQ');
             end
 
             if ~ScreenInfo.IsActive,
@@ -590,12 +662,14 @@ elseif ismember(gcbo, get(fig, 'children')),
                     mlvideo('restoremode', ScreenInfo.Device);
                     mlvideo('releasedevice', ScreenInfo.Device);
                     mlvideo('release');
+                    disp('<<< MonkeyLogic >>> Released Video');
                 end
                 
                 
             end
-            if (~DEBUG_ON_KEYBOARD)
+            if (~DEBUG_ON_MOUSE)
                 enable_cursor;
+                disp('<<< MonkeyLogic >>> Enabled Cursor');
             end
 
         case 'ttype',
@@ -784,10 +858,6 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','custom');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-%Below system() doesn't work properly if the directory is "too long"
-%system(sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory));
-
-%fix for a long directory, but why bother! Better to leave broken and mouse stays enabled.
 current_dir = pwd;
 cd(dirs.BaseDirectory);
 system('mlhelper --cursor-disable');
@@ -803,10 +873,6 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','arrow');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-%Below system() doesn't work properly if the directory is "too long"
-%system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
-
-%fix for a long directory, but why bother! Better to leave broken and mouse stays enabled.
 current_dir = pwd;
 cd(dirs.BaseDirectory);
 system('mlhelper --cursor-enable');
