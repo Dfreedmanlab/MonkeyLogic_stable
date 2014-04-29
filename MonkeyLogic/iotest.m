@@ -1,7 +1,11 @@
 function iotest(varargin)
 %
 % Created by WA, Fall, 2006
-% Last modified 12/14/2007  --WA
+% Last Modified 12/14/2007  --WA
+% Last Modified 2/24/2014 --ER (to display voltage for multiple channels)
+% Last Modified 2/27/2014 --ER (to display voltage in XY)
+% Last Modified 2/27/2014 --ER (to dynamically display 1:n channels as chosen by the user)
+% Last Modified 2/28/2014 --ER (to dynamically set the figure window's layout and data matrices based on the type of iotest being performed)
 
 fig = findobj('tag', 'iotestfigure');
 if ~isempty(fig) && ~isempty(varargin),
@@ -19,24 +23,96 @@ if isempty(fig),
         error('Unrecognized subsystem type %s', DaqData.SubSystemName);
         return
     end
+    
+    % create the figure window where to put all the controls
+    figure
 
-    xs = 700;
-    ys = 400;
+    % start determining the user's display dimensions in order to properly
+    % position the layout of this new figure window.
+    
     scrnsz = get(0, 'screensize');
     sx = scrnsz(3);
     sy = scrnsz(4);
 
-    figure
+    % Different i/o test types require unique figure windows
+    % and coordinates of interior controls.
+
+    if subsystype == 1, %Analog Input
+        
+
+        xs = 1150;      % width of the figure window
+        ys = 400;       % height of the figure window
+        xbase = 910;    % x offset of the control label
+        ybase = 300;    % y offset of the control label
+
+        %initialize the data matrix before creating the subplots
+        numpoints = 300;
+        numchannels = length(DaqData.Channel);
+
+        v = 1:numpoints;
+        w = zeros(1, numpoints);
+        x = [];
+        y = [];
+        for i=1:numchannels
+            x = [x;v];
+            y = [y;w];
+        end
+
+        % create first graph (XY Plot)
+        subplot('position', [0.03 0.06 0.33 0.85], 'YGrid','on', 'XGrid','on')
+        set(gca, 'xlim', [-6 6]);% add an extra volt of space
+        set(gca, 'ylim', [-5 6]);% add an extra volt of space
+        %xlabel(gca, 'Channel 0 Volts');
+        %ylabel(gca, 'Channel 1 Volts ');
+        title(gca, 'Voltage XY') 
+        set(gca, 'nextplot', 'add', 'tag', 'ioplotXY', 'color', [0.2 0.2 0.2]);
+        xyData = line(x', y'); %notice that the transpose is critical
+        set(xyData, 'markersize', 3, 'tag', 'plotterXY', 'color', [0 1 0]);
+
+        % create second graph (yT Plot)
+        subplot('position', [0.37 0.06 0.33 0.85], 'YGrid','on');
+        set(gca, 'ylim', [-6 6]);  % add an extra volt of space
+        set(gca,'yaxislocation','right');
+        xlabel(gca, 'samples');
+        ylabel(gca, 'volts');
+        title(gca, 'Voltage Change (yT)') 
+        set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [0.2 0.2 0.2]);
+        h = line(x', y'); %notice that the transpose is critical
+        %forces all channels to be plotted in the same green color.
+        %set(h, 'markersize', 3, 'tag', 'plotter', 'color', [0 1 0]);
+        set(h, 'markersize', 3, 'tag', 'plotter');
+
+    elseif subsystype == 2, %Analog Output
+
+        xs = 700;
+        ys = 400;
+        xbase = 460;
+        ybase = 300;
+        % create second graph (yT Plot) ONLY
+      	subplot('position', [0.05 0.05 0.5 0.9])
+    	set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [0 0 0], 'ylim', [-0.1 1.1]);
+    	h = plot(0, 0);
+    	set(h, 'markersize', 3, 'tag', 'plotter', 'color', [0 1 0]);
+ 
+    elseif subsystype == 3, %Digital IO
+       
+        xs = 700;
+        ys = 400;
+        xbase = 460;
+        ybase = 300;
+        % create second graph (yT Plot) ONLY
+       	subplot('position', [0.05 0.05 0.5 0.9])
+    	set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [0 0 0], 'ylim', [-0.1 1.1]);
+    	h = plot(0, 0);
+    	set(h, 'markersize', 3, 'tag', 'plotter', 'color', [0 1 0]);
+
+    end
+        
     set(gcf, 'position', [0.5*(sx - xs) 0.5*(sy - ys) xs ys], 'doublebuffer', 'on', 'tag', 'iotestfigure', 'numbertitle', 'off', 'name', 'I/O Test', 'menubar', 'none');
     set(gcf, 'closerequestfcn', 'set(findobj(''tag'', ''stopiotest''), ''userdata'', 2)');
-    subplot('position', [0.05 0.05 0.5 0.9])
-    set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [0 0 0], 'ylim', [-0.1 1.1]);
-    h = plot(0, 0);
-    set(h, 'markersize', 3, 'tag', 'plotter', 'color', [0 1 0]);
-    
-    fbg = [0.75 0.7 0.77];
-    xbase = 460;
-    ybase = 300;
+
+    % create the control label (start, stop, quit, and potentially others
+    fbg = [0.75 0.7 0.77];  % color of the control label
     uicontrol('style', 'frame', 'position', [xbase-30 10 250 380], 'backgroundcolor', get(gcf, 'color'));
     uicontrol('style', 'frame', 'position', [xbase-20 ybase 230 80], 'backgroundcolor', fbg);
     uicontrol('style', 'text', 'position', [xbase-10 ybase+50 210 20], 'string', sprintf('Testing: %s', DaqData.BoardName), 'backgroundcolor', fbg, 'fontsize', 10);
@@ -47,9 +123,9 @@ if isempty(fig),
         uicontrol('style', 'text', 'position', [xbase ybase+10 190 20], 'string', sprintf('Port: %i', DaqData.Port), 'backgroundcolor', fbg, 'fontsize', 10);
     end
     uicontrol('style', 'pushbutton', 'position', [xbase+35 260 120 30], 'string', 'Start Test', 'tag', 'startiotest', 'callback', 'iotest', 'userdata', 0);
-    uicontrol('style', 'pushbutton', 'position', [xbase+35 220 120 30], 'string', 'Stop Test', 'tag', 'stopiotest', 'callback', 'iotest');
+    uicontrol('style', 'pushbutton', 'position', [xbase+35 220 120 30], 'string', 'Stop Test', 'tag', 'stopiotest', 'callback', 'iotest', 'enable', 'off');
     uicontrol('style', 'pushbutton', 'position', [xbase+35 20 120 30], 'string', 'Reset DAQ & Quit', 'tag', 'closeiotest', 'callback', 'iotest');
-
+    
     numpoints = 200;
     if subsystype == 1, %Analog Input
 
@@ -127,32 +203,70 @@ elseif ismember(gcbo, get(fig, 'children')),
             TestData = get(findobj(gcf, 'tag', 'ioplot'), 'userdata');
             wform = TestData.WaveForm;
             h = findobj(gcf, 'tag', 'plotter');
-            
+         
             numpoints = 300;
-            set(h, 'xdata', 1:numpoints, 'ydata', zeros(1, numpoints));
-            data = zeros(1, numpoints);
+
             
             hstop = findobj(gcf, 'tag', 'stopiotest');
             set(hstop, 'userdata', 0);
-            
+            set(hstop, 'enable', 'on');
             set(gcbo, 'enable', 'off');
+            
             set(findobj(gcf, 'tag', 'startiotest'), 'userdata', 1);
             if TestData.SubSystemType == 1, %analog input
-                
-                set(gca, 'ylim', [-5 5]);
+             
+            	% initialize the vector that buffers analog input data
+                numchannels = length(DaqData.Channel);
+                data = zeros(numchannels, numpoints);
+                xyH = findobj(gcf, 'tag', 'plotterXY');
+            
                 daqreset;
                 ai = eval(DaqData.Constructor);
-                addchannel(ai, DaqData.Channel);
-                                
+
+                for channelNum=1:numchannels
+                    addchannel(ai, DaqData.Channel(channelNum));
+                end
+                
                 numloops = 10000;
                 i = 0;
                 set(ai, 'InputType', DaqData.InputType);
                 %set(ai,'BufferingConfig',[1 2000]);
                 while i < numloops,
                     i = i + 1;
-                    data(numpoints+1) = getsample(ai);
-                    data = data(2:numpoints+1);
-                    set(h, 'ydata', data);
+                    smp = getsample(ai);
+
+                    for channelNum=1:numchannels
+                        data(channelNum, numpoints+1) = smp(channelNum);
+                        data(channelNum,1:numpoints) = data(channelNum, 2:numpoints+1);
+                    end
+                    
+                    %x = [1:numpoints;1:numpoints];
+                    y = [];
+                    for channelNum=1:numchannels
+                        y = [y;data(channelNum,1:numpoints)];
+                    end
+                    
+                    %x = num2cell(x,2);% not needed if using the simple way
+                    y = num2cell(y,2);                  
+                    set(h,{'ydata'},y);                 % simple new way
+                    %set(h,{'xdata'},x,{'ydata'},y);    % complete new way
+                    %set(h, 'ydata', data(1,1:numpoints));% old way
+
+                    %plot vectors 1 and 2 in the XY graph
+                    if (numchannels < 2)
+                        
+                        point = repmat(data(1,numpoints), 1, numpoints);
+                        
+                        if (mod(DaqData.Channel(1), 2) == 1) % even
+                            set(xyH,'xdata',zeros(1,numpoints),'ydata',point); %plot as vertical
+                        else
+                            set(xyH,'xdata',point,'ydata',zeros(1,numpoints)); %plot as horizontal
+                        end
+                        
+                    else
+                    	set(xyH,'xdata',data(1,1:numpoints),'ydata',data(2,1:numpoints));
+                    end
+
                     stopval = get(hstop, 'userdata');
                     if stopval,
                         i = numloops + 1;
@@ -169,7 +283,10 @@ elseif ismember(gcbo, get(fig, 'children')),
                 
             elseif TestData.SubSystemType == 2, %analog output
                         
-                DaqData = get(gcf, 'userdata');
+             	set(h, 'xdata', 1:numpoints, 'ydata', zeros(1, numpoints));
+            	data = zeros(1, numpoints);
+
+				DaqData = get(gcf, 'userdata');
                 aoindx = get(findobj(gcf, 'tag', 'aolines'), 'value');
                 z = zeros(size(DaqData.Channels));
                 aolines = z;
@@ -212,7 +329,10 @@ elseif ismember(gcbo, get(fig, 'children')),
                 
             elseif TestData.SubSystemType == 3, %digital io
 
-                DaqData = get(gcf, 'userdata');
+                set(h, 'xdata', 1:numpoints, 'ydata', zeros(1, numpoints));
+           		data = zeros(1, numpoints);
+				
+				DaqData = get(gcf, 'userdata');
                 dioindx = get(findobj(gcf, 'tag', 'diolines'), 'value');
                 z = zeros(size(DaqData.Line))';
                 diolines = z;
@@ -259,7 +379,11 @@ elseif ismember(gcbo, get(fig, 'children')),
         case 'stopiotest',
             
             set(gcbo, 'userdata', 1);
-
+       
+            hstop = findobj(gcf, 'tag', 'startiotest');
+            set(hstop, 'enable', 'on');
+            set(gcbo, 'enable', 'off');
+            
         case 'pulseduration',
             
             str = get(gcbo, 'string');
