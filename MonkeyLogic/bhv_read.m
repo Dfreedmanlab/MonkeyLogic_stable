@@ -310,10 +310,10 @@ for trial = 1:BHV.NumTrials,
     BHV.ConditionNumber(trial, 1) = fread(fidbhv, 1, 'uint16');
     BHV.TrialError(trial, 1) = fread(fidbhv, 1, 'uint16');
 	if BHV.FileVersion >= 2.05,
-        BHV.CycleRate(trial, 1) = fread(fidbhv, 1, 'uint16');
+        BHV.MinCycleRate(trial, 1) = fread(fidbhv, 1, 'uint16');
 		if BHV.FileVersion >= 2.72
-			if BHV.CycleRate(trial, 1) > 0
-				BHV.MinCycleRate(trial, 1) = fread(fidbhv, 1, 'uint16');
+			if BHV.MinCycleRate(trial, 1) > 0
+				BHV.CycleRate(trial, 1) = fread(fidbhv, 1, 'uint16');
 			else
 				fprintf('Cycle rate on trial %i is 0.\n', trial);
 				BHV.MinCycleRate(trial, 1) = 0;
