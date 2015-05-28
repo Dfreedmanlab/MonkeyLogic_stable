@@ -11,8 +11,8 @@ function mlmenu(varargin)
 % Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 
-lastupdate = 'August 2014';
-currentversion = '8-20-2014 build 1.0.33';
+lastupdate = 'May 2015';
+currentversion = '5-28-2015 build 1.0.42';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),

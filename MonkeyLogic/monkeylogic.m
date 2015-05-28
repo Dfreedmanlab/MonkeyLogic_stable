@@ -1421,7 +1421,7 @@ varargout = {RESULT};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [firstbuffer, lastbuffer, vbuffer, vbufnum, xis, yis, xscreenpos, yscreenpos, numframes] = buf_mov(name, xpos, ypos, vbuffer, vbufnum, ScreenInfo, pre)
+function [firstbuffer, lastbuffer, vbuffer, vbufnum, xis, yis, xscreenpos, yscreenpos, numframes] = buf_mov(name, xpos, ypos, vbuffer, vbufnum, ScreenInfo, pre, gen)
 
 M = 0;
 xis = 0;
@@ -1431,7 +1431,38 @@ yisbuf = 0;
 numframes = 0;
 
 preprocessed = 0;
-if pre,
+
+if gen                          % what to do in case the movie to be buffered is a matrix, not a file
+    [~, xis, yis, xisbuf, yisbuf] = pad_image(name(:,:,:,1), ScreenInfo.ModVal, ScreenInfo.BackgroundColor);
+    numframes = size(name, 4);
+    M = uint32(zeros([xisbuf*yisbuf numframes]));
+
+    firstbuffer = vbufnum + 1;
+    for framenumber = 1:numframes,
+        [imdata, xis, yis, xisbuf, yisbuf] = pad_image(name(:,:,:,framenumber), ScreenInfo.ModVal, ScreenInfo.BackgroundColor);   %#ok<NASGU,NASGU>
+        imdata = double(imdata);
+        if ~any(imdata(:) > 1),
+            imdata = ceil(255*imdata);
+        end
+        imdata = uint32(xglrgb8(imdata(:, :, 1)', imdata(:, :, 2)', imdata(:, :, 3)'));
+        vbuf = mlvideo('createbuffer', ScreenInfo.Device, xisbuf, yisbuf, ScreenInfo.BytesPerPixel);
+        mlvideo('copybuffer', ScreenInfo.Device, vbuf, imdata, ScreenInfo.BackgroundColor);
+        vbufnum = vbufnum + 1;
+        vbuffer(vbufnum) = vbuf;
+    end
+    lastbuffer = vbufnum;
+    
+    xoffset = round(xis/2);
+    yoffset = round(yis/2);
+    xscreenpos = ScreenInfo.Half_xs + round(ScreenInfo.PixelsPerDegree * xpos) - xoffset;
+    yscreenpos = ScreenInfo.Half_ys - round(ScreenInfo.PixelsPerDegree * ypos) - yoffset; %invert so that positive y is above the horizone
+
+    if xscreenpos + xis > ScreenInfo.Xsize || yscreenpos + yis > ScreenInfo.Ysize || xscreenpos < 0 || yscreenpos < 0,
+        error('*** MonkeyLogic Error: Movie "%s" is placed outside of screen pixel boundaries', name);
+    end
+end
+     
+if pre && ~gen,
     [pname fname] = fileparts(name);
     file = [pname filesep fname '_preprocessed.mat'];
     if exist(file, 'file'),
@@ -1501,7 +1532,7 @@ if pre,
         end
     end
 end
-if ~preprocessed,
+if ~preprocessed && ~gen,
     file = name;
     if ischar(file), %file name
         if verLessThan('matlab', '8')
@@ -1580,7 +1611,7 @@ for cond = 1:length(Conditions)
                 xpos = C(obnum).Xpos;
                 ypos = C(obnum).Ypos;
 
-                [firstbuffer, lastbuffer, vbuffer, vbufnum, xis, yis, xscreenpos, yscreenpos, numframes] = buf_mov(C(obnum).Name, xpos, ypos, vbuffer, vbufnum, ScreenInfo, usepreprocessed);
+                [firstbuffer, lastbuffer, vbuffer, vbufnum, xis, yis, xscreenpos, yscreenpos, numframes] = buf_mov(C(obnum).Name, xpos, ypos, vbuffer, vbufnum, ScreenInfo, usepreprocessed, C(obnum).GenMov);
                 
                 rec = vbuffer(firstbuffer:lastbuffer);
                 vbufrecord{end+1,1} = C(obnum).Name; %#ok<AGROW>
@@ -1666,19 +1697,17 @@ vbuffer = zeros(10000, 1);
 vbufnum = 0;
 
 lc = length(C);
-TaskObject(1:lc) = struct('Class', '', 'Type', '', 'Modality', 0, 'XPos', [], 'YPos', [], 'Buffer', [], 'FrameOrder', [], 'FrameEvents', [], 'XsPos', [], 'YsPos', [], 'Xsize', [], 'Ysize', [], 'Status', 0, 'WaveForm', [], 'Freq', [], 'NBits', [], 'OutputPort', [], 'ControlObjectColor', [], 'Used', 0);
+TaskObject(1:lc) = struct('Class', '', 'Type', '', 'Modality', 0, 'XPos', [], 'YPos', [], 'Buffer', [], 'FrameOrder', [], 'FrameEvents', [], 'XsPos', [], 'YsPos', [], 'Xsize', [], 'Ysize', [], 'Status', 0, 'WaveForm', [], 'Freq', [], 'NBits', [], 'OutputPort', [], 'ControlObjectColor', [], 'Used', 0, 'GenMov', 0);
 StimulusInfo = cell(1,lc);
 
 usepreprocessed = ScreenInfo.UsePreProcessedImages;
 
-for obnum = 1:lc, %first check for user-generated images
+for obnum = 1:lc, %first check for user-generated images and movies
     imdata = [];
     MoreInfo = [];
     if strcmp(C(obnum).Type, 'gen')
-        [pname fname] = fileparts(C(obnum).FunctionName);
-		if ~exist(fname, 'file'),
-            prep_m_file(C(obnum).FunctionName, mldirectories);
-		end
+        [pname, fname] = fileparts(C(obnum).FunctionName); %#ok<ASGLU>
+        prep_m_file(C(obnum).FunctionName, mldirectories);
         
 		try
             needxy = isnan(C(obnum).Xpos) || isnan(C(obnum).Ypos);
@@ -1690,11 +1719,11 @@ for obnum = 1:lc, %first check for user-generated images
 			if nout == 1,
                 imdata = feval(fname, TrialRecord);
             elseif nout == 2,
-                [imdata MoreInfo] = feval(fname, TrialRecord);
+                [imdata, MoreInfo] = feval(fname, TrialRecord);
             elseif nout == 3,
-                [imdata xpos ypos] = feval(fname, TrialRecord);
+                [imdata, xpos, ypos] = feval(fname, TrialRecord);
             else
-                [imdata xpos ypos MoreInfo] = feval(fname, TrialRecord);
+                [imdata, xpos, ypos, MoreInfo] = feval(fname, TrialRecord);
 			end
 
             if needxy,
@@ -1731,9 +1760,12 @@ for obnum = 1:lc, %first check for user-generated images
         
 		if ndims(imdata) == 4 || ischar(imdata)	%movie
 			C(obnum).Type = 'mov';
+            if ndims(imdata) == 4               % generated movie
+                TaskObject(obnum).GenMov = 1;
+            end
 		elseif ndims(imdata) == 3 %RGB image
             C(obnum).Type = 'pic';
-		elseif ndims(imdata) == 2,
+		elseif ndims(imdata) == 2, %#ok<ISMAT>
             imdata = repmat(imdata, [1 1 3]); %grayscale image;
             C(obnum).Type = 'pic';
         else
@@ -1863,7 +1895,7 @@ for obnum = 1:lc, %first check for user-generated images
                 mov = C(obnum).Name;
             end
             
-            [firstbuffer, lastbuffer, vbuffer, vbufnum, xis, yis, xscreenpos, yscreenpos, numframes] = buf_mov(mov, xpos, ypos, vbuffer, vbufnum, ScreenInfo, usepreprocessed);
+            [firstbuffer, lastbuffer, vbuffer, vbufnum, xis, yis, xscreenpos, yscreenpos, numframes] = buf_mov(mov, xpos, ypos, vbuffer, vbufnum, ScreenInfo, usepreprocessed, TaskObject(obnum).GenMov);
 
             TaskObject(obnum).Class = 'Movie';
             TaskObject(obnum).Modality = 2; % movie

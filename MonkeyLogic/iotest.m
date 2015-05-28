@@ -6,6 +6,7 @@ function iotest(varargin)
 % Last Modified 2/27/2014 --ER (to display voltage in XY)
 % Last Modified 2/27/2014 --ER (to dynamically display 1:n channels as chosen by the user)
 % Last Modified 2/28/2014 --ER (to dynamically set the figure window's layout and data matrices based on the type of iotest being performed)
+% Last Modified 8/15/2014 --ER (added velocity plot)
 
 fig = findobj('tag', 'iotestfigure');
 if ~isempty(fig) && ~isempty(varargin),
@@ -58,24 +59,27 @@ if isempty(fig),
             y = [y;w];
         end
 
+		% this doubles the size of the arrays to add a velocity channel for each position channel
+        x = [x;x];
+        y = [y;y];
         % create first graph (XY Plot)
         subplot('position', [0.03 0.06 0.33 0.85], 'YGrid','on', 'XGrid','on')
-        set(gca, 'xlim', [-6 6]);% add an extra volt of space
-        set(gca, 'ylim', [-5 6]);% add an extra volt of space
+        set(gca, 'xlim', [-10 10]);
+        set(gca, 'ylim', [-10 10]);
         %xlabel(gca, 'Channel 0 Volts');
         %ylabel(gca, 'Channel 1 Volts ');
-        title(gca, 'Voltage XY') 
+        title(gca, 'Voltage (XY)') 
         set(gca, 'nextplot', 'add', 'tag', 'ioplotXY', 'color', [0.2 0.2 0.2]);
         xyData = line(x', y'); %notice that the transpose is critical
         set(xyData, 'markersize', 3, 'tag', 'plotterXY', 'color', [0 1 0]);
 
         % create second graph (yT Plot)
         subplot('position', [0.37 0.06 0.33 0.85], 'YGrid','on');
-        set(gca, 'ylim', [-6 6]);  % add an extra volt of space
+        set(gca, 'ylim', [-10 10]);  % add an extra volt of space
         set(gca,'yaxislocation','right');
         xlabel(gca, 'samples');
         ylabel(gca, 'volts');
-        title(gca, 'Voltage Change (yT)') 
+        title(gca, 'Voltage (yT)') 
         set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [0.2 0.2 0.2]);
         h = line(x', y'); %notice that the transpose is critical
         %forces all channels to be plotted in the same green color.
@@ -114,22 +118,23 @@ if isempty(fig),
     % create the control label (start, stop, quit, and potentially others
     fbg = [0.75 0.7 0.77];  % color of the control label
     uicontrol('style', 'frame', 'position', [xbase-30 10 250 380], 'backgroundcolor', get(gcf, 'color'));
-    uicontrol('style', 'frame', 'position', [xbase-20 ybase 230 80], 'backgroundcolor', fbg);
+    uicontrol('style', 'frame', 'position', [xbase-20 ybase-80 230 160], 'backgroundcolor', fbg);
     uicontrol('style', 'text', 'position', [xbase-10 ybase+50 210 20], 'string', sprintf('Testing: %s', DaqData.BoardName), 'backgroundcolor', fbg, 'fontsize', 10);
     uicontrol('style', 'text', 'position', [xbase ybase+30 190 21], 'string', sprintf('Subsystem: %s', subsystypes{subsystype}), 'backgroundcolor', fbg, 'fontsize', 10);
     if isfield(DaqData, 'Channel'),
-        uicontrol('style', 'text', 'position', [xbase ybase+10 190 20], 'string', sprintf('Channel: %i', DaqData.Channel), 'backgroundcolor', fbg, 'fontsize', 10, 'tag', 'channelheader');
+        uicontrol('style', 'text', 'position', [xbase ybase+10-80 190 120], 'string', sprintf('Analog Input Channel: %i\n', DaqData.Channel), 'backgroundcolor', fbg, 'fontsize', 10, 'tag', 'channelheader');
     else
-        uicontrol('style', 'text', 'position', [xbase ybase+10 190 20], 'string', sprintf('Port: %i', DaqData.Port), 'backgroundcolor', fbg, 'fontsize', 10);
+        uicontrol('style', 'text', 'position', [xbase ybase+10-80 190 120], 'string', sprintf('Port: %i', DaqData.Port), 'backgroundcolor', fbg, 'fontsize', 10);
     end
-    uicontrol('style', 'pushbutton', 'position', [xbase+35 260 120 30], 'string', 'Start Test', 'tag', 'startiotest', 'callback', 'iotest', 'userdata', 0);
-    uicontrol('style', 'pushbutton', 'position', [xbase+35 220 120 30], 'string', 'Stop Test', 'tag', 'stopiotest', 'callback', 'iotest', 'enable', 'off');
+    uicontrol('style', 'pushbutton', 'position', [xbase+35 160 120 30], 'string', 'Start Test', 'tag', 'startiotest', 'callback', 'iotest', 'userdata', 0);
+    uicontrol('style', 'pushbutton', 'position', [xbase+35 120 120 30], 'string', 'Stop Test', 'tag', 'stopiotest', 'callback', 'iotest', 'enable', 'off');
     uicontrol('style', 'pushbutton', 'position', [xbase+35 20 120 30], 'string', 'Reset DAQ & Quit', 'tag', 'closeiotest', 'callback', 'iotest');
     
     numpoints = 200;
     if subsystype == 1, %Analog Input
 
         wform = [];
+        uicontrol('style', 'pushbutton', 'position', [xbase+35 80 120 30], 'string', 'Show Velocity', 'tag', 'showvelocity', 'callback', 'iotest', 'enable', 'off');
         
     elseif subsystype == 2, %Analog Output
 
@@ -215,6 +220,9 @@ elseif ismember(gcbo, get(fig, 'children')),
             set(findobj(gcf, 'tag', 'startiotest'), 'userdata', 1);
             if TestData.SubSystemType == 1, %analog input
              
+                hvelocity = findobj(gcf, 'tag', 'showvelocity');
+                set(hvelocity, 'enable', 'on');
+                set(hvelocity, 'userdata', 0);
             	% initialize the vector that buffers analog input data
                 numchannels = length(DaqData.Channel);
                 data = zeros(numchannels, numpoints);
@@ -227,7 +235,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                     addchannel(ai, DaqData.Channel(channelNum));
                 end
                 
-                numloops = 10000;
+                numloops = 30000;
                 i = 0;
                 set(ai, 'InputType', DaqData.InputType);
                 %set(ai,'BufferingConfig',[1 2000]);
@@ -242,13 +250,40 @@ elseif ismember(gcbo, get(fig, 'children')),
                     
                     %x = [1:numpoints;1:numpoints];
                     y = [];
+                    yCopy = [];
+                    yVelocity = [];
                     for channelNum=1:numchannels
                         y = [y;data(channelNum,1:numpoints)];
                     end
                     
+                    yCopy = y;
+                    
+                    for channelNum=1:numchannels
+                        yVelocity = [yVelocity; diff(yCopy(channelNum, :))];
+                    end
+
+                    %MAKE SAME LENGTH
+                    yVelocity(channelNum, end+1) = 0; 
+                    
+
+                    windowSize = 5;
+                    yVelocity = filter(ones(1,windowSize)/windowSize,1,yVelocity);
+                    yVelocity = yVelocity.*3;
+
+                    if (get(hvelocity, 'userdata') == 1) 
+                        yTData = [y; yVelocity];
+                    else
+                        yTData = [y; y];
+                    end
+
+                    
+
                     %x = num2cell(x,2);% not needed if using the simple way
+                    yTData = num2cell(yTData,2);                  
                     y = num2cell(y,2);                  
-                    set(h,{'ydata'},y);                 % simple new way
+                    yVelocity = num2cell(yVelocity,2);                  
+                    
+                    set(h,{'ydata'},yTData);         % simple new way
                     %set(h,{'xdata'},x,{'ydata'},y);    % complete new way
                     %set(h, 'ydata', data(1,1:numpoints));% old way
 
@@ -375,7 +410,13 @@ elseif ismember(gcbo, get(fig, 'children')),
                         
             set(findobj(gcf, 'tag', 'startiotest'), 'userdata', 0);
             set(gcbo, 'enable', 'on');
-            
+        case 'showvelocity',
+            hvelocity = findobj(gcf, 'tag', 'showvelocity');
+            if (get(hvelocity, 'userdata') == 0)
+                set(hvelocity, 'userdata', 1);
+            else 
+                set(hvelocity, 'userdata', 0);
+            end
         case 'stopiotest',
             
             set(gcbo, 'userdata', 1);
@@ -383,7 +424,11 @@ elseif ismember(gcbo, get(fig, 'children')),
             hstop = findobj(gcf, 'tag', 'startiotest');
             set(hstop, 'enable', 'on');
             set(gcbo, 'enable', 'off');
-            
+
+            hvelocity = findobj(gcf, 'tag', 'showvelocity');
+            set(hvelocity, 'enable', 'off');
+            set(hvelocity, 'userdata', 0);
+
         case 'pulseduration',
             
             str = get(gcbo, 'string');
