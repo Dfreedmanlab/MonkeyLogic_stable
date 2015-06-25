@@ -78,7 +78,7 @@ for adaptornum = 1:length(adaptors),
                     end
                 end
             else
-                AdaptorInfo(totalboards).Name = sprintf('%s (Not Supported)', adaptors{adaptornum});
+                AdaptorInfo(totalboards).Name = sprintf('%s (DAQ Device Not Supported)', adaptors{adaptornum});
                 AdaptorInfo(totalboards).SubSystemsConstructors = {''};
                 AdaptorInfo(totalboards).SubSystemsNames = {''};
                 AdaptorInfo(totalboards).AvailableChannels = {[]};
