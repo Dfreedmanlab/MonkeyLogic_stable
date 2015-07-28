@@ -473,7 +473,7 @@ ScreenInfo.BytesPerPixel = 4;
 ScreenInfo.Half_xs = round(xs/2);
 ScreenInfo.Half_ys = round(ys/2);
 
-disp(sprintf('<<< MonkeyLogic >>> Starting up video...'))
+disp(sprintf('<<< MonkeyLogic >>> Video graphics initialization started...'))
 ScreenInfo = init_video(ScreenInfo);
 if ~ScreenInfo.IsActive,
     error_escape(ScreenInfo, DaqInfo, fidbhv);
@@ -481,7 +481,7 @@ if ~ScreenInfo.IsActive,
     save(errorfile);
     error('*** Video Initialization Error ***')
 end
-disp(sprintf('<<< MonkeyLogic >>> Successfully initialized video.'))
+disp(sprintf('<<< MonkeyLogic >>> Video graphics initialization completed.'))
 
 % per MS: calculate video frame length for use with movies...
 disp(sprintf('<<< MonkeyLogic >>> Calculating video frame length...'))

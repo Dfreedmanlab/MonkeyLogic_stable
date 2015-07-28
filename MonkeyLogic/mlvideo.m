@@ -89,7 +89,9 @@ switch fxn
         end
 
     case 'init',
-        
+
+        disp('<<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...')
+
         xglrelease;
         xglinit;
         
