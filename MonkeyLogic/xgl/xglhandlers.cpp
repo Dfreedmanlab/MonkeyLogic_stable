@@ -1070,3 +1070,27 @@ void xgltext (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         ReportErrorAndExit (e);
     }
 }
+
+void xglmouse_l_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+{
+    const int dims[2] = { 1, 4 };
+    plhs[0] = mxCreateNumericArray (2, dims, mxDOUBLE_CLASS, mxREAL);
+    double *p = mxGetPr (plhs[0]);
+    p[0] = GetKeyState(VK_LBUTTON);
+    p[1] = GetKeyState(VK_RBUTTON);
+    p[2] = 3;
+    p[3] = 4;
+    
+}
+
+void xglmouse_r_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+{
+    const int dims[2] = { 1, 4 };
+    plhs[0] = mxCreateNumericArray (2, dims, mxDOUBLE_CLASS, mxREAL);
+    double *p = mxGetPr (plhs[0]);
+    p[0] = GetKeyState(VK_RBUTTON);
+    p[1] = 2;
+    p[2] = 3;
+    p[3] = 4;
+	
+}

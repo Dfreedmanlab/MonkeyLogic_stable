@@ -520,3 +520,11 @@ function xgltext(double,double,char)
 %
 % See also XGLSETFONT, XGLSETPOINTSIZE, XGLTEXTWIDTH
 end
+
+function xglmouse_l_buttonstate(double,double,char)
+
+end
+
+function xglmouse_r_buttonstate(double,double,char)
+
+end

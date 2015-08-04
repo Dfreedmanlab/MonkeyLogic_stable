@@ -10,7 +10,7 @@
 %     case 'mexw64'
     archdir='x64';
 %     case 'mexw32'
-%     archdir='x86';
+%    archdir='x86';
 %     otherwise
 %     error('Unknown architecture');
 % end
