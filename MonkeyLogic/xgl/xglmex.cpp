@@ -1308,22 +1308,13 @@ void xgltext_mexgen (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // Check output types
 }
 
-void xglmouse_l_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
+void xglmouse_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
 
-void xglmouse_l_buttonstate_mexgen (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+void xglmouse_buttonstate_mexgen (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    xglmouse_l_buttonstate (nlhs, plhs, nrhs, prhs);
+    xglmouse_buttonstate (nlhs, plhs, nrhs, prhs);
 
 	// Check output types
-}
-
-void xglmouse_r_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
-
-void xglmouse_r_buttonstate_mexgen (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
-    xglmouse_r_buttonstate (nlhs, plhs, nrhs, prhs);
-
-    // Check output types
 }
 
 typedef void (*MEXFUNCTION) (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
@@ -1375,8 +1366,7 @@ MEXFUNCTION functions[] =
     xgltextwidth_mexgen,
     xgltextheight_mexgen,
     xgltext_mexgen,
-	xglmouse_l_buttonstate_mexgen,
-	xglmouse_r_buttonstate_mexgen,
+	xglmouse_buttonstate_mexgen,
 };
 
 static const int MAX_FUNCTIONS = sizeof (functions) / sizeof (void (*) ());

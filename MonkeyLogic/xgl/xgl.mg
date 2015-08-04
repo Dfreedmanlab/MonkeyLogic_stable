@@ -521,10 +521,12 @@ function xgltext(double,double,char)
 % See also XGLSETFONT, XGLSETPOINTSIZE, XGLTEXTWIDTH
 end
 
-function xglmouse_l_buttonstate(double,double,char)
-
-end
-
-function xglmouse_r_buttonstate(double,double,char)
-
+function xglmouse_buttonstate()
+% XGLMOUSE_BUTTONSTATE   returns the state of the mouse buttons
+%
+% 0 left mouse button is up
+% 1 left mouse button is down
+% 0 right mouse button is up
+% 1 right mouse button is down
+%
 end

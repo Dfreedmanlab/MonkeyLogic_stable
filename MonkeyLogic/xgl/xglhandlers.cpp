@@ -1071,26 +1071,35 @@ void xgltext (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 }
 
-void xglmouse_l_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+void xglmouse_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    const int dims[2] = { 1, 4 };
-    plhs[0] = mxCreateNumericArray (2, dims, mxDOUBLE_CLASS, mxREAL);
-    double *p = mxGetPr (plhs[0]);
-    p[0] = GetKeyState(VK_LBUTTON);
-    p[1] = GetKeyState(VK_RBUTTON);
-    p[2] = 3;
-    p[3] = 4;
-    
-}
+	int returnStateLeft = 0;
+	int returnStateRight = 0;
 
-void xglmouse_r_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
+	if (!(GetAsyncKeyState (VK_LBUTTON) & 0x8000))
+	{
+		//cout << "Line " << line++ << ": " << "Left Mouse Up " << endl;
+		returnStateLeft = 0;
+	} else {
+		//cout << "Line " << line++ << ": " << "Left Mouse Down " << endl;;
+		returnStateLeft = 1;
+	}
+
+	if (!(GetAsyncKeyState (VK_RBUTTON) & 0x8000))
+	{
+		//cout << "Line " << line++ << ": " << "Right Mouse Up " << endl;;
+		returnStateRight = 0;
+	} else {
+		//cout << "Line " << line++ << ": " << "Right Mouse Down " << endl;;
+		returnStateRight = 1;
+	}
+
     const int dims[2] = { 1, 4 };
     plhs[0] = mxCreateNumericArray (2, dims, mxDOUBLE_CLASS, mxREAL);
     double *p = mxGetPr (plhs[0]);
-    p[0] = GetKeyState(VK_RBUTTON);
-    p[1] = 2;
-    p[2] = 3;
-    p[3] = 4;
-	
+    p[0] = returnStateLeft;
+    p[1] = returnStateRight;
+    p[2] = 0; // reserved for future use
+    p[3] = 0; // reserved for future use
+    
 }
