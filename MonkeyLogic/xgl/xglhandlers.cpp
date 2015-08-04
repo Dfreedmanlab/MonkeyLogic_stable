@@ -313,7 +313,7 @@ void xglrect (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     double *p = mxGetPr (prhs[0]);
 
-    unsigned x, y, w, h;
+    int x, y, w, h;
 
     try
     {

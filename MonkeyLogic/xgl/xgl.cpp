@@ -64,7 +64,7 @@ std::string Session::GetDeviceInfo (unsigned d)
     return s;
 }
 
-void Session::GetScreenRect (unsigned d, unsigned *x, unsigned *y, unsigned *w, unsigned *h)
+void Session::GetScreenRect (unsigned d, int *x, int *y, int *w, int *h)
 {
     CheckDeviceNumber (d);
     HMONITOR hm = d3d->GetAdapterMonitor (d);
@@ -1210,7 +1210,7 @@ std::string Session::GetDeviceInfo (unsigned d)
     return s;
 }
 
-void Session::GetScreenRect (unsigned d, unsigned *x, unsigned *y, unsigned *w, unsigned *h)
+void Session::GetScreenRect (int d, int *x, int *y, int *w, int *h)
 {
     CheckDeviceNumber (d);
     *x = 0;
