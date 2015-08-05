@@ -485,7 +485,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                     [xp yp] = tformfwd(SigTransform, xv, yv);
                     set(xy, 'xdata', xp, 'ydata', yp);
                     if (refresh_time == 200)
-                        xystr = sprintf('Current Input: X= %2.1f V   Y= %2.1f V', xp, yp);
+                        xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xp, yp);
                         set(findobj(gcf, 'tag', 'xytxt_real_time'), 'string', xystr);
                         refresh_time = 0;
                     else 
