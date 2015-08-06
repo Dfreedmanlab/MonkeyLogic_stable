@@ -225,7 +225,7 @@ switch fxn
 		result = xglgetcursor;
 
     case 'getmousebuttons'
-		result = xglmouse_buttonstate;		
+		result = xglgetcursor_buttonstate;		
 	
     case 'setmouse'
 		P = varargin{1};

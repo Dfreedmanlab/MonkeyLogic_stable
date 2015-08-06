@@ -1,4 +1,4 @@
-function [lhs1] = xglmouse_buttonstate ()
+function [lhs1] = xglgetcursor_buttonstate ()
 % XGLMOUSE_BUTTONSTATE   
 %
 % XGLMOUSE_BUTTONSTATE() returns the state of the left and right mouse

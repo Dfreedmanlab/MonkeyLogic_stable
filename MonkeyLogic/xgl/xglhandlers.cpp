@@ -1071,7 +1071,7 @@ void xgltext (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 }
 
-void xglmouse_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+void xglgetcursor_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
 	int returnStateLeft = 0;
 	int returnStateRight = 0;
