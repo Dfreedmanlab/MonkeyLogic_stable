@@ -1,9 +1,9 @@
 % XGL Toolbox
 %
-% Version 1.1
-% Thu, Nov 07, 2013  8:06:03 AM
+% Version 1.2
+% Mon, Sep 21, 2015  5:00:00 PM
 %
-% Copyright (C) 2013
+% Copyright (C) 2015
 % Jeffrey S. Perry
 % Wilson S. Geisler
 % Center for Perceptual Systems
@@ -69,3 +69,4 @@
 % jsp Mon Oct 17 15:29:25 CDT 2005 Updated
 % jsp Thu Oct 19 11:25:03 CDT 2006 Updated
 % jsp Thu Nov 07  8:06:39 CDT 2013 Updated
+% er Mon Sep 21  5:10:00 EST 2015 Updated

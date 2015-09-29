@@ -50,6 +50,7 @@ else
 end
 
 fid = fopen(txtfile);
+disp(sprintf('<<< MonkeyLogic >>> Loading conditions file', txtfile));
 if fid < 1,
     cerror = 'Unable to open Conditions file';
     return

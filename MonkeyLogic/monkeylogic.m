@@ -227,7 +227,7 @@ else %standard task-loop (using a conditions text file and timing files, etc)
     if numtfiles == 1,
         disp('<<< MonkeyLogic >>> Successfully created the run-time function from the timing script');
     else
-        disp(sprintf('<<< MonkeyLogic >>> Successfully created %i run-time functions from %i timing scripts...', numtfiles, numtfiles));
+        fprintf('<<< MonkeyLogic >>> Successfully created %i run-time functions from %i timing scripts...\n', numtfiles, numtfiles);
     end
     drawnow;
 
@@ -383,7 +383,7 @@ if fidbhv == -1,
     error('*** Unable to open data file: %s ***', datafile);
 end
 bhv_write(1, fidbhv, MLConfig, condfile, RunTimeFiles, Conditions, MLConfig.EyeTransform, MLConfig.JoyTransform);
-disp(sprintf('<<< MonkeyLogic >>> Initialized data file %s...', datafile));
+fprintf('<<< MonkeyLogic >>> Initialized data file %s...\n', datafile);
 MLConfig.DataFile = datafile;
 
 % Set up subject screen parameters
@@ -444,7 +444,7 @@ set(findobj(ScreenInfo.ControlScreenHandle, 'tag', 'conderrors'), 'userdata', bl
 drawnow;
 
 % Initialize I/O
-disp(sprintf('<<< MonkeyLogic >>> Starting up DAQ...'))
+disp('<<< MonkeyLogic >>> Starting up DAQ...')
 [DaqInfo DaqError] = initio(MLConfig.InputOutput);
 if ~isempty(DaqError),
     daqreset;
@@ -473,7 +473,8 @@ ScreenInfo.BytesPerPixel = 4;
 ScreenInfo.Half_xs = round(xs/2);
 ScreenInfo.Half_ys = round(ys/2);
 
-disp(sprintf('<<< MonkeyLogic >>> Video graphics initialization started...'))
+disp('<<< MonkeyLogic >>> Video graphics initialization started...');
+
 ScreenInfo = init_video(ScreenInfo);
 if ~ScreenInfo.IsActive,
     error_escape(ScreenInfo, DaqInfo, fidbhv);
@@ -481,10 +482,10 @@ if ~ScreenInfo.IsActive,
     save(errorfile);
     error('*** Video Initialization Error ***')
 end
-disp(sprintf('<<< MonkeyLogic >>> Video graphics initialization completed.'))
+disp('<<< MonkeyLogic >>> Video graphics initialization completed.')
 
 % per MS: calculate video frame length for use with movies...
-disp(sprintf('<<< MonkeyLogic >>> Calculating video frame length...'))
+disp('<<< MonkeyLogic >>> Calculating video frame length...')
 numframes = 10;
 flength = zeros(numframes, 2);
 k = 1000;
@@ -538,7 +539,7 @@ TempScreenInfo = ScreenInfo;
 %TempScreenInfo.BackgroundColor = [0 0 0];
 trialtype = 1;
 
-fprintf('<<< MonkeyLogic >>> Starting initialization trial...\n');
+fprintf('<<< MonkeyLogic >>> Initialization trial starting...\n');
 
 disable_cursor;
 disable_syskeys;
@@ -2705,7 +2706,9 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','custom');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory);
+disp(message);
+system(message);
 
 %%
 function enable_cursor
@@ -2718,7 +2721,9 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','arrow');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+disp(message);
+system(message);
 
 %%
 function disable_clicks %#ok<DEFNU>
@@ -2727,7 +2732,9 @@ if MLHELPER_OFF,
     return
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --clicks-disable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --clicks-disable',dirs.BaseDirectory);
+disp(message);
+system(message);
 
 %%
 function enable_clicks
@@ -2736,7 +2743,9 @@ if MLHELPER_OFF,
     return
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --clicks-enable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --clicks-enable',dirs.BaseDirectory);
+disp(message);
+system(message);
 
 %%
 function disable_syskeys
