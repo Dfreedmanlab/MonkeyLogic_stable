@@ -221,9 +221,24 @@ switch fxn
         end
         xglrelease;
 		
-	case 'getmouse'
+	case 'getmouse_pix'
 		result = xglgetcursor;
 
+	case 'getmouse'
+		pos = xglgetcursor;
+        
+        screen_ppd  = 48.7900;  % warning this needs to be updated with a dynamic value
+
+        xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+
+        obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
+        obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
+        obj.sub_ppd_x = screen_ppd;
+        obj.sub_ppd_y = screen_ppd;
+        
+        result(1) =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
+        result(2) = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
+        
     case 'getmousebuttons'
 		result = xglgetcursor_buttonstate;		
 	
