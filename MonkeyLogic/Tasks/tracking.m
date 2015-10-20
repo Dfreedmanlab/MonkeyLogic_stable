@@ -11,11 +11,36 @@
 a = MouseTracker(ScreenInfo);
 
 scene_timer = tic;
-while toc(scene_timer) < 10
-    toggleobject(5, 'Status', 'on');
-    toggleobject(6, 'Status', 'on');
+attempt = 1;
 
+while toc(scene_timer) < 10
+    % These are the steady state targets
+    toggleobject([5 6], 'Status', 'on');
+
+    %ScreenInfo.PixelsPerDegree;
     
+    %[x y] = eye_position();
+    
+    %disp(sprintf('%0.2f %0.2f', x, y));
+    
+    ontarget5 = 0;
+    ontarget6 = 0;
+    ontarget5 = eyejoytrack('acquirefix', 5, 3, 500);
+    ontarget6 = eyejoytrack('acquirefix', 6, 3, 500);
+
+    disp(sprintf('%i %0.2f %0.2f', attempt, ontarget5, ontarget6));
+    attempt = attempt + 1;
+
+    if (ontarget5)
+        toggleobject(5);
+    end
+    
+    if (ontarget6)
+        toggleobject(6);
+    end
+    
+    % Below are the targest that are changing location to indicate the
+    % location of the cursor
     [x1,y1,left_button,right_button] = a.GetCursorPos('control');  % red
     reposition_object(1,x1,y1);  %x1 and %y1 are in DVA (degrees of visual angle, not pixels)
     reposition_object(2,x1,y1);  %x1 and %y1 are in DVA (degrees of visual angle, not pixels)
