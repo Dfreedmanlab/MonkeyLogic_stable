@@ -2186,7 +2186,7 @@ function ScreenInfo = init_video(ScreenInfo)
 
 ScreenInfo.IsActive = 0;
 try
-    mlvideo('init');
+    mlvideo('init', ScreenInfo.PixelsPerDegree);
     mlvideo('initdevice', ScreenInfo.Device);
     mlvideo('setmode', ScreenInfo.Device, ScreenInfo.Xsize, ScreenInfo.Ysize, ScreenInfo.BytesPerPixel, ScreenInfo.RefreshRate, ScreenInfo.BufferPages);
     pause(1);
