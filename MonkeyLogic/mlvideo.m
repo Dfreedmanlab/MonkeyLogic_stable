@@ -40,6 +40,11 @@ function result = mlvideo(fxn, varargin)
 
 result = [];
 fxn = lower(fxn);
+
+global x_touch;
+global y_touch;
+global screen_ppd;
+
 switch fxn
             
     case 'waitflip',
@@ -95,6 +100,14 @@ switch fxn
         xglrelease;
         xglinit;
         
+        x_touch = -180;
+        y_touch = -180;
+        if (isempty(varargin))
+            screen_ppd = 0;
+        else
+            screen_ppd = varargin{1};
+        end
+        
     case 'devices',
         
         result = xgldevices;
@@ -137,6 +150,8 @@ switch fxn
     case 'release',
         
         xglrelease;
+        x_touch = -180;
+        y_touch = -180;
         
     case 'createbuffer',
         
@@ -221,14 +236,15 @@ switch fxn
         end
         xglrelease;
 		
-	case 'getmouse_pix'
+    case 'getmousebuttons'
+		result = xglgetcursor_buttonstate;		
+    
+    case 'getmouse_pix'
 		result = xglgetcursor;
 
 	case 'getmouse'
 		pos = xglgetcursor;
         
-        screen_ppd  = 48.7900;  % warning this needs to be updated with a dynamic value
-
         xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
 
         obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
@@ -239,9 +255,31 @@ switch fxn
         result(1) =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
         result(2) = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
         
-    case 'getmousebuttons'
-		result = xglgetcursor_buttonstate;		
-	
+    case 'gettouch'
+		pos = xglgetcursor;
+        
+        xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+
+        obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
+        obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
+        obj.sub_ppd_x = screen_ppd;
+        obj.sub_ppd_y = screen_ppd;
+        
+        mouse_state = mlvideo('getmousebuttons');   % get Button State
+        left_button = mouse_state(1);               % get Button State Left
+        right_button = mouse_state(2);              % get Button State Right
+
+        if ( (left_button == 1) || (right_button == 1) ) % update touch location if left mouse button is down
+            x_touch =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
+            y_touch = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
+        else 
+            x_touch = -180; %out of bounds
+            y_touch = -180; %out of bounds
+        end
+        
+        result(1) = x_touch;
+        result(2) = y_touch;
+        
     case 'setmouse'
 		P = varargin{1};
 		xglsetcursor(P);
