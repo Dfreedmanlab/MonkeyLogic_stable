@@ -102,9 +102,7 @@ switch fxn
         
         x_touch = -180;
         y_touch = -180;
-        if (isempty(varargin))
-            screen_ppd = 0;
-        else
+        if (~isempty(varargin))
             screen_ppd = varargin{1};
         end
         
