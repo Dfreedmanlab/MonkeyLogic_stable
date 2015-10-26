@@ -18,7 +18,7 @@
 
 scene_timer = tic;
 windowSize = 1.5; % in degrees of visual angle (DVA)
-fixDuration = 50; % duration in milliseconds to test for a touch/fixation
+fixDuration = 10; % duration in milliseconds to test for a touch/fixation
    
 touchLocationNotFilled      = 1;
 touchLocationFilled         = 2;
@@ -43,11 +43,10 @@ while toc(scene_timer) < 10
     reposition_object(touchLocationFilled,x,y);     %x and %y are in DVA (degrees of visual angle, not pixels)
     toggleobject(touchLocationNotFilled, 'Status', 'on');
    
-%{
     ontargetCursor          = eyejoytrack('acquirefix', touchLocationNotFilled,     windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
     ontargetLeftTarget      = eyejoytrack('acquirefix', touchTargetLeftNotFilled,   windowSize, fixDuration);   % it does not matter if you track the filled or not filled target since they overlap eachother in space
     ontargetRightTarget     = eyejoytrack('acquirefix', touchTargetRightNotFilled,  windowSize, fixDuration);  % it does not matter if you track the filled or not filled target since they overlap eachother in space
-%}
+
     if (ontargetCursor)
        toggleobject(touchLocationNotFilled, 'Status', 'off');
        toggleobject(touchLocationFilled, 'Status', 'on');
@@ -55,7 +54,6 @@ while toc(scene_timer) < 10
        toggleobject(touchLocationNotFilled, 'Status', 'on');
        toggleobject(touchLocationFilled, 'Status', 'off');
     end
-
 
     if (ontargetLeftTarget)
        toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
