@@ -10,9 +10,10 @@ function mlmenu(varargin)
 % Modified 2/01/12 -WA (to remove overwrite_hardware_cfg subfunction - had broken the ability to write new cfg files when none present)
 % Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
+% Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'May 2015';
-currentversion = '5-28-2015 build 1.0.42';
+lastupdate = 'October 2015';
+currentversion = '10-26-2015 build 1.0.63';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -147,7 +148,7 @@ if isempty(mlf),
     set(gcf, 'closerequestfcn', 'mlmenu; delete(get(0, ''userdata'')); set(0, ''userdata'', ''''); disp(''Closed MonkeyLogic.'')');
     
     mlvideo('mlinit');
-    disp('<<< MonkeyLogic >>> Initialized DirectX / OpenGL interface...')
+    disp('<<< MonkeyLogic >>> Initialized ML Video Graphics interface...')
     
     ybase = 550;
     uicontrol('style', 'frame', 'position', [10 ybase+22 280 80], 'backgroundcolor', 0.85*figbg, 'foregroundcolor', 0.6*figbg);

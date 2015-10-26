@@ -113,7 +113,7 @@ ScreenX = validxsize(resval);
 ScreenY = validysize(resval);
 
 try
-	mlvideo('init');
+	mlvideo('init', MLConfig.PixelsPerDegree);
 	mlvideo('initdevice', videodevice);
 	mlvideo('setmode', videodevice, ScreenX, ScreenY, bytesperpixel, refreshrate, bufferpages);
 	mlvideo('showcursor', videodevice, 0);

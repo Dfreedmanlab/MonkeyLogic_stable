@@ -21,6 +21,9 @@ global SIMULATION_MODE
 % displayed twice)
 % modified 3/18/13 -DF (set_object_path bug fix)
 % modified 3/28/13 -DF (ttl bug fix/ modify/improve toggleobject)
+% modified 10/20/15 -ER (initial changes to add a touchscreen and mouse tracking controller)
+
+%disp('trialholder starting');
 
 Codes = []; %#ok<NASGU>
 rt = NaN; %#ok<NASGU>
@@ -636,6 +639,8 @@ t1 = trialtime;
 ontarget = 0;
 rt = NaN;
 
+%disp('eyejoytrack() is tracking');
+
 if fxn1 == -1,
     ejt_totaltime = 0;
     min_cyclerate = Inf;
@@ -710,7 +715,9 @@ if fxn1 == -1,
     count = 0;
     if joypresent || eyepresent,
         while isempty(data) && count < 1000,
-            data = getsample(DAQ.AnalogInput);
+            %data = getsample(DAQ.AnalogInput);
+            data = mlvideo('getmouse');
+            %disp('eyejoytrack() data = getsample(DAQ.AnalogInput)');
             count = count + 1;
         end
         if isempty(data),
@@ -1016,8 +1023,13 @@ if ~idle,
     if eyetrack,
         numeyeobjects = length(eyeobject);
         eyestatus = 0;
-        ex = {eyeobject.XPos}';
-        ey = {eyeobject.YPos}';
+        %ex = {eyeobject.XPos}';
+        %ey = {eyeobject.YPos}';
+        data = mlvideo('getmouse');
+        ex = data(1);
+        ey = data(2);
+        %disp('~idle, eyetrack');
+
         eyetarget_index = eyetarget_index + 1;
         eyetarget_record{eyetarget_index} = [ex ey];
         esize = num2cell(2*eyerad*ScreenData.PixelsPerDegree*ScreenData.ControlScreenRatio(1)/ScreenData.PixelsPerPoint);
@@ -1081,20 +1093,35 @@ while t2 < maxtime,
     totalsamples = totalsamples + 1;
 	if ~isempty(AI),
         data = getsample(AI);
+        %disp('eyejoytrack() data = getsample(AI) 1');
 	end
 	if eyepresent,
         if SIMULATION_MODE,
             sim_vals = simulation_positions(0);
             xp_eye = sim_vals(3);
             yp_eye = sim_vals(4);
+            %disp('eyejoytrack() data = getsample(AI) 1 SIMULATION MODE');
         else
-            xp_eye = data(eyex);
-            yp_eye = data(eyey);
+			%original code below
+            %xp_eye = data(eyex);
+            %yp_eye = data(eyey);
+            %message = sprintf('getsample(AI) %0.2f v, %0.2f v', xp_eye, yp_eye);
+            %disp(message);
+            
+       		%new code to get touchscreen data, but notice I insert it into the eye data stream for now
+           %mouse_data = mlvideo('gettouch');
+            mouse_data = mlvideo('getmouse');
+            xp_eye = mouse_data(1);
+            yp_eye = mouse_data(2);
+            %message = sprintf('mlvideo(getmouse) %0.2f dva, %0.2f dva', xp_eye, yp_eye);
+            %disp(message);
+
             if ~useraweye,
                 [xp_eye yp_eye] = tformfwd(eTform, xp_eye, yp_eye);
                 [exOff eyOff] = eye_position(-3);
                 xp_eye = xp_eye + exOff;
                 yp_eye = yp_eye + eyOff;
+                %disp('eyejoytrack() data = getsample(AI) 1 ~useraweye');
             end 
         end
 
@@ -1116,6 +1143,7 @@ while t2 < maxtime,
         else
             xp_joy = data(joyx);
             yp_joy = data(joyy);
+            %disp('eyejoytrack() data = getsample(AI) data(joyxy)');
         end
 
         if ~userawjoy,
@@ -1428,6 +1456,7 @@ if isempty(AI),
 end
 
 data = getsample(AI);
+%disp('eyejoytrack() data = getsample(AI) 2');
 jx = data(joyx);
 jy = data(joyy);
 if ~ScreenData.UseRawJoySignal,
@@ -1455,6 +1484,7 @@ end
 function [ex, ey] = eye_position(varargin)
 persistent DAQ AI ScreenData eyex eyey eTform exOff eyOff exTarget eyTarget last_etrace_update ControlObject
 
+%disp('trialholder eye_position() starting');
 t1 = trialtime;
 
 if ~isempty(varargin), 
@@ -1484,6 +1514,7 @@ if ~isempty(varargin),
             eyey = DAQ.EyeSignal.YChannelIndex;
         end
         last_etrace_update = t1;
+        %disp('trialholder eye_position() varargin{1} == -1');
         return
     elseif varargin{1} == -2,
         if isnan(exTarget) || isnan(eyTarget),
@@ -1492,14 +1523,20 @@ if ~isempty(varargin),
         [ex ey] = eye_position;
         exOff = exOff - ex + exTarget;
         eyOff = eyOff - ey + eyTarget;
+        %disp('trialholder eye_position() varargin{1} == -2');
         return
     elseif varargin{1} == -3,
         ex = exOff;
         ey = eyOff;
+        %disp('trialholder eye_position varargin{1} == -3');
         return
     elseif varargin{1} == -4,
         exTarget = varargin{2};
         eyTarget = varargin{3};
+        %data = mlvideo('getmouse');
+        %exTarget = data(1);
+        %eyTarget = data(2);
+        %disp('trialholder eye_position varargin{1} == -4');
         return
     end
 end
@@ -1508,13 +1545,20 @@ if isempty(AI),
     error('*** No analog inputs defined for eye-signal acquisition ***')
 end
 
-data = getsample(AI);
-ex = data(eyex);
-ey = data(eyey);
+%data = getsample(AI);
+%ex = data(eyex);
+%ey = data(eyey);
+
+data = mlvideo('getmouse');
+ex = data(1);
+ey = data(2);
+%disp('trialholder eye_position getmouse success');
+
 if ~ScreenData.UseRawEyeSignal,
     [ex ey] = tformfwd(eTform, ex, ey);
     ex = ex + exOff;
     ey = ey + eyOff;
+    %disp('trialholder eye_position UseRawEyeSignal');
 end
 
 if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
@@ -1526,6 +1570,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [adata, frq] = get_analog_data(sig, varargin)
 persistent DAQ eTform jTform aipresent
+
+%disp('trialholder get_analog_data');
 
 if sig == -1,
     DAQ = varargin{1};
@@ -1570,11 +1616,29 @@ if strcmpi(sig(1:3), 'eye'),
     y = aisample(:, DAQ.EyeSignal.YChannelIndex);
     [x y] = tformfwd(eTform, x, y);
     adata = [x y];
+
+    %tmp = mlvideo('getmouse');
+    %x = tmp(1);
+    %y = tmp(2);
+    %adata = [x y];
+    %disp('eye')
 elseif strcmpi(sig(1:3), 'joy'),
     x = aisample(:, DAQ.Joystick.XChannelIndex);
     y = aisample(:, DAQ.Joystick.YChannelIndex);
     [x y] = tformfwd(jTform, x, y);
     adata = [x y];
+
+    %tmp = mlvideo('getmouse');
+    %x = tmp(1);
+    %y = tmp(2);
+    adata = [x y];
+    %disp('joy')
+%elseif strcmpi(sig(1:3), 'touch'),
+    %tmp = mlvideo('getmouse');
+    %x = tmp(1);
+    %y = tmp(2);
+    %adata = [x y];
+    %disp('touch')
 else
     chindex = DAQ.AnalogInput.(sig).Index;
     adata = aisample(:, chindex);
@@ -2286,6 +2350,8 @@ end
 AIdata.EyeSignal = [];
 AIdata.Joystick = [];
 AIdata.PhotoDiode = [];
+%disp('end_trial() insert touch screen code here?');
+
 for i = 1:9,
     gname = sprintf('Gen%i', i);
     AIdata.General.(gname) = [];
@@ -2294,6 +2360,7 @@ if ~isempty(DAQ.AnalogInput),
     while DAQ.AnalogInput.SamplesAvailable < MinSamplesExpected, end %changed by NS (03/28/2012)
     stop(DAQ.AnalogInput);
     data = getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable);
+	%disp('end_trial() ~isempty(DAQ.AnalogInput) insert touch screen code or maybe here?');
     set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
     if ~isempty(DAQ.Joystick) && ~SIMULATION_MODE,
         joyx = DAQ.Joystick.XChannelIndex;

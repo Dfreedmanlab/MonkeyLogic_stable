@@ -242,7 +242,7 @@ switch fxn
 
 	case 'getmouse'
 		pos = xglgetcursor;
-        
+
         xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
 
         obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
@@ -262,7 +262,7 @@ switch fxn
         obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
         obj.sub_ppd_x = screen_ppd;
         obj.sub_ppd_y = screen_ppd;
-        
+
         mouse_state = mlvideo('getmousebuttons');   % get Button State
         left_button = mouse_state(1);               % get Button State Left
         right_button = mouse_state(2);              % get Button State Right
