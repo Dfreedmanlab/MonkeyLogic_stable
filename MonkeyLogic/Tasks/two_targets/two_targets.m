@@ -5,15 +5,17 @@
 % screen). Moving the joystick to either target will cause the trial to
 % end.
 % 
-% ShowCursor is set to on, and a small gray filled disc will appear on the
-% stimulus display, which represents the location of the joystick.
+% showcursor is set to on, so a small gray colored filled disc will appear on the
+% stimulus display; which represents the location of the joystick.
 %
 % Make sure the joystick is mapped in the GUI to analog inputs, or else
-% this task will cause an error to appear. If you wish to use an eye
-% tracker instead of a joystick you need to change the 'aqcuiretarget'
-% command to 'acquirefix'.
+% this task will cause an error to appear. 
 %
-% Oct 28, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% If you wish to use an eyetracker instead of a joystick you need to change 
+% the 'acquiretarget' command to 'acquirefix', or else you will get an
+% error.
+%
+% Oct 29, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 
 left = 1;           %left target number

@@ -217,7 +217,7 @@ switch fxn
         end
         xglclear(devicenum, backbuffernum, rgbval(bgcolor));
         
-    case 'showcursor',
+    case 'showcursor',  % this will shows/hides the arrow pointer
         
         devicenum = varargin{1};
         val = varargin{2};
