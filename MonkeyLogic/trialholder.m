@@ -21,7 +21,8 @@ global SIMULATION_MODE
 % displayed twice)
 % modified 3/18/13 -DF (set_object_path bug fix)
 % modified 3/28/13 -DF (ttl bug fix/ modify/improve toggleobject)
-% modified 10/20/15 -ER (initial changes to add a touchscreen and mouse tracking controller)
+% modified 8/20/15 -ER (initial changes to add a touchscreen and mouse tracking controller)
+% modified 10/26/15 -ER (insert touch screen/usb data into its own digital datastream)
 
 %disp('trialholder starting');
 
@@ -160,7 +161,7 @@ end
 
 return
 
-%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [tflip, framenumber] = toggleobject(stimuli, varargin)
 persistent TrialObject ScreenData DAQ togglecount ObjectStatusRecord yrasterthresh ltb lastframe activemovies % %taken from TaskObject & ScreenInfo
 
@@ -463,9 +464,11 @@ if ScreenData.PhotoDiode > 1 && videochange && ~update_cursor,
     end
 end
 
-%Subject's Joystick Cursor
+%Subject's Controller Cursor (Eyetracker, joystick, touchscreen, etc.)
 if update_cursor,
-    mlvideo('blit', ScreenData.Device, ScreenData.CursorBuffer, cursorpos(1), cursorpos(2), ScreenData.CursorXsize, ScreenData.CursorYsize);
+    if ( (cursorpos(1) >= 0) && (cursorpos(2) >= 0) )
+        mlvideo('blit', ScreenData.Device, ScreenData.CursorBuffer, cursorpos(1), cursorpos(2), ScreenData.CursorXsize, ScreenData.CursorYsize);
+    end
     if ScreenData.PhotoDiode > 1, %keep current photodiode trigger on-screen (so doesn't flash with cursor)
         if ~ScreenData.PdStatus,
             mlvideo('blit', ScreenData.Device, ScreenData.PdBufferBlack, ScreenData.PdX, ScreenData.PdY, ScreenData.PdXsize, ScreenData.PdYsize);
@@ -1099,7 +1102,6 @@ while t2 < maxtime,
             sim_vals = simulation_positions(0);
             xp_eye = sim_vals(3);
             yp_eye = sim_vals(4);
-            %disp('eyejoytrack() data = getsample(AI) 1 SIMULATION MODE');
         else
 			%original code below
             %xp_eye = data(eyex);
@@ -1313,8 +1315,15 @@ while t2 < maxtime,
         end
         if videoupdates && currentframe > lastframe,
             if yesshowcursor,
-                cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_joy) - (ScreenData.CursorXsize/2));
-                cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_joy) - (ScreenData.CursorYsize/2));
+                if (eyepresent)
+                    cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_eye) - (ScreenData.CursorXsize/2));
+                    cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_eye) - (ScreenData.CursorYsize/2));
+                end
+                if (joypresent)
+                    cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_joy) - (ScreenData.CursorXsize/2));
+                    cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_joy) - (ScreenData.CursorYsize/2));
+                end
+                
                 [tflip lastframe] = toggleobject(-4, [cxpos cypos]);
             else
                 [tflip lastframe] = toggleobject(-4);
