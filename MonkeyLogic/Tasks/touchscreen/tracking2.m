@@ -37,31 +37,32 @@ end
 
 showcursor('on');
 scene_timer = tic;
+target_touched = [0, 0];
+
+toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
+toggleobject(touchTargetRightNotFilled, 'Status', 'on');
 
 while toc(scene_timer) < 10
-    toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
-    toggleobject(touchTargetRightNotFilled, 'Status', 'on');
 
     ontargets = eyejoytrack('acquirefix', [touchTargetLeftNotFilled touchTargetRightNotFilled],  windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
         toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
         toggleobject(touchTargetLeftFilled, 'Status', 'on');
-    else 
-        toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
-        toggleobject(touchTargetLeftFilled, 'Status', 'off');
+        target_touched(1) = 1;
     end
 
     if (ontargets == 2)
         toggleobject(touchTargetRightNotFilled, 'Status', 'off');
         toggleobject(touchTargetRightFilled, 'Status', 'on');
-    else 
-        toggleobject(touchTargetRightNotFilled, 'Status', 'on');
-        toggleobject(touchTargetRightFilled, 'Status', 'off');
+        target_touched(2) = 1;
     end
 
     idle(20);  % if this idle command is missing there will be a buffer overrun error when the trial completes
 
+    if ( (target_touched(1) == 1) && (target_touched(2) == 1) )
+        break;
+    end
 end
 
 numdev = xgldevices;
@@ -69,4 +70,4 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 1);
 end
 
-set_iti(0);
+set_iti(1000);
