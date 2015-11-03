@@ -12,8 +12,8 @@ function mlmenu(varargin)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'October 2015';
-currentversion = '10-29-2015 build 1.0.71';
+lastupdate = 'November 2015';
+currentversion = '11-03-2015 build 1.0.73';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -668,7 +668,7 @@ if isempty(mlf),
     uimenu(advancedmenu, 'label', 'Preload Video Data', 'tag', 'menubar_preload', 'callback', 'mlmenu');
     uimenu(advancedmenu, 'label', 'Enable Mouse/System Keys', 'tag', 'menubar_mlhelper', 'callback', 'mlmenu');
     uimenu(advancedmenu, 'label', 'Use Personal Hardware Settings', 'tag', 'menubar_personalhardware', 'callback', 'mlmenu', 'enable', 'off');
-    
+ 
     helpmenu = uimenu('label', 'Help');
     uimenu(helpmenu, 'label', 'Online Help', 'callback', 'web(''http://www.monkeylogic.net'', ''-browser'')', 'accelerator', 'h');
     uimenu(helpmenu, 'label', 'About...', 'tag', 'menubar_aboutbutton', 'callback', 'mlmenu');

@@ -24,8 +24,6 @@ global SIMULATION_MODE
 % modified 8/20/15 -ER (initial changes to add a touchscreen and mouse tracking controller)
 % modified 10/26/15 -ER (insert touch screen/usb data into its own digital datastream)
 
-%disp('trialholder starting');
-
 Codes = []; %#ok<NASGU>
 rt = NaN; %#ok<NASGU>
 AIdata = []; %#ok<NASGU>
@@ -1020,6 +1018,7 @@ end
 
 %set targets
 eye_position(-4,NaN,NaN);
+
 if ~idle,
     if eyetrack,
         numeyeobjects = length(eyeobject);
@@ -1487,7 +1486,7 @@ persistent DAQ AI ScreenData eyex eyey eTform exOff eyOff exTarget eyTarget last
 t1 = trialtime;
 
 if ~isempty(varargin), 
-    if varargin{1} == -1,
+    if varargin{1} == -1, %INITIALIZE
         DAQ = varargin{2};
         AI = [];
         if isempty(DAQ.AnalogInput),
@@ -1513,29 +1512,22 @@ if ~isempty(varargin),
             eyey = DAQ.EyeSignal.YChannelIndex;
         end
         last_etrace_update = t1;
-        %disp('trialholder eye_position() varargin{1} == -1');
         return
-    elseif varargin{1} == -2,
+    elseif varargin{1} == -2, %SETOFFSET
         if isnan(exTarget) || isnan(eyTarget),
             return
         end
         [ex ey] = eye_position;
         exOff = exOff - ex + exTarget;
         eyOff = eyOff - ey + eyTarget;
-        %disp('trialholder eye_position() varargin{1} == -2');
         return
-    elseif varargin{1} == -3,
+    elseif varargin{1} == -3, %GETOFFSET
         ex = exOff;
         ey = eyOff;
-        %disp('trialholder eye_position varargin{1} == -3');
         return
-    elseif varargin{1} == -4,
+    elseif varargin{1} == -4, %SETTARGET
         exTarget = varargin{2};
         eyTarget = varargin{3};
-        %data = mlvideo('gettouch');
-        %exTarget = data(1);
-        %eyTarget = data(2);
-        %disp('trialholder eye_position varargin{1} == -4');
         return
     end
 end
@@ -1556,7 +1548,6 @@ if ~ScreenData.UseRawEyeSignal,
     [ex ey] = tformfwd(eTform, ex, ey);
     ex = ex + exOff;
     ey = ey + eyOff;
-    %disp('trialholder eye_position UseRawEyeSignal');
 end
 
 if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
@@ -1568,8 +1559,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [adata, frq] = get_analog_data(sig, varargin)
 persistent DAQ eTform jTform aipresent
-
-%disp('trialholder get_analog_data');
 
 if sig == -1,
     DAQ = varargin{1};
@@ -2335,7 +2324,7 @@ eventmarker(18);
 % Get current trial time to calculate # of samples
 MinSamplesExpected = (trialtime * DAQ.AnalogInput.SampleRate/1000) + 1; %changed by NS (03/28/2012)
 
-[exOff eyOff] = eye_position(-3);
+[exOff eyOff] = eye_position(-3); %GETOFFSET
 [eyetargets cyclerate] = eyejoytrack(-4);
 if ~isempty(eyetargets),
     etX = cat(1, eyetargets{:, 1});
@@ -2349,12 +2338,12 @@ end
 AIdata.EyeSignal = [];
 AIdata.Joystick = [];
 AIdata.PhotoDiode = [];
-%disp('end_trial() insert touch screen code here?');
 
 for i = 1:9,
     gname = sprintf('Gen%i', i);
     AIdata.General.(gname) = [];
 end
+
 if ~isempty(DAQ.AnalogInput),
     while DAQ.AnalogInput.SamplesAvailable < MinSamplesExpected, end %changed by NS (03/28/2012)
     stop(DAQ.AnalogInput);
