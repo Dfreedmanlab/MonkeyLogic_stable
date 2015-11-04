@@ -2356,7 +2356,9 @@ if ~isempty(DAQ.AnalogInput),
     while DAQ.AnalogInput.SamplesAvailable < MinSamplesExpected, end %changed by NS (03/28/2012)
     stop(DAQ.AnalogInput);
     data = getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable);
-    [ex, ey] = eyejoytrack(-8);
+    [ex, ey] = eyejoytrack(-8);  % get touchscreen data
+    ex = findandreplace(ex);
+    ey = findandreplace(ey);
     
     set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
     if ~isempty(DAQ.Joystick) && ~SIMULATION_MODE,
