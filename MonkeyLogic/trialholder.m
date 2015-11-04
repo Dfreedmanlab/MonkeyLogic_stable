@@ -634,7 +634,7 @@ persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsample
     joyx joyy eyex eyey joypresent eyepresent eyetarget_index eyetarget_record ...
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
     lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax ...
-	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys
+	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys touchdata_x touchdata_y
 
 t1 = trialtime;
 ontarget = 0;
@@ -654,6 +654,8 @@ if fxn1 == -1,
     TrialObject = varargin{1};
     DAQ = varargin{2};
     AI = [];
+    touchdata_x = [];
+    touchdata_y = [];
     if isempty(DAQ.AnalogInput2),
         if ~isempty(DAQ.AnalogInput),
             AI = DAQ.AnalogInput;
@@ -808,6 +810,10 @@ elseif fxn1 == -7, %RFM
 	end
 	RFM_TASK = 1;					%required for check_keyboard
 	FIRST_FRAME = 1;
+elseif fxn1 == -8,
+    ontarget = touchdata_x;
+    rt = touchdata_y;
+    return;
 end
 
 eyetrack = 0;
@@ -1107,9 +1113,15 @@ while t2 < maxtime,
             %yp_eye = data(eyey);
             
        		%new code to get touchscreen data, but notice I insert it into the eye data stream for now
-            mouse_data = mlvideo('gettouch');
-            xp_eye = mouse_data(1);
-            yp_eye = mouse_data(2);
+            data = mlvideo('gettouch');
+            xp_eye = data(1);
+            yp_eye = data(2);
+            touchdata_x = [touchdata_x, xp_eye];
+            touchdata_y = [touchdata_y, yp_eye];
+            %touchdata_x(DAQ.AnalogInput.SamplesAvailable) = xp_eye;
+            %touchdata_y(DAQ.AnalogInput.SamplesAvailable) = yp_eye;
+			%DAQ.AnalogInput.SamplesAvailable
+            
 
             if ~useraweye,
                 [xp_eye yp_eye] = tformfwd(eTform, xp_eye, yp_eye);
@@ -1417,7 +1429,6 @@ else
     ejt_totaltime = ejt_totaltime + rt;
 end
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [jx, jy] = joystick_position(varargin)
 persistent DAQ AI ScreenData joyx joyy jTform cxpos_last cypos_last last_jtrace_update ControlObject
@@ -1482,7 +1493,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ex, ey] = eye_position(varargin)
 persistent DAQ AI ScreenData eyex eyey eTform exOff eyOff exTarget eyTarget last_etrace_update ControlObject
-
 t1 = trialtime;
 
 if ~isempty(varargin), 
@@ -1663,7 +1673,6 @@ if action == 2,
     val = sim_vals;
     return
 end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function idle(duration, varargin)
@@ -2142,7 +2151,6 @@ n = length(keynumbers) + 1;
 keynumbers(n) = keynum;
 keycallbacks{n} = keyfxn;
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function val = bhv_variable(varname, varargin)
 persistent vars
@@ -2348,7 +2356,8 @@ if ~isempty(DAQ.AnalogInput),
     while DAQ.AnalogInput.SamplesAvailable < MinSamplesExpected, end %changed by NS (03/28/2012)
     stop(DAQ.AnalogInput);
     data = getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable);
-	%disp('end_trial() ~isempty(DAQ.AnalogInput) insert touch screen code or maybe here?');
+    [ex, ey] = eyejoytrack(-8);
+    
     set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
     if ~isempty(DAQ.Joystick) && ~SIMULATION_MODE,
         joyx = DAQ.Joystick.XChannelIndex;
@@ -2365,10 +2374,10 @@ if ~isempty(DAQ.AnalogInput),
         AIdata.Joystick = [jx jy];
     end
     if ~isempty(DAQ.EyeSignal) && ~SIMULATION_MODE,
-        eyex = DAQ.EyeSignal.XChannelIndex;
-        eyey = DAQ.EyeSignal.YChannelIndex;
-        ex = data(:, eyex);
-        ey = data(:, eyey);
+        %eyex = DAQ.EyeSignal.XChannelIndex;
+        %eyey = DAQ.EyeSignal.YChannelIndex;
+        %ex = data(:, eyex);
+        %ey = data(:, eyey);        
         if ~ScreenData.UseRawEyeSignal,
             [ex ey] = tformfwd(eTform, ex, ey);
             ex = ex + exOff;
