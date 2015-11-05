@@ -70,4 +70,4 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 1);
 end
 
-set_iti(1000);
+set_iti(3000);

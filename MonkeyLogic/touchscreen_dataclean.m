@@ -1,7 +1,7 @@
-function [cleaned_data] = findandreplace(ex)
+function [cleaned_data] = touchscreen_dataclean(ex)
 
 %ex = [-180 -180 -180 -180 -180 -180 -180 1 2 3 -180 -180 1 2 3 -180 2 -180 -180 -180 -180 -180 -180] %test case
-%disp('starting findandreplace')
+%disp('starting touchscreen_dataclean')
 
 exout = find (ex == -180);  % -180 is the BLANK value to replace with a valid sample
 
