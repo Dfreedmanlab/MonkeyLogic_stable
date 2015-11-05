@@ -2389,7 +2389,7 @@ if ~isempty(DAQ.AnalogInput),
         set(h1, 'color', ScreenData.EyeTraceColor/2);
         h2 = plot(ex, ey, '.');
         set(h2, 'markeredgecolor', ScreenData.EyeTraceColor, 'markersize', 3);
-        AIdata.EyeSignal = [ex ey];
+        AIdata.EyeSignal = [ex' ey'];
     end
     if ~isempty(DAQ.General),
         generalpresent = DAQ.General.GeneralPresent;
