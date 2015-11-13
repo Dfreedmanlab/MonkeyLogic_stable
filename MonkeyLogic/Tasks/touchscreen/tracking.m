@@ -59,6 +59,7 @@ while toc(scene_timer) < 10
     if (ontargetLeftTarget)
        toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
        toggleobject(touchTargetLeftFilled, 'Status', 'on');
+       trialerror(0);
     else 
        toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
        toggleobject(touchTargetLeftFilled, 'Status', 'off');
@@ -67,6 +68,7 @@ while toc(scene_timer) < 10
     if (ontargetRightTarget)
        toggleobject(touchTargetRightNotFilled, 'Status', 'off');
        toggleobject(touchTargetRightFilled, 'Status', 'on');
+       trialerror(0);
     else 
        toggleobject(touchTargetRightNotFilled, 'Status', 'on');
        toggleobject(touchTargetRightFilled, 'Status', 'off');
@@ -80,4 +82,4 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 1);
 end
 
-set_iti(0);
+set_iti(3000);

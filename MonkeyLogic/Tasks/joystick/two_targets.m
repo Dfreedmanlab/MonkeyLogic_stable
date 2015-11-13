@@ -30,9 +30,10 @@ if ~ontarget,
      trialerror(4); % no response
      toggleobject([left right], 'Status', 'off');
      set_iti(10);
-     return
+else 
+    trialerror(0);  % user responded
 end
 
 showcursor('off');
 
-set_iti(0);
+set_iti(3000);

@@ -61,6 +61,7 @@ while toc(scene_timer) < 10
     idle(20);  % if this idle command is missing there will be a buffer overrun error when the trial completes
 
     if ( (target_touched(1) == 1) && (target_touched(2) == 1) )
+        trialerror(0);
         break;
     end
 end
