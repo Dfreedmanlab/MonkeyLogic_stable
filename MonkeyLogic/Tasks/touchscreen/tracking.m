@@ -39,14 +39,14 @@ end
 
 while toc(scene_timer) < 10
     
-    [x, y] = eye_position();
+    [x, y] = touch_position();
    	reposition_object(touchLocationNotFilled,x,y);  %x and %y are in DVA (degrees of visual angle, not pixels)
     reposition_object(touchLocationFilled,x,y);     %x and %y are in DVA (degrees of visual angle, not pixels)
     toggleobject(touchLocationNotFilled, 'Status', 'on');
    
-    ontargetCursor          = eyejoytrack('acquirefix', touchLocationNotFilled,     windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
-    ontargetLeftTarget      = eyejoytrack('acquirefix', touchTargetLeftNotFilled,   windowSize, fixDuration);   % it does not matter if you track the filled or not filled target since they overlap eachother in space
-    ontargetRightTarget     = eyejoytrack('acquirefix', touchTargetRightNotFilled,  windowSize, fixDuration);  % it does not matter if you track the filled or not filled target since they overlap eachother in space
+    ontargetCursor          = eyejoytrack('touchtarget', touchLocationNotFilled,     windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
+    ontargetLeftTarget      = eyejoytrack('touchtarget', touchTargetLeftNotFilled,   windowSize, fixDuration);   % it does not matter if you track the filled or not filled target since they overlap eachother in space
+    ontargetRightTarget     = eyejoytrack('touchtarget', touchTargetRightNotFilled,  windowSize, fixDuration);  % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargetCursor)
        toggleobject(touchLocationNotFilled, 'Status', 'off');

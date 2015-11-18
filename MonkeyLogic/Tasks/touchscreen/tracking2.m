@@ -44,7 +44,7 @@ toggleobject(touchTargetRightNotFilled, 'Status', 'on');
 
 while toc(scene_timer) < 10
 
-    ontargets = eyejoytrack('acquirefix', [touchTargetLeftNotFilled touchTargetRightNotFilled],  windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
+    ontargets = eyejoytrack('touchtarget', [touchTargetLeftNotFilled touchTargetRightNotFilled],  windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
         toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
