@@ -1823,7 +1823,7 @@ elseif strcmpi(sig(1:3), 'touch'),
     x = tmp(1);
     y = tmp(2);
     adata = [x y];
-    disp('strcmpi(sig(1:3), 'touch'),');
+    %disp('get_analog_data is running the touch block'),
 else
     chindex = DAQ.AnalogInput.(sig).Index;
     adata = aisample(:, chindex);
