@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'November 2015';
-currentversion = '11-17-2015 build 1.0.84';
+currentversion = '11-18-2015 build 1.0.85';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -81,7 +81,7 @@ if isempty(mlf),
     disp(' ')
     disp(' ')
     disp(' ')
-    disp(sprintf('<<< MonkeyLogic >>> Revision Date: %s', currentversion))
+    disp(sprintf('<<< MonkeyLogic >>> : Revision : %s', currentversion))
     chknewupdates(lastupdate);
     envOS = getenv('OS');
     envCN = getenv('COMPUTERNAME');
@@ -838,7 +838,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'aboutbutton',
             
-            mlmessage(sprintf('MonkeyLogic Revision Date: %s', currentversion));
+            mlmessage(sprintf('>>> Revision : %s <<<', currentversion));
             try
                 f = wavread('science.wav');
                 sound(f, 48000);
