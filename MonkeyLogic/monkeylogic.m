@@ -407,6 +407,7 @@ ScreenInfo.UseRawJoySignal = MLConfig.UseRawJoySignal; %use raw input signal (i.
 if isempty(MLConfig.JoyTransform),
     ScreenInfo.UseRawJoySignal = 1;
 end
+ScreenInfo.UseRawTouchSignal = 0; %use raw input signal (i.e., pre-calibrated touchscreen)
 ScreenInfo.UpdateInterval = MLConfig.UpdateInterval;
 ScreenInfo.EyeTraceColor = MLConfig.EyeTraceColor;
 ScreenInfo.EyeTraceSize = MLConfig.EyeTraceSize;
@@ -416,6 +417,10 @@ ScreenInfo.JoyTraceColor = MLConfig.JoyTraceColor;
 ScreenInfo.JoyTraceSize = MLConfig.JoyTraceSize;
 ScreenInfo.JoyTargetColor = 0.5*MLConfig.JoyTraceColor;
 ScreenInfo.JoyTargetLinewidth = 3;
+ScreenInfo.TouchTraceColor = MLConfig.JoyTraceColor;        % use Joystick setting
+ScreenInfo.TouchTraceSize = MLConfig.JoyTraceSize;          % use Joystick setting
+ScreenInfo.TouchTargetColor = 0.5*MLConfig.JoyTraceColor;   % use Joystick setting
+ScreenInfo.TouchTargetLinewidth = 3;                        % use Joystick setting
 ScreenInfo.OutOfBounds = 2*max([ScreenInfo.Xsize ScreenInfo.Ysize])/ScreenInfo.PixelsPerDegree;
 ScreenInfo.FixationSpotImageFile = MLConfig.FixationSpotImageFile;
 ScreenInfo.ShowCursor = 0;
@@ -444,7 +449,6 @@ set(findobj(ScreenInfo.ControlScreenHandle, 'tag', 'conderrors'), 'userdata', bl
 drawnow;
 
 % Initialize I/O
-disp('<<< MonkeyLogic >>> Starting up DAQ...')
 [DaqInfo DaqError] = initio(MLConfig.InputOutput);
 if ~isempty(DaqError),
     daqreset;
@@ -459,6 +463,7 @@ end
 DaqInfo.StrobeBitEdge = MLConfig.StrobeBitEdge;
 EyeSignalInUse = ~ScreenInfo.UseRawEyeSignal && ~isempty(DaqInfo.EyeSignal);
 JoystickInUse = ~ScreenInfo.UseRawJoySignal && ~isempty(DaqInfo.Joystick);
+TouchscreenInUse = ~ScreenInfo.UseRawTouchSignal && ~isempty(DaqInfo.TouchSignal);
 fprintf('<<< MonkeyLogic >>> Successfully initialized DAQ system.\n');
 drawnow;
 
@@ -517,6 +522,7 @@ TrialRecord.TrialErrors = [];
 TrialRecord.ReactionTimes = [];
 TrialRecord.LastTrialAnalogData.EyeSignal = [];
 TrialRecord.LastTrialAnalogData.Joystick = [];
+TrialRecord.LastTrialAnalogData.TouchSignal = [];
 TrialRecord.LastTrialCodes.CodeNumbers = [];
 TrialRecord.LastTrialCodes.CodeTimes = [];
 TrialRecord.DataFile = datafile;
@@ -1164,6 +1170,7 @@ for trial = 1:MLConfig.MaxTrials,
     WriteData(trial).CodeTimes = {Codes.CodeTimes};
     WriteData(trial).EyeSignal = TrialData.AnalogData.EyeSignal;
     WriteData(trial).Joystick = TrialData.AnalogData.Joystick;
+    WriteData(trial).Touchscreen = TrialData.AnalogData.TouchSignal;
     WriteData(trial).PhotoDiode = TrialData.AnalogData.PhotoDiode;
     WriteData(trial).GeneralAnalog = TrialData.AnalogData.General;
     WriteData(trial).ReactionTime = reactiontime;

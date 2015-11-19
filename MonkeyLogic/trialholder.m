@@ -51,10 +51,12 @@ set_object_path(-1, TaskObject, ScreenInfo);
 set_iti(-1);
 showcursor(-1, ScreenInfo);
 %%% initialize i/o subroutines:
+%disp('initialize i/o subroutines:');
 eyejoytrack(-1, TaskObject, DaqInfo, ScreenInfo, EyeTransform, JoyTransform);
 idle(-1, ScreenInfo);
 joystick_position(-1, DaqInfo, ScreenInfo, JoyTransform);
 eye_position(-1, DaqInfo, ScreenInfo, EyeTransform);
+touch_position(-1, DaqInfo, ScreenInfo); % notice that this does not have a TouchTransform
 simulation_positions(-1);
 get_analog_data(-1, DaqInfo, EyeTransform, JoyTransform);
 getkeypress(-1, ScreenInfo);
@@ -693,13 +695,13 @@ if fxn1 == -1,                      %initialize
         joyy = DAQ.AnalogInput.JoyY.Index;
         joypresent = 1;
     end
-    if isempty(DAQ.Touchscreen),
+    if isempty(DAQ.TouchSignal),
         touchx = [];
         touchy = [];
         touchpresent = 0;
     else
-        touchx = DAQ.Touchscreen.XChannelIndex;
-        touchy = DAQ.Touchscreen.YChannelIndex;
+        touchx = DAQ.TouchSignal.XChannelIndex;
+        touchy = DAQ.TouchSignal.YChannelIndex;
         touchpresent = 1;
     end
     if isempty(DAQ.Buttons),
@@ -745,6 +747,7 @@ if fxn1 == -1,                      %initialize
     end
     eyetarget_index = 0;
     eyetarget_record = cell(100, 1);
+    %disp('initialized eyejoytrack');
     return
 elseif fxn1 == -2, %call from showcursor
     ScreenData.ShowCursor = varargin{1};
@@ -1030,13 +1033,13 @@ end
 
 % make certain requested inputs are present
 if eyetrack && ~eyepresent,
-    error('*** No eye-signal inputs defined in I/O menu ***');
+    disp('*** No eye-signal inputs defined in I/O menu ***');
 end
 if joytrack && ~joypresent,
-    error('*** No joystick inputs defined in I/O menu ***');
+    disp('*** No joystick inputs defined in I/O menu ***');
 end
 if touchtrack && ~touchpresent,
-    error('*** No touchscreen inputs defined in I/O menu ***');
+    disp('*** No touchscreen inputs defined in I/O menu ***');
 end
 if buttontrack,
     if ~any(buttonspresent),
@@ -1567,6 +1570,7 @@ persistent DAQ AI ScreenData joyx joyy jTform cxpos_last cypos_last last_jtrace_
 t1 = trialtime;
 
 if ~isempty(varargin) && varargin{1} == -1,
+    %disp('initialized joystick_position');
     DAQ = varargin{2};
     AI = [];
     if isempty(DAQ.AnalogInput),
@@ -1590,6 +1594,7 @@ if ~isempty(varargin) && varargin{1} == -1,
     cxpos_last = NaN;
     cypos_last = NaN;
     last_jtrace_update = t1;
+
     return
 end
 
@@ -1631,6 +1636,7 @@ t1 = trialtime;
 
 if ~isempty(varargin), 
     if varargin{1} == -1, %INITIALIZE
+        %disp('initialized eye_position');
         DAQ = varargin{2};
         AI = [];
         if isempty(DAQ.AnalogInput),
@@ -1700,23 +1706,16 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [tx, ty] = touch_position(varargin)
-persistent DAQ AI ScreenData touchx touchy eTform exOff eyOff exTarget eyTarget last_etrace_update ControlObject
+persistent DAQ ScreenData touchx touchy exOff eyOff exTarget eyTarget last_etrace_update ControlObject
 t1 = trialtime;
 
 if ~isempty(varargin), 
     if varargin{1} == -1, %INITIALIZE
+        disp('initialized touch_position');
         DAQ = varargin{2};
-        AI = [];
-        if isempty(DAQ.AnalogInput),
-            return
-        end
-        if isempty(DAQ.AnalogInput2),
-            AI = DAQ.AnalogInput;
-        else
-            AI = DAQ.AnalogInput2;
-        end
+       
         ScreenData = varargin{3};
-        eTform = varargin{4};
+        
         exOff = 0;
         eyOff = 0;
         exTarget = 0;
@@ -1728,10 +1727,9 @@ if ~isempty(varargin),
         else
             touchx = DAQ.TouchSignal.XChannelIndex;
             touchy = DAQ.TouchSignal.YChannelIndex;
-            touchx
-            touchy
         end
         last_etrace_update = t1;
+        
         return
     elseif varargin{1} == -2, %SETOFFSET
         if isnan(exTarget) || isnan(eyTarget),
@@ -1752,18 +1750,19 @@ if ~isempty(varargin),
     end
 end
 
-%if isempty(AI),
-%    error('*** No analog inputs defined for touch-signal acquisition ***')
-%end
-
 data = mlvideo('gettouch');
 tx = data(1);
 ty = data(2);
 
-if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
-    set(ControlObject.TouchTraceHandle, 'xdata', tx, 'ydata', ty);
-    drawnow;
-    last_etrace_update = trialtime;
+if isfield(ScreenData, 'UpdateInterval'),
+    ScreenData.UpdateInterval
+    if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
+        if isfield(ControlObject, 'TouchTraceHandle'),
+            set(ControlObject.TouchTraceHandle, 'xdata', tx, 'ydata', ty);
+        end
+        drawnow;
+        last_etrace_update = trialtime;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2519,6 +2518,7 @@ eventmarker(18);
 
 % Get current trial time to calculate # of samples
 MinSamplesExpected = 0;
+
 if isfield(DAQ, 'AnalogInput'),
     if isfield(DAQ.AnalogInput, 'SampleRate'),
         MinSamplesExpected = (trialtime * DAQ.AnalogInput.SampleRate/1000) + 1; %changed by NS (03/28/2012)
@@ -2542,7 +2542,7 @@ else
 end
 AIdata.EyeSignal = [];
 AIdata.Joystick = [];
-AIdata.Touchscreen = [];
+AIdata.TouchSignal = [];
 AIdata.PhotoDiode = [];
 
 for i = 1:9,
@@ -2554,9 +2554,6 @@ if ~isempty(DAQ.AnalogInput),
     while DAQ.AnalogInput.SamplesAvailable < MinSamplesExpected, end %changed by NS (03/28/2012)
     stop(DAQ.AnalogInput);
     data = getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable);
-    [ex, ey] = eyejoytrack(-8);  % get touchscreen data
-    %ex = touchscreen_dataclean(ex);
-    %ey = touchscreen_dataclean(ey);
     
     set(gcf, 'CurrentAxes', findobj('tag', 'replica'));
     if ~isempty(DAQ.Joystick) && ~SIMULATION_MODE,
@@ -2590,10 +2587,11 @@ if ~isempty(DAQ.AnalogInput),
         AIdata.EyeSignal = [ex' ey'];
     end
     if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
-        touchx = DAQ.TouchSignal.XChannelIndex;
-        touchy = DAQ.TouchSignal.YChannelIndex;
-        ex = 0;%data(:, eyex);
-        ey = 0;%data(:, eyey);        
+        %touchx = DAQ.TouchSignal.XChannelIndex;
+        %touchy = DAQ.TouchSignal.YChannelIndex;
+        [ex, ey] = eyejoytrack(-8);  % get all touchscreen data
+        %ex = touchscreen_dataclean(ex);
+        %ey = touchscreen_dataclean(ey);
 
         h1 = plot(ex, ey);
         set(h1, 'color', ScreenData.TouchTraceColor/2);

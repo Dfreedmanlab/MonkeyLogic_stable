@@ -6,6 +6,9 @@ function [DAQ, DaqError] = initio(IO)
 % Modified 2/19/08 -WA (incorporated DJF changes to analog channel input range parameters)
 % Modified 2/21/08 -WA (incorporated code for "Buttons" & reward configuration settings)
 % Last modified 8/11/08 -WA (to make certain analog-input objects use DMA)
+% Last modified 11/17/15 -ER (Added DigitalInputStream for touchscreens and other future devices)
+
+disp('<<< MonkeyLogic >>> Starting up DAQ...')
 
 %for manual editing:
 configIO.AI.BufferingConfig =  [16 1024]; %[1 2000];
@@ -13,10 +16,18 @@ configIO.AI.InputRange = [-10 10];
 configIO.Reward.TriggerValue = 5; %if analog, number of volts to trigger or hold at (will be "1" if digital).
 
 %from menu:
-configIO.AI.SampleRate = IO.Configuration.AnalogInputFrequency;
-configIO.AI.InputType = IO.Configuration.AnalogInputType;
-configIO.AI.AnalogInputDuplication = IO.Configuration.AnalogInputDuplication;
-configIO.Reward.Polarity = IO.Configuration.RewardPolarity; %+1 for positive-edge reward trigger, -1 for negative edge
+if isfield(IO.Configuration, 'AnalogInputFrequency')
+    configIO.AI.SampleRate = IO.Configuration.AnalogInputFrequency;
+end
+if isfield(IO.Configuration, 'AnalogInputType')
+    configIO.AI.InputType = IO.Configuration.AnalogInputType;
+end
+if isfield(IO.Configuration, 'AnalogInputDuplication')
+    configIO.AI.AnalogInputDuplication = IO.Configuration.AnalogInputDuplication;
+end
+if isfield(IO.Configuration, 'RewardPolarity')
+    configIO.Reward.Polarity = IO.Configuration.RewardPolarity; %+1 for positive-edge reward trigger, -1 for negative edge
+end
 
 IO = rmfield(IO, 'Configuration');
 daqreset;
@@ -27,8 +38,11 @@ for i = 1:numfields,
     fn = fnames{i};
     DAQ.(fn) = [];
     fnfrag = fn(1:3);
+
     if strcmp(fnfrag, 'Eye') || strcmp(fnfrag, 'Joy') || strcmp(fnfrag, 'Gen'),
         REQSYS.(fn) = {'AnalogInput'};
+    elseif strcmp(fnfrag, 'Tou'),
+        REQSYS.(fn) = {'DigitalInputStream'};
     elseif strcmp(fnfrag, 'Rew'),
         REQSYS.(fn) = {'DigitalIO' 'AnalogOutput'};
     elseif strcmp(fnfrag, 'Cod') || strcmp(fnfrag, 'Dig'),
@@ -102,6 +116,7 @@ DAQ.AnalogInput2 = [];
 DAQ.AnalogOutput = [];
 DAQ.EyeSignal = [];
 DAQ.Joystick = [];
+DAQ.TouchSignal = [];
 DAQ.Buttons = [];
 DAQ.General = [];
 DAQ.BehavioralCodes = [];
@@ -134,13 +149,26 @@ if JoyXpresent || JoyYpresent,
     end
 end
 
+TouchXpresent = isfield(IO.TouchX, 'Adaptor');
+TouchYpresent = isfield(IO.TouchY, 'Adaptor');
+if TouchXpresent || JoyYpresent,
+    numfieldsTouchX = length(fieldnames(IO.TouchX));
+    numfieldsTouchY = length(fieldnames(IO.TouchY));
+end
+if TouchXpresent || TouchYpresent,
+    if numfieldsTouchX ~= numfieldsTouchY,
+        DaqError{1} = 'I/O Error: Must define 0 or 2 touchscreen inputs';
+        disp('I/O Error: Must define 0 or 2 touchscreen inputs')
+        return
+    end
+end
+
 %Look for duplicate boards:
-hwinfo = daqhwinfo;
-AdaptorInfo = ioscan(hwinfo.InstalledAdaptors);
+AdaptorInfo = ioscan();
 adaptors = {AdaptorInfo(:).Name};
-numadaptors = length(adaptors);
-duplicateboard = zeros(numadaptors, 1);
-for i = 1:numadaptors,
+
+duplicateboard = zeros(length(adaptors), 1);
+for i = 1:length(adaptors), %if 2 or more boards by the same name exist, then duplicate them
     matches = strcmp(adaptors(i), adaptors);
     if sum(matches) > 1,
         f = find(matches);
@@ -152,6 +180,7 @@ end
 for i = 1:length(fnames),
     signame = fnames{i};
     sigpresent = isfield(IO.(signame), 'Adaptor');
+
     if sigpresent,
         if strcmpi(IO.(signame).Subsystem, 'AnalogInput'),
 
@@ -246,7 +275,14 @@ for i = 1:length(fnames),
             else
                 DAQ.AnalogInput.BufferingConfig = configIO.AI.BufferingConfig; %shrink buffers for more frequent data transfers
             end
-                        
+             
+        elseif strcmpi(IO.(signame).Subsystem, 'DigitalInputStream'),
+            if strcmp(signame, 'TouchX'),
+                DAQ.TouchSignal.XChannelIndex = IO.(signame).Channel;
+            elseif strcmp(signame, 'TouchY'),
+                DAQ.TouchSignal.YChannelIndex = IO.(signame).Channel;
+            end
+            
         elseif strcmp(signame, 'Reward'),
 
             if strcmpi(IO.Reward.Subsystem, 'AnalogOutput'),
@@ -366,7 +402,7 @@ if ~isempty(DAQ.AnalogOutput),
     set(DAQ.AnalogOutput, 'TriggerType', 'Manual');
 end
 
-rmf = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'CodesDigOut' 'DigCodesStrobeBit'};
+rmf = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'CodesDigOut' 'DigCodesStrobeBit'};
 for i = 1:length(rmf),
     if isfield(DAQ, rmf{i}),
         DAQ = rmfield(DAQ, rmf{i});
@@ -386,6 +422,8 @@ for i = 1:length(fn),
         DAQ = rmfield(DAQ, fname);
     end
 end
+
+disp('<<< MonkeyLogic >>> Starting up DAQ Completed!')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ai DaqError] = init_ai(constructor, configIO)
