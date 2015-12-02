@@ -1711,7 +1711,7 @@ t1 = trialtime;
 
 if ~isempty(varargin), 
     if varargin{1} == -1, %INITIALIZE
-        disp('initialized touch_position');
+        
         DAQ = varargin{2};
        
         ScreenData = varargin{3};
@@ -2517,17 +2517,12 @@ eventmarker(18);
 eventmarker(18);
 
 % Get current trial time to calculate # of samples
-MinSamplesExpected = 0;
-
+MinSamplesExpected  = trialtime;
 if isfield(DAQ, 'AnalogInput'),
     if isfield(DAQ.AnalogInput, 'SampleRate'),
         MinSamplesExpected = (trialtime * DAQ.AnalogInput.SampleRate/1000) + 1; %changed by NS (03/28/2012)
     end
-else 
-    MinSamplesExpected = trialtime;
 end
-
-MinSamplesExpected
 
 [exOff eyOff] = eye_position(-3); %GETOFFSET
 [eyetargets cyclerate] = eyejoytrack(-4);
@@ -2586,19 +2581,7 @@ if ~isempty(DAQ.AnalogInput),
         set(h2, 'markeredgecolor', ScreenData.EyeTraceColor, 'markersize', 3);
         AIdata.EyeSignal = [ex' ey'];
     end
-    if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
-        %touchx = DAQ.TouchSignal.XChannelIndex;
-        %touchy = DAQ.TouchSignal.YChannelIndex;
-        [ex, ey] = eyejoytrack(-8);  % get all touchscreen data
-        %ex = touchscreen_dataclean(ex);
-        %ey = touchscreen_dataclean(ey);
 
-        h1 = plot(ex, ey);
-        set(h1, 'color', ScreenData.TouchTraceColor/2);
-        h2 = plot(ex, ey, '.');
-        set(h2, 'markeredgecolor', ScreenData.TouchTraceColor, 'markersize', 3);
-        AIdata.TouchSignal = [ex' ey'];
-    end
     if ~isempty(DAQ.General),
         generalpresent = DAQ.General.GeneralPresent;
         if generalpresent,
@@ -2618,6 +2601,19 @@ if ~isempty(DAQ.AnalogInput),
     end
 end
 
+if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
+
+    [ex, ey] = eyejoytrack(-8);  % get all touchscreen data
+    ex = touchscreen_dataclean(ex);
+    ey = touchscreen_dataclean(ey);
+    
+   	%h1 = plot(ex, ey);
+    %set(h1, 'color', ScreenData.TouchTraceColor/2);
+    h2 = plot(ex, ey, '.');
+    set(h2, 'markeredgecolor', ScreenData.TouchTraceColor, 'markersize', 20);
+    AIdata.TouchSignal = [ex' ey'];
+end
+    
 newtform = [];
 if ~isempty(eTform)
     tri = [0 0; 1 0; 0 1];
