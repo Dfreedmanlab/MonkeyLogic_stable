@@ -70,6 +70,10 @@ function BHV = bhv_read(varargin)
 %       | BHV.AnalogData{trial}.Joystick [x]     'float32' x BHV.NumXJoyPoints
 %       | BHV.NumYJoyPoints(trial)               'uint32' x 1
 %       | BHV.AnalogData{trial}.Joystick [y]     'float32' x BHV.NumYJoyPoints
+%       | BHV.NumXTouchPoints(trial)               'uint32' x 1
+%       | BHV.AnalogData{trial}.TouchSignal[x]     'float32' x BHV.NumXTouchPoints
+%       | BHV.NumYTouchPoints(trial)               'uint32' x 1
+%       | BHV.AnalogData{trial}.TouchSignal[y]     'float32' x BHV.NumYTouchPoints
 %       | BHV.ReactionTime(trial)                'uint16' x 1
 %       | BHV.ObjectStatusRecord(trial).Number   'uint32' x 1
 %       | BHV.ObjectStatusRecord(trial).Status   'ubit1' x ...Number
@@ -84,6 +88,8 @@ function BHV = bhv_read(varargin)
 % Modified 5/22/08 -WA (added BlockIndex)
 % Modified 8/13/08 -WA (added Movies)
 % Modified 7/25/12 -WA (lengthened maximum trial to 2^32 milliseconds)
+% Modified 7/25/12 -WA (lengthened maximum trial to 2^32 milliseconds)
+% Modified 11/19/15 -WA (added TouchSignal to data stream)
 
 BHV = struct;
 if ~ispref('MonkeyLogic', 'Directories'),
@@ -373,6 +379,30 @@ for trial = 1:BHV.NumTrials,
             BHV.AnalogData{trial}.Joystick = xjoy;
         end
         
+        if BHV.FileVersion >= 3.2,
+            BHV.NumXTouchPoints = fread(fidbhv, 1, 'uint32');
+            if BHV.NumXTouchPoints > 0,
+                if BHV.FileVersion > 1.6,
+                    xtouch = fread(fidbhv, BHV.NumXTouchPoints, 'float32');
+                else
+                    xtouch = fread(fidbhv, BHV.NumXTouchPoints, 'double');
+                end
+            end
+            BHV.NumYTouchPoints = fread(fidbhv, 1, 'uint32');
+            if BHV.NumYTouchPoints > 0,
+                if BHV.FileVersion > 1.6,
+                    ytouch = fread(fidbhv, BHV.NumYTouchPoints, 'float32');
+                else
+                    ytouch = fread(fidbhv, BHV.NumYTouchPoints, 'double');
+                end
+            end
+            if BHV.NumXTouchPoints == BHV.NumYTouchPoints && BHV.NumXTouchPoints > 0,
+                BHV.AnalogData{trial}.TouchSignal = [xtouch ytouch];
+            elseif BHV.NumXJoyPoints > BHV.NumYJoyPoints, %only recorded one of the two
+                BHV.AnalogData{trial}.TouchSignal = xtouch;
+            end
+        end
+
         if BHV.FileVersion > 2.5,
             for i = 1:9
                 gname = sprintf('Gen%i', i);

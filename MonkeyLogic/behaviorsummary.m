@@ -237,6 +237,16 @@ else
                 numjoypoints = 0;
             end
 
+            if isfield(adata, 'TouchSignal'),
+                touchx = adata.TouchSignal(:, 1);
+                touchy = adata.TouchSignal(:, 2);
+                numtouchpoints = length(touchx);
+            else
+                touchx = [];
+                touchy = [];
+                numjoypoints = 0;
+            end
+            
             if isfield(bhv, 'AnalogInputFrequency') && bhv.AnalogInputFrequency ~= 1000,
                 ystep = 1000/bhv.AnalogInputFrequency;
                 if numeyepoints,
@@ -602,6 +612,16 @@ else
                 numjoypoints = 0;
             end
 
+            if isfield(adata, 'TouchSignal'),
+                xtouch = adata.TouchSignal(:, 1);
+                ytouch = adata.TouchSignal(:, 2);
+                numjoypoints = length(xtouch);
+            else
+                xtouch = 0;
+                ytouch = 0;
+                numtouchpoints = 0;
+            end
+            
             if isfield(bhv, 'AnalogInputFrequency') && bhv.AnalogInputFrequency ~= 1000,
                 ystep = 1000/bhv.AnalogInputFrequency;
                 if numeyepoints,
@@ -789,7 +809,7 @@ for i = numobjects:-1:1,
 end
 set(gca, 'userdata', h);
 
-%add eye & joystick traces
+%add eye & joystick traces % touchscreen traces
 adata = bhv.AnalogData{trialnumber};
 if isfield(adata, 'EyeSignal'),
     if isfield(bhv, 'EyeTraceColor'),
@@ -809,7 +829,15 @@ if isfield(adata, 'Joystick'),
     h = plot(adata.Joystick(:, 1), adata.Joystick(:, 2));
     set(h, 'color', joycolor, 'linewidth', 1.5, 'tag', 'joytrace');
 end
-
+if isfield(adata, 'TouchSignal'),
+    if isfield(bhv, 'TouchTraceColor'),
+        touchcolor = bhv.TouchTraceColor;
+    else
+        touchcolor = [.8 .5 .5];
+    end
+    h = plot(adata.TouchSignal(:, 1), adata.TouchSignal(:, 2));
+    set(h, 'color', touchcolor, 'linewidth', 1.5, 'tag', 'touchtrace');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function embedded_behaviorgraph(bhv)

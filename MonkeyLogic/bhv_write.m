@@ -23,7 +23,7 @@ function status = bhv_write(mode, fidbhv, WriteData, varargin)
 persistent numtrialpointer
 
 status = 0;
-bhvfileversion = 3.1;
+bhvfileversion = 3.2;
 
 switch mode,
     case 1, %write header
@@ -353,6 +353,32 @@ switch mode,
         fwrite(fidbhv, xjoy, 'float32');
         fwrite(fidbhv, numyjoypoints, 'uint32');
         fwrite(fidbhv, yjoy, 'float32');
+        
+        %%%%% Versions > 3.2
+        if (isfield(WriteData, 'TouchSignal'))
+
+            if isempty(WriteData.TouchSignal),
+                numxtouchpoints = 0;
+                numytouchpoints = 0;
+                xtouch = [];
+                ytouch = [];
+            else
+                [rows cols] = size(WriteData.TouchSignal);
+                numxtouchpoints = rows;
+                xtouch = WriteData.TouchSignal(:, 1);
+                if cols > 1,
+                    numytouchpoints = numxtouchpoints;
+                    ytouch = WriteData.TouchSignal(:, 2);
+                else
+                    numytouchpoints = 0;
+                    ytouch = [];
+                end
+            end
+            fwrite(fidbhv, numxtouchpoints, 'uint32');
+            fwrite(fidbhv, xtouch, 'float32');
+            fwrite(fidbhv, numytouchpoints, 'uint32');
+            fwrite(fidbhv, ytouch, 'float32');
+        end
         
         %%%%% Versions > 2.5
         for i = 1:9,

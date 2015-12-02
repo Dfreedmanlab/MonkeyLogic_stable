@@ -1170,7 +1170,7 @@ for trial = 1:MLConfig.MaxTrials,
     WriteData(trial).CodeTimes = {Codes.CodeTimes};
     WriteData(trial).EyeSignal = TrialData.AnalogData.EyeSignal;
     WriteData(trial).Joystick = TrialData.AnalogData.Joystick;
-    WriteData(trial).Touchscreen = TrialData.AnalogData.TouchSignal;
+    WriteData(trial).TouchSignal = TrialData.AnalogData.TouchSignal;
     WriteData(trial).PhotoDiode = TrialData.AnalogData.PhotoDiode;
     WriteData(trial).GeneralAnalog = TrialData.AnalogData.General;
     WriteData(trial).ReactionTime = reactiontime;
@@ -1178,6 +1178,7 @@ for trial = 1:MLConfig.MaxTrials,
     WriteData(trial).RewardRecord = TrialData.RewardRecord;
     WriteData(trial).CycleRate = TrialData.CycleRate;
     WriteData(trial).UserVars = TrialData.UserVars;
+    
     bhv_write(2, fidbhv, WriteData(trial));
     
     lastcond = cond;
