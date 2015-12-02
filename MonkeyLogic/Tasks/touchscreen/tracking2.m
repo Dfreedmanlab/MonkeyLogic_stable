@@ -11,13 +11,7 @@
 % This task is much more efficient than the other sample. However, it can
 % not display any advanced touch location stimuli.
 %
-% Currently, this code assumes that the cursor data is piped into the eye
-% tracker channel, which allows us to use the eye_position() function to get
-% x,y data, and eyejoytrack() to determine if the cursor is ontarget. Future
-% versions will have separate functions such as touchscreen_position() and
-% touchtrack(), or something similar.
-
-% Oct 29, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a touch/fixation

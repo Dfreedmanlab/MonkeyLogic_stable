@@ -9,13 +9,7 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors).
 % 
-% Currently, this code assumes that the cursor data is piped into the eye
-% tracker channel, which allows us to use the eye_position() function to get
-% x,y data, and eyejoytrack() to determine if the cursor is ontarget. Future
-% versions will have separate functions such as touchscreen_position() and
-% touchtrack(), or something similar.
-
-% Oct 26, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 scene_timer = tic;
 windowSize = 1.5; % in degrees of visual angle (DVA)
