@@ -8,6 +8,6 @@ if verLessThan('matlab', '8')
 else
     clear sound;
 end
-clear all;
+%clear all;
 fclose all;
 close all;
