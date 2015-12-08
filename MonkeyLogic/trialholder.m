@@ -747,7 +747,6 @@ if fxn1 == -1,                      %initialize
     end
     eyetarget_index = 0;
     eyetarget_record = cell(100, 1);
-    %disp('initialized eyejoytrack');
     return
 elseif fxn1 == -2, %call from showcursor
     ScreenData.ShowCursor = varargin{1};
@@ -1098,12 +1097,6 @@ if ~idle,
         eyestatus = 0;
         ex = {eyeobject.XPos}';
         ey = {eyeobject.YPos}';
-		%do not do this below or you will get an error
-		% eyeobject.XPos is not the eye position, it's a GUI object.
-        %data = mlvideo('gettouch');
-        %ex = data(1);
-        %ey = data(2);
-
         eyetarget_index = eyetarget_index + 1;
         eyetarget_record{eyetarget_index} = [ex ey];
         esize = num2cell(2*eyerad*ScreenData.PixelsPerDegree*ScreenData.ControlScreenRatio(1)/ScreenData.PixelsPerPoint);
@@ -1570,7 +1563,6 @@ persistent DAQ AI ScreenData joyx joyy jTform cxpos_last cypos_last last_jtrace_
 t1 = trialtime;
 
 if ~isempty(varargin) && varargin{1} == -1,
-    %disp('initialized joystick_position');
     DAQ = varargin{2};
     AI = [];
     if isempty(DAQ.AnalogInput),
@@ -1636,7 +1628,6 @@ t1 = trialtime;
 
 if ~isempty(varargin), 
     if varargin{1} == -1, %INITIALIZE
-        %disp('initialized eye_position');
         DAQ = varargin{2};
         AI = [];
         if isempty(DAQ.AnalogInput),
@@ -1817,7 +1808,7 @@ elseif strcmpi(sig(1:3), 'joy'),
     y = aisample(:, DAQ.Joystick.YChannelIndex);
     [x y] = tformfwd(jTform, x, y);
     adata = [x y];
-elseif strcmpi(sig(1:3), 'touch'),
+elseif strcmpi(sig(1:3), 'tou'),
     tmp = mlvideo('gettouch');
     x = tmp(1);
     y = tmp(2);
@@ -2579,7 +2570,7 @@ if ~isempty(DAQ.AnalogInput),
         set(h1, 'color', ScreenData.EyeTraceColor/2);
         h2 = plot(ex, ey, '.');
         set(h2, 'markeredgecolor', ScreenData.EyeTraceColor, 'markersize', 3);
-        AIdata.EyeSignal = [ex' ey'];
+        AIdata.EyeSignal = [ex ey];
     end
 
     if ~isempty(DAQ.General),

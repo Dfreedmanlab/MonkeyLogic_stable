@@ -12,8 +12,8 @@ function mlmenu(varargin)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'November 2015';
-currentversion = '12-02-2015 build 1.0.91';
+lastupdate = 'December 2015';
+currentversion = '12-08-2015 build 1.0.95';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
