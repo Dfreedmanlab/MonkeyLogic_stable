@@ -51,12 +51,12 @@ set_object_path(-1, TaskObject, ScreenInfo);
 set_iti(-1);
 showcursor(-1, ScreenInfo);
 %%% initialize i/o subroutines:
-%disp('initialize i/o subroutines:');
 eyejoytrack(-1, TaskObject, DaqInfo, ScreenInfo, EyeTransform, JoyTransform);
 idle(-1, ScreenInfo);
 joystick_position(-1, DaqInfo, ScreenInfo, JoyTransform);
 eye_position(-1, DaqInfo, ScreenInfo, EyeTransform);
 touch_position(-1, DaqInfo, ScreenInfo); % notice that this does not have a TouchTransform
+mouse_position(-1, DaqInfo, ScreenInfo); % notice that this does not have a TouchTransform
 simulation_positions(-1);
 get_analog_data(-1, DaqInfo, EyeTransform, JoyTransform);
 getkeypress(-1, ScreenInfo);
@@ -464,7 +464,7 @@ if ScreenData.PhotoDiode > 1 && videochange && ~update_cursor,
     end
 end
 
-%Subject's Controller Cursor (Eyetracker, joystick, touchscreen, etc.)
+%Subject's Controller Cursor (Eyetracker, joystick, touchscreen, mouse, etc.)
 if update_cursor,
     if ( (cursorpos(1) >= 0) && (cursorpos(2) >= 0) )
         mlvideo('blit', ScreenData.Device, ScreenData.CursorBuffer, cursorpos(1), cursorpos(2), ScreenData.CursorXsize, ScreenData.CursorYsize);
@@ -633,10 +633,10 @@ function [ontarget, rt] = eyejoytrack(fxn1, varargin)
 global SIMULATION_MODE
 global RFM_TASK
 persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsamples ejt_totaltime min_cyclerate...
-    joyx joyy eyex eyey touchx touchy joypresent eyepresent touchpresent eyetarget_index eyetarget_record ...
+    joyx joyy eyex eyey touchx touchy mousex mousey joypresent eyepresent touchpresent mousepresent eyetarget_index eyetarget_record ...
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
     lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax ...
-	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys touchdata_x touchdata_y
+	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys touchdata_x touchdata_y mousedata_x mousedata_y
 
 t1 = trialtime;
 ontarget = 0;
@@ -658,6 +658,8 @@ if fxn1 == -1,                      %initialize
     AI = [];
     touchdata_x = [];
     touchdata_y = [];
+    mousedata_x = [];
+    mousedata_y = [];
     if isempty(DAQ.AnalogInput2),
         if ~isempty(DAQ.AnalogInput),
             AI = DAQ.AnalogInput;
@@ -674,9 +676,12 @@ if fxn1 == -1,                      %initialize
     ControlObject.JoyTraceHandle = findobj('tag', 'trace');
 	ControlObject.TouchTargetHandle = findobj('tag', 'fixcircle'); % same as eye
 	ControlObject.TouchTraceHandle = findobj('tag', 'eyetrace');   % same as eye
+	ControlObject.MouseTargetHandle = findobj('tag', 'fixcircle'); % same as eye
+	ControlObject.MouseTraceHandle = findobj('tag', 'eyetrace');   % same as eye
     ControlObject.ButtonLines = findobj('tag', 'ButtonLine');
     ControlObject.ButtonCircles = findobj('tag', 'ButtonCircle');
     ControlObject.ButtonThresh = findobj('tag', 'ButtonThresh');
+    
     if isempty(DAQ.EyeSignal),
         eyex = [];
         eyey = [];
@@ -704,6 +709,16 @@ if fxn1 == -1,                      %initialize
         touchy = DAQ.TouchSignal.YChannelIndex;
         touchpresent = 1;
     end
+    if isempty(DAQ.MouseSignal),
+        mousex = [];
+        mousey = [];
+        mousepresent = 0;
+    else
+        mousex = DAQ.MouseSignal.XChannelIndex;
+        mousey = DAQ.MouseSignal.YChannelIndex;
+        mousepresent = 1;
+    end
+
     if isempty(DAQ.Buttons),
         buttonx = [];
         buttonspresent = 0;
@@ -735,15 +750,25 @@ if fxn1 == -1,                      %initialize
         if isempty(data),
             error('*** Unable to acquire data from analog input object ***')
         end
+
     elseif touchpresent
         while isempty(data) && count < 1000,
             data = mlvideo('gettouch');
             count = count + 1;
         end
         if isempty(data),
-            error('*** Unable to acquire data from analog input object ***')
+            error('*** Unable to acquire data from touch input object ***')
         end
-        
+ 
+    elseif mousepresent
+        while isempty(data) && count < 1000,
+            data = mlvideo('getmouse');
+            count = count + 1;
+        end
+        if isempty(data),
+            error('*** Unable to acquire data from mouse input object ***')
+        end
+
     end
     eyetarget_index = 0;
     eyetarget_record = cell(100, 1);
@@ -834,15 +859,21 @@ elseif fxn1 == -8,
     ontarget = touchdata_x;
     rt = touchdata_y;
     return;
+elseif fxn1 == -9,
+    ontarget = mousedata_x;
+    rt = mousedata_y;
+    return;
 end
 
 eyetrack = 0;
 joytrack = 0;
 touchtrack = 0;
+mousetrack = 0;
 buttontrack = 0;
 eyestatus = 0;
 joystatus = 0;
 touchstatus = 0;
+mousestatus = 0;
 bstatus = 0;
 eyefirst = 0;
 joyfirst = 0;
@@ -858,6 +889,9 @@ if strcmp(fxn1, 'idle'),
     end
     if ~isempty(touchx),
         touchtrack = 1;
+    end
+    if ~isempty(mousex),
+        mousetrack = 1;
     end
     maxtime = varargin{1};
 else
@@ -921,6 +955,23 @@ else
         touchrad = trad1';
         %touchfirst = 1;
         touchobindex = tob1;
+    elseif strcmpi(fxn1, 'acquiremouse'),
+        mousetrack = 1;
+        mouseop = 0; %less than
+        mouseobject = TrialObject(tob1);
+        mouserad = trad1';
+        %mousefirst = 1;
+        mouseobindex = tob1;
+    elseif strcmpi(fxn1, 'releasemouse'),
+        if length(tob1) > 1,
+            error('*** Must specify exactly one object on which to mouse over target ***');
+        end
+        mousetrack = 1;
+        mouseop = 1; %greater than
+        mouseobject = TrialObject(tob1);
+        mouserad = trad1';
+        %mousefirst = 1;
+        mouseobindex = tob1;
     elseif strcmpi(fxn1, 'acquiretouch'),
         buttontrack = 1;
         buttonop = 0;
@@ -1009,6 +1060,27 @@ if length(varargin) > 3,
         touchobject = TrialObject(tob2);
         touchrad = trad2';
         touchobindex = tob2;
+    elseif strcmpi(fxn2, 'acquiremouse'),
+        if mousetrack,
+            error('*** Mouse tracking criteria double-set in one "eyejoytrack" command ***');
+        end
+        mousetrack = 1;
+        mouseop = 0; %less than
+        mouseobject = TrialObject(tob2);
+        mouserad = trad2';
+        mouseobindex = tob2;
+    elseif strcmpi(fxn2, 'releasemouse'),
+        if mousetrack,
+            error('*** Mouse tracking criteria double-set in one "eyejoytrack" command ***');
+        end
+        if length(tob2) > 1,
+            error('*** Must specify exactly one object on which to release target ***');
+        end
+        mousetrack = 1;
+        mouseop = 1; %greater than
+        mouseobject = TrialObject(tob2);
+        mouserad = trad2';
+        mouseobindex = tob2;
     elseif strcmpi(fxn2, 'acquiretouch'),
         if buttontrack,
             error('*** Button tracking criteria double-set in one "eyejoytrack" command ***');
@@ -1039,6 +1111,9 @@ if joytrack && ~joypresent,
 end
 if touchtrack && ~touchpresent,
     disp('*** No touchscreen inputs defined in I/O menu ***');
+end
+if mousetrack && ~mousepresent,
+    disp('*** No mouse inputs defined in I/O menu ***');
 end
 if buttontrack,
     if ~any(buttonspresent),
@@ -1140,6 +1215,21 @@ if ~idle,
             set(ControlObject.TouchTargetHandle(touchobindex(2:numtouchobjects))', 'markeredgecolor', (ScreenData.TouchTargetColor/2));
         end
     end
+    if mousetrack,
+        nummouseobjects = length(mouseobject);
+        mousestatus = 0;
+        mx = {mouseobject.XPos}';
+        my = {mouseobject.YPos}';
+        tsize = num2cell(2*mouserad*ScreenData.PixelsPerDegree*ScreenData.ControlScreenRatio(1)/ScreenData.PixelsPerPoint);
+        if ~moviesplaying,
+            set(ControlObject.MouseTargetHandle(mouseobindex)', {'xdata'}, mx, {'ydata'}, my, {'markersize'}, tsize);
+        end
+        mx = cat(1, mx{:});
+        my = cat(1, my{:});
+        if nummouseobjects > 1 && ~moviesplaying,
+            set(ControlObject.MouseTargetHandle(mouseobindex(2:nummouseobjects))', 'markeredgecolor', (ScreenData.MouseTargetColor/2));
+        end
+    end
     if buttontrack,
         if isempty(bthresh),
             if analogbuttons,
@@ -1229,8 +1319,8 @@ while t2 < maxtime,
 	if touchpresent,
         if SIMULATION_MODE,
             sim_vals = simulation_positions(0);
-            xp_touch = sim_vals(3);
-            yp_touch = sim_vals(4);
+            xp_touch = sim_vals(1);
+            yp_touch = sim_vals(2);
         else
 
             touch_data = mlvideo('gettouch');
@@ -1254,6 +1344,34 @@ while t2 < maxtime,
         end
     end
     
+	if mousepresent,
+        if SIMULATION_MODE,
+            sim_vals = simulation_positions(0);
+            xp_mouse = sim_vals(3);
+            yp_mouse = sim_vals(4);
+        else
+
+            mouse_data = mlvideo('getmouse');
+            xp_mouse = mouse_data(mousex);
+            yp_mouse = mouse_data(mousey);
+            % create a memory buffer of touch data (this is not necessary
+            % for all other forms of analoginput because they use the NIDAQ
+            % buffer).
+            mousedata_x = [mousedata_x, xp_mouse];
+            mousedata_y = [mousedata_y, yp_mouse];
+            
+        end
+
+        if ~idle && mousetrack,
+            mouse_dist = realsqrt((xp_mouse - mx).^2 + (yp_mouse - my).^2);
+            if mouseop, %mousetarget
+                mousestatus = mouse_dist > mouserad;
+            else %releasetarget
+                mousestatus = mouse_dist <= mouserad;
+            end
+        end
+    end
+
     if any(buttonspresent),
         if analogbuttons,
             allbvals = data(buttonx);
@@ -1280,7 +1398,7 @@ while t2 < maxtime,
 	end
 	
 	if exist('Xnew', 'var')
-        rfmtarget = mlvideo('gettouch');
+        rfmtarget = mlvideo('getmouse');
 		Xold = Xnew;
 		Yold = Ynew;
         Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
@@ -1345,7 +1463,7 @@ while t2 < maxtime,
 		end
 	end
 	
-    if any(eyestatus) || any(joystatus) || any(touchstatus)|| any(bstatus),
+    if any(eyestatus) || any(joystatus) || any(touchstatus)|| any(mousestatus) || any(bstatus),
         t = trialtime - t1;
         rt = round(t);
         t2 = maxtime;
@@ -1362,6 +1480,10 @@ while t2 < maxtime,
             t_targetnumber = find(touchstatus);
             touchstatus = any(touchstatus);
         end
+        if mousetrack,
+            t_targetnumber = find(mousestatus);
+            mousestatus = any(mousestatus);
+        end
         if buttontrack,
             btargetnumber = find(bstatus);
             bstatus = any(bstatus);
@@ -1372,6 +1494,8 @@ while t2 < maxtime,
             ontarget = ~joyop*jtargetnumber;
         elseif numsigs == 1 && touchtrack,
             ontarget = ~touchop*t_targetnumber;
+        elseif numsigs == 1 && mousetrack,
+            ontarget = ~mouseop*t_targetnumber;
         elseif numsigs == 1 && buttontrack,
             ontarget = ~buttonop*btargetnumber;
         elseif numsigs == 2,
@@ -1393,6 +1517,17 @@ while t2 < maxtime,
                     ontarget = [eyeop ~touchop*t_targetnumber];
                 else %both 
                     ontarget = [~eyeop*etargetnumber ~touchop*t_targetnumber];
+                end
+                if ~eyefirst,
+                    ontarget = [ontarget(2) ontarget(1)];
+                end
+            elseif eyetrack && mousetrack,
+                if eyestatus && ~mousestatus,
+                    ontarget = [~eyeop*etargetnumber mouseop];
+                elseif ~eyestatus && mousestatus,
+                    ontarget = [eyeop ~mouseop*t_targetnumber];
+                else %both 
+                    ontarget = [~eyeop*etargetnumber ~mouseop*t_targetnumber];
                 end
                 if ~eyefirst,
                     ontarget = [ontarget(2) ontarget(1)];
@@ -1445,6 +1580,11 @@ while t2 < maxtime,
                     cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_touch) - (ScreenData.CursorXsize/2));
                     cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_touch) - (ScreenData.CursorYsize/2));
                 end
+                if (mousepresent)
+                    cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_mouse) - (ScreenData.CursorXsize/2));
+                    cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_mouse) - (ScreenData.CursorYsize/2));
+                  
+                end
                 
                 [tflip lastframe] = toggleobject(-4, [cxpos cypos]);
             else
@@ -1465,6 +1605,9 @@ while t2 < maxtime,
             end
             if touchpresent,
                 set(ControlObject.TouchTraceHandle, 'xdata', xp_touch, 'ydata', yp_touch);
+            end
+            if mousepresent,
+                set(ControlObject.MouseTraceHandle, 'xdata', xp_mouse, 'ydata', yp_mouse);
             end
             if any(buttonspresent),
                 for i = 1:numbuttons,
@@ -1505,6 +1648,8 @@ if ~earlybreak && ~idle,
             ontarget = joyop*find(~joystatus);
         elseif touchtrack,
             ontarget = touchop*find(~touchstatus);
+        elseif mousetrack,
+            ontarget = mouseop*find(~mousestatus);
         elseif buttontrack,
             ontarget = buttonop*find(~bstatus);
         end
@@ -1520,6 +1665,12 @@ if ~earlybreak && ~idle,
                 ontarget = [eyeop*(find(~eyestatus))' touchop*(find(~touchstatus))'];
             else
                 ontarget = [touchop*(find(~touchstatus))' eyeop*(find(~eyestatus))'];
+            end
+        elseif eyetrack && mousetrack,
+            if eyefirst,
+                ontarget = [eyeop*(find(~eyestatus))' mouseop*(find(~mousestatus))'];
+            else
+                ontarget = [mouseop*(find(~mousestatus))' eyeop*(find(~eyestatus))'];
             end
         elseif eyetrack && buttontrack,
             if eyefirst,
@@ -1540,6 +1691,7 @@ end
 set(ControlObject.EyeTargetHandle, 'xdata', ScreenData.OutOfBounds, 'ydata', ScreenData.OutOfBounds);
 set(ControlObject.JoyTargetHandle, 'xdata', ScreenData.OutOfBounds, 'ydata', ScreenData.OutOfBounds);
 set(ControlObject.TouchTargetHandle, 'xdata', ScreenData.OutOfBounds, 'ydata', ScreenData.OutOfBounds);
+set(ControlObject.MouseTargetHandle, 'xdata', ScreenData.OutOfBounds, 'ydata', ScreenData.OutOfBounds);
 
 if eyetrack && ~idle && numeyeobjects > 1,
     set(ControlObject.EyeTargetHandle(eyeobindex(2:numeyeobjects)), 'markeredgecolor', ScreenData.EyeTargetColor);
@@ -1549,6 +1701,9 @@ if joytrack && ~idle && numjoyobjects > 1,
 end
 if touchtrack && ~idle && numtouchobjects > 1,
     set(ControlObject.TouchTargetHandle(touchobindex(2:numtouchobjects)), 'markeredgecolor', ScreenData.TouchTargetColor);
+end
+if mousetrack && ~idle && nummouseobjects > 1,
+    set(ControlObject.MouseTargetHandle(mouseobindex(2:nummouseobjects)), 'markeredgecolor', ScreenData.MouseTargetColor);
 end
 if isnan(rt),
     ejt_totaltime = ejt_totaltime + maxtime;
@@ -1746,10 +1901,69 @@ tx = data(1);
 ty = data(2);
 
 if isfield(ScreenData, 'UpdateInterval'),
-    ScreenData.UpdateInterval
     if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
         if isfield(ControlObject, 'TouchTraceHandle'),
             set(ControlObject.TouchTraceHandle, 'xdata', tx, 'ydata', ty);
+        end
+        drawnow;
+        last_etrace_update = trialtime;
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [mx, my] = mouse_position(varargin)
+persistent DAQ ScreenData mousex mousey exOff eyOff exTarget eyTarget last_etrace_update ControlObject
+t1 = trialtime;
+
+if ~isempty(varargin), 
+    if varargin{1} == -1, %INITIALIZE
+        
+        DAQ = varargin{2};
+       
+        ScreenData = varargin{3};
+        
+        exOff = 0;
+        eyOff = 0;
+        exTarget = 0;
+        eyTarget = 0;
+        ControlObject.MouseTraceHandle = findobj('tag', 'eyetrace'); %uses eye setting
+        if isempty(DAQ.MouseSignal),
+            mousex = [];
+            mousey = [];
+        else
+            mousex = DAQ.MouseSignal.XChannelIndex;
+            mousey = DAQ.MouseSignal.YChannelIndex;
+        end
+        last_etrace_update = t1;
+        
+        return
+    elseif varargin{1} == -2, %SETOFFSET
+        if isnan(exTarget) || isnan(eyTarget),
+            return
+        end
+        [mx my] = mouse_position;
+        exOff = exOff - mx + exTarget;
+        eyOff = eyOff - my + eyTarget;
+        return
+    elseif varargin{1} == -3, %GETOFFSET
+        mx = exOff;
+        my = eyOff;
+        return
+    elseif varargin{1} == -4, %SETTARGET
+        exTarget = varargin{2};
+        eyTarget = varargin{3};
+        return
+    end
+end
+
+data = mlvideo('getmouse');
+mx = data(1);
+my = data(2);
+
+if isfield(ScreenData, 'UpdateInterval'),
+    if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
+        if isfield(ControlObject, 'MouseTraceHandle'),
+            set(ControlObject.MouseTraceHandle, 'xdata', mx, 'ydata', my);
         end
         drawnow;
         last_etrace_update = trialtime;
@@ -1813,7 +2027,11 @@ elseif strcmpi(sig(1:3), 'tou'),
     x = tmp(1);
     y = tmp(2);
     adata = [x y];
-    %disp('get_analog_data is running the touch block'),
+elseif strcmpi(sig(1:3), 'mou'),
+    tmp = mlvideo('getmouse');
+    x = tmp(1);
+    y = tmp(2);
+    adata = [x y];
 else
     chindex = DAQ.AnalogInput.(sig).Index;
     adata = aisample(:, chindex);
@@ -2529,6 +2747,7 @@ end
 AIdata.EyeSignal = [];
 AIdata.Joystick = [];
 AIdata.TouchSignal = [];
+AIdata.MouseSignal = [];
 AIdata.PhotoDiode = [];
 
 for i = 1:9,
@@ -2605,6 +2824,19 @@ if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
     AIdata.TouchSignal = [ex' ey'];
 end
     
+if ~isempty(DAQ.MouseSignal) && ~SIMULATION_MODE,
+
+    [ex, ey] = eyejoytrack(-9);  % get all mouse data
+    %ex = touchscreen_dataclean(ex);  %not necessary to clean mouse data
+    %ey = touchscreen_dataclean(ey);  %not necessary to clean mouse data
+    
+   	h1 = plot(ex, ey);
+    set(h1, 'color', ScreenData.MouseTraceColor/2);
+    h2 = plot(ex, ey, '.');
+    set(h2, 'markeredgecolor', ScreenData.MouseTraceColor, 'markersize', 10);
+    AIdata.MouseSignal = [ex' ey'];
+end
+
 newtform = [];
 if ~isempty(eTform)
     tri = [0 0; 1 0; 0 1];

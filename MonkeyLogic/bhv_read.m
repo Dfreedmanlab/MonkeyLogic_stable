@@ -70,10 +70,14 @@ function BHV = bhv_read(varargin)
 %       | BHV.AnalogData{trial}.Joystick [x]     'float32' x BHV.NumXJoyPoints
 %       | BHV.NumYJoyPoints(trial)               'uint32' x 1
 %       | BHV.AnalogData{trial}.Joystick [y]     'float32' x BHV.NumYJoyPoints
-%       | BHV.NumXTouchPoints(trial)               'uint32' x 1
-%       | BHV.AnalogData{trial}.TouchSignal[x]     'float32' x BHV.NumXTouchPoints
-%       | BHV.NumYTouchPoints(trial)               'uint32' x 1
-%       | BHV.AnalogData{trial}.TouchSignal[y]     'float32' x BHV.NumYTouchPoints
+%       | BHV.NumXTouchPoints(trial)             'uint32' x 1
+%       | BHV.AnalogData{trial}.TouchSignal[x]   'float32' x BHV.NumXTouchPoints
+%       | BHV.NumYTouchPoints(trial)             'uint32' x 1
+%       | BHV.AnalogData{trial}.TouchSignal[y]   'float32' x BHV.NumYTouchPoints
+%       | BHV.NumXMousePoints(trial)             'uint32' x 1
+%       | BHV.AnalogData{trial}.MouseSignal[x]   'float32' x BHV.NumXMousePoints
+%       | BHV.NumYMousePoints(trial)             'uint32' x 1
+%       | BHV.AnalogData{trial}.MouseSignal[y]   'float32' x BHV.NumYMousePoints
 %       | BHV.ReactionTime(trial)                'uint16' x 1
 %       | BHV.ObjectStatusRecord(trial).Number   'uint32' x 1
 %       | BHV.ObjectStatusRecord(trial).Status   'ubit1' x ...Number
@@ -90,6 +94,7 @@ function BHV = bhv_read(varargin)
 % Modified 7/25/12 -WA (lengthened maximum trial to 2^32 milliseconds)
 % Modified 7/25/12 -WA (lengthened maximum trial to 2^32 milliseconds)
 % Modified 11/19/15 -WA (added TouchSignal to data stream)
+% Modified 12/21/15 -WA (added MouseSignal to data stream)
 
 BHV = struct;
 if ~ispref('MonkeyLogic', 'Directories'),
@@ -398,8 +403,32 @@ for trial = 1:BHV.NumTrials,
             end
             if BHV.NumXTouchPoints == BHV.NumYTouchPoints && BHV.NumXTouchPoints > 0,
                 BHV.AnalogData{trial}.TouchSignal = [xtouch ytouch];
-            elseif BHV.NumXJoyPoints > BHV.NumYJoyPoints, %only recorded one of the two
+            elseif BHV.NumXTouchPoints > BHV.NumYTouchPoints, %only recorded one of the two
                 BHV.AnalogData{trial}.TouchSignal = xtouch;
+            end
+        end
+
+        if BHV.FileVersion >= 3.3,
+            BHV.NumXMousePoints = fread(fidbhv, 1, 'uint32');
+            if BHV.NumXMousePoints > 0,
+                if BHV.FileVersion > 1.6,
+                    xmouse = fread(fidbhv, BHV.NumXMousePoints, 'float32');
+                else
+                    xmouse = fread(fidbhv, BHV.NumXMousePoints, 'double');
+                end
+            end
+            BHV.NumYMousePoints = fread(fidbhv, 1, 'uint32');
+            if BHV.NumYMousePoints > 0,
+                if BHV.FileVersion > 1.6,
+                    ymouse = fread(fidbhv, BHV.NumYMousePoints, 'float32');
+                else
+                    ymouse = fread(fidbhv, BHV.NumYMousePoints, 'double');
+                end
+            end
+            if BHV.NumXMousePoints == BHV.NumYMousePoints && BHV.NumXMousePoints > 0,
+                BHV.AnalogData{trial}.MouseSignal = [xmouse ymouse];
+            elseif BHV.NumXMousePoints > BHV.NumYMousePoints, %only recorded one of the two
+                BHV.AnalogData{trial}.MouseSignal = xmouse;
             end
         end
 

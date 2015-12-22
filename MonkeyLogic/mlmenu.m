@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'December 2015';
-currentversion = '12-21-2015 build 1.0.98';
+currentversion = '12-22-2015 build 1.1.1';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -503,8 +503,8 @@ if isempty(mlf),
     
     uicontrol('style', 'pushbutton', 'position', [xbase+355 ybase+1 70 25], 'string', 'Check', 'tag', 'checkio', 'callback', 'mlmenu');
     
-    iolist = {'Eye Signal X' 'Eye Signal Y' 'Joystick X' 'Joystick Y' 'Touchscreen X' 'Touchscreen Y' 'Reward' 'Behavioral Codes' 'Codes Strobe' 'Vertical Sync' 'PhotoDiode' 'Button 1' 'Button 2' 'Button 3' 'Button 4' 'Button 5' 'General Input 1' 'General Input 2' 'General Input 3' 'Stimulation 1' 'Stimulation 2' 'Stimulation 3' 'Stimulation 4' 'TTL 1' 'TTL 2' 'TTL 3' 'TTL 4', 'TTL 5', 'TTL 6'};
-    iovarnames = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'Reward' 'CodesDigOut' 'DigCodesStrobeBit' 'Vsync' 'PhotoDiode' 'Button1' 'Button2' 'Button3' 'Button4' 'Button5' 'Gen1' 'Gen2' 'Gen3' 'Stim1' 'Stim2' 'Stim3' 'Stim4' 'TTL1' 'TTL2' 'TTL3' 'TTL4' 'TTL5' 'TTL6'}';
+    iolist = {'Eye Signal X' 'Eye Signal Y' 'Joystick X' 'Joystick Y' 'Touchscreen X' 'Touchscreen Y' 'Mouse X' 'Mouse Y' 'Reward' 'Behavioral Codes' 'Codes Strobe' 'Vertical Sync' 'PhotoDiode' 'Button 1' 'Button 2' 'Button 3' 'Button 4' 'Button 5' 'General Input 1' 'General Input 2' 'General Input 3' 'Stimulation 1' 'Stimulation 2' 'Stimulation 3' 'Stimulation 4' 'TTL 1' 'TTL 2' 'TTL 3' 'TTL 4', 'TTL 5', 'TTL 6'};
+    iovarnames = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'MouseX' 'MouseY' 'Reward' 'CodesDigOut' 'DigCodesStrobeBit' 'Vsync' 'PhotoDiode' 'Button1' 'Button2' 'Button3' 'Button4' 'Button5' 'Gen1' 'Gen2' 'Gen3' 'Stim1' 'Stim2' 'Stim3' 'Stim4' 'TTL1' 'TTL2' 'TTL3' 'TTL4' 'TTL5' 'TTL6'}';
     for i = 1: length(iovarnames),
         InputOutput.(iovarnames{i}) = struct;
         InputOutput.(iovarnames{i}).Label = iolist{i};

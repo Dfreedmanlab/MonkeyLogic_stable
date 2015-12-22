@@ -41,7 +41,7 @@ for i = 1:numfields,
 
     if strcmp(fnfrag, 'Eye') || strcmp(fnfrag, 'Joy') || strcmp(fnfrag, 'Gen'),
         REQSYS.(fn) = {'AnalogInput'};
-    elseif strcmp(fnfrag, 'Tou'),
+    elseif strcmp(fnfrag, 'Tou') || strcmp(fnfrag, 'Mou'),
         REQSYS.(fn) = {'DigitalInputStream'};
     elseif strcmp(fnfrag, 'Rew'),
         REQSYS.(fn) = {'DigitalIO' 'AnalogOutput'};
@@ -117,6 +117,7 @@ DAQ.AnalogOutput = [];
 DAQ.EyeSignal = [];
 DAQ.Joystick = [];
 DAQ.TouchSignal = [];
+DAQ.MouseSignal = [];
 DAQ.Buttons = [];
 DAQ.General = [];
 DAQ.BehavioralCodes = [];
@@ -151,7 +152,7 @@ end
 
 TouchXpresent = isfield(IO.TouchX, 'Adaptor');
 TouchYpresent = isfield(IO.TouchY, 'Adaptor');
-if TouchXpresent || JoyYpresent,
+if TouchXpresent || TouchYpresent,
     numfieldsTouchX = length(fieldnames(IO.TouchX));
     numfieldsTouchY = length(fieldnames(IO.TouchY));
 end
@@ -159,6 +160,20 @@ if TouchXpresent || TouchYpresent,
     if numfieldsTouchX ~= numfieldsTouchY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 touchscreen inputs';
         disp('I/O Error: Must define 0 or 2 touchscreen inputs')
+        return
+    end
+end
+
+MouseXpresent = isfield(IO.MouseX, 'Adaptor');
+MouseYpresent = isfield(IO.MouseY, 'Adaptor');
+if MouseXpresent || MouseYpresent,
+    numfieldsMouseX = length(fieldnames(IO.MouseX));
+    numfieldsMouseY = length(fieldnames(IO.MouseY));
+end
+if MouseXpresent || MouseYpresent,
+    if numfieldsMouseX ~= numfieldsMouseY,
+        DaqError{1} = 'I/O Error: Must define 0 or 2 mouse inputs';
+        disp('I/O Error: Must define 0 or 2 mouse inputs')
         return
     end
 end
@@ -281,6 +296,10 @@ for i = 1:length(fnames),
                 DAQ.TouchSignal.XChannelIndex = IO.(signame).Channel;
             elseif strcmp(signame, 'TouchY'),
                 DAQ.TouchSignal.YChannelIndex = IO.(signame).Channel;
+            elseif strcmp(signame, 'MouseX'),
+                DAQ.MouseSignal.XChannelIndex = IO.(signame).Channel;
+            elseif strcmp(signame, 'MouseY'),
+                DAQ.MouseSignal.YChannelIndex = IO.(signame).Channel;
             end
             
         elseif strcmp(signame, 'Reward'),
@@ -402,7 +421,7 @@ if ~isempty(DAQ.AnalogOutput),
     set(DAQ.AnalogOutput, 'TriggerType', 'Manual');
 end
 
-rmf = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'CodesDigOut' 'DigCodesStrobeBit'};
+rmf = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'MouseX' 'MouseY' 'CodesDigOut' 'DigCodesStrobeBit'};
 for i = 1:length(rmf),
     if isfield(DAQ, rmf{i}),
         DAQ = rmfield(DAQ, rmf{i});

@@ -244,9 +244,19 @@ else
             else
                 touchx = [];
                 touchy = [];
-                numjoypoints = 0;
+                numtouchpoints = 0;
             end
             
+            if isfield(adata, 'MouseSignal'),
+                mousex = adata.MouseSignal(:, 1);
+                mousey = adata.MouseSignal(:, 2);
+                nummousepoints = length(mousex);
+            else
+                mousex = [];
+                mousey = [];
+                nummousepoints = 0;
+            end
+
             if isfield(bhv, 'AnalogInputFrequency') && bhv.AnalogInputFrequency ~= 1000,
                 ystep = 1000/bhv.AnalogInputFrequency;
                 if numeyepoints,
@@ -615,13 +625,23 @@ else
             if isfield(adata, 'TouchSignal'),
                 xtouch = adata.TouchSignal(:, 1);
                 ytouch = adata.TouchSignal(:, 2);
-                numjoypoints = length(xtouch);
+                numtouchpoints = length(xtouch);
             else
                 xtouch = 0;
                 ytouch = 0;
                 numtouchpoints = 0;
             end
             
+            if isfield(adata, 'MouseSignal'),
+                xmouse = adata.MouseSignal(:, 1);
+                ymouse = adata.MouseSignal(:, 2);
+                nummousepoints = length(xmouse);
+            else
+                xmouse = 0;
+                ymouse = 0;
+                nummousepoints = 0;
+            end
+
             if isfield(bhv, 'AnalogInputFrequency') && bhv.AnalogInputFrequency ~= 1000,
                 ystep = 1000/bhv.AnalogInputFrequency;
                 if numeyepoints,
@@ -809,7 +829,7 @@ for i = numobjects:-1:1,
 end
 set(gca, 'userdata', h);
 
-%add eye & joystick traces % touchscreen traces
+%add eye, joystick, touchscreen, and mouse traces
 adata = bhv.AnalogData{trialnumber};
 if isfield(adata, 'EyeSignal'),
     if isfield(bhv, 'EyeTraceColor'),
@@ -837,6 +857,16 @@ if isfield(adata, 'TouchSignal'),
     end
     h = plot(adata.TouchSignal(:, 1), adata.TouchSignal(:, 2));
     set(h, 'color', touchcolor, 'linewidth', 1.5, 'tag', 'touchtrace');
+end
+
+if isfield(adata, 'MouseSignal'),
+    if isfield(bhv, 'MouseTraceColor'),
+        mousecolor = bhv.MouseTraceColor;
+    else
+        mousecolor = [.8 .5 .5];
+    end
+    h = plot(adata.MouseSignal(:, 1), adata.MouseSignal(:, 2));
+    set(h, 'color', mousecolor, 'linewidth', 1.5, 'tag', 'mousetrace');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

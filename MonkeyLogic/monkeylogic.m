@@ -408,19 +408,28 @@ if isempty(MLConfig.JoyTransform),
     ScreenInfo.UseRawJoySignal = 1;
 end
 ScreenInfo.UseRawTouchSignal = 0; %use raw input signal (i.e., pre-calibrated touchscreen)
+ScreenInfo.UseRawMouseSignal = 0; %use raw input signal (i.e., pre-calibrated mouse)
 ScreenInfo.UpdateInterval = MLConfig.UpdateInterval;
+%%
 ScreenInfo.EyeTraceColor = MLConfig.EyeTraceColor;
 ScreenInfo.EyeTraceSize = MLConfig.EyeTraceSize;
 ScreenInfo.EyeTargetColor = 0.5*MLConfig.EyeTraceColor;
 ScreenInfo.EyeTargetLinewidth = 2;
+%%
 ScreenInfo.JoyTraceColor = MLConfig.JoyTraceColor;
 ScreenInfo.JoyTraceSize = MLConfig.JoyTraceSize;
 ScreenInfo.JoyTargetColor = 0.5*MLConfig.JoyTraceColor;
 ScreenInfo.JoyTargetLinewidth = 3;
+%%
 ScreenInfo.TouchTraceColor = MLConfig.JoyTraceColor;        % use Joystick setting
 ScreenInfo.TouchTraceSize = MLConfig.JoyTraceSize;          % use Joystick setting
 ScreenInfo.TouchTargetColor = 0.5*MLConfig.JoyTraceColor;   % use Joystick setting
 ScreenInfo.TouchTargetLinewidth = 3;                        % use Joystick setting
+%%
+ScreenInfo.MouseTraceColor = MLConfig.JoyTraceColor;        % use Joystick setting
+ScreenInfo.MouseTraceSize = MLConfig.JoyTraceSize;          % use Joystick setting
+ScreenInfo.MouseTargetColor = 0.5*MLConfig.JoyTraceColor;   % use Joystick setting
+ScreenInfo.MouseTargetLinewidth = 3;                        % use Joystick setting
 ScreenInfo.OutOfBounds = 2*max([ScreenInfo.Xsize ScreenInfo.Ysize])/ScreenInfo.PixelsPerDegree;
 ScreenInfo.FixationSpotImageFile = MLConfig.FixationSpotImageFile;
 ScreenInfo.ShowCursor = 0;
@@ -464,6 +473,7 @@ DaqInfo.StrobeBitEdge = MLConfig.StrobeBitEdge;
 EyeSignalInUse = ~ScreenInfo.UseRawEyeSignal && ~isempty(DaqInfo.EyeSignal);
 JoystickInUse = ~ScreenInfo.UseRawJoySignal && ~isempty(DaqInfo.Joystick);
 TouchscreenInUse = ~ScreenInfo.UseRawTouchSignal && ~isempty(DaqInfo.TouchSignal);
+MouseInUse = ~ScreenInfo.UseRawMouseSignal && ~isempty(DaqInfo.MouseSignal);
 fprintf('<<< MonkeyLogic >>> Successfully initialized DAQ system.\n');
 drawnow;
 
@@ -523,6 +533,7 @@ TrialRecord.ReactionTimes = [];
 TrialRecord.LastTrialAnalogData.EyeSignal = [];
 TrialRecord.LastTrialAnalogData.Joystick = [];
 TrialRecord.LastTrialAnalogData.TouchSignal = [];
+TrialRecord.LastTrialAnalogData.MouseSignal = [];
 TrialRecord.LastTrialCodes.CodeNumbers = [];
 TrialRecord.LastTrialCodes.CodeTimes = [];
 TrialRecord.DataFile = datafile;
@@ -1171,6 +1182,7 @@ for trial = 1:MLConfig.MaxTrials,
     WriteData(trial).EyeSignal = TrialData.AnalogData.EyeSignal;
     WriteData(trial).Joystick = TrialData.AnalogData.Joystick;
     WriteData(trial).TouchSignal = TrialData.AnalogData.TouchSignal;
+    WriteData(trial).MouseSignal = TrialData.AnalogData.MouseSignal;
     WriteData(trial).PhotoDiode = TrialData.AnalogData.PhotoDiode;
     WriteData(trial).GeneralAnalog = TrialData.AnalogData.General;
     WriteData(trial).ReactionTime = reactiontime;
