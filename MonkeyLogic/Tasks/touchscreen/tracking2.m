@@ -1,11 +1,10 @@
 % This is an example MonkeyLogic task that demonstrates very basic use of a
-% touchscreen or mouse to select stimulus
+% touchscreen to select stimulus.
 %
 % Moving the mouse/touchscreen controlled cursor over one of two square
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors). Unlike the other tracking sample, this one will terminate
-% the trial after a selection is made all the alloted time period is
-% expired.
+% the trial only after both stimuli are selected.
 % 
 % The position of the cursor is displayed using showcursor('on')
 % This task is much more efficient than the other sample. However, it can

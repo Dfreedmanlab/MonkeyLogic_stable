@@ -1,5 +1,5 @@
 % This is an example MonkeyLogic task that demonstrates very basic use of a
-% touchscreen or mouse to select stimulus
+% touchscreen to select stimulus.
 %
 % During trials, a red dot will follow the cursor which is controlled by a
 % mouse or touchscreen. When the left mouse button is pressed, or
