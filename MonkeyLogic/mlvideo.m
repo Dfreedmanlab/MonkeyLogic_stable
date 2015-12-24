@@ -200,6 +200,17 @@ switch fxn
             screen_y_pos = varargin{4};
             image_x_size = varargin{5};
             image_y_size = varargin{6};
+            
+            xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+
+            width = xgl_pos(2,3);
+            height = xgl_pos(2,4);
+                       
+            if (screen_x_pos < 0), screen_x_pos = 0; end
+            if (screen_y_pos < 0), screen_y_pos = 0;end
+            if (screen_x_pos >= width-image_x_size), screen_x_pos = width-image_x_size; end
+            if (screen_y_pos >= height-image_y_size), screen_y_pos = height-image_y_size; end
+
             xglblit(devicenum, buffer, [screen_x_pos screen_y_pos image_x_size image_y_size]);
         else
             xglblit(devicenum, buffer);
