@@ -1585,7 +1585,7 @@ while t2 < maxtime,
                     cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_mouse) - (ScreenData.CursorYsize/2));
                   
                 end
-                
+			
                 [tflip lastframe] = toggleobject(-4, [cxpos cypos]);
             else
                 [tflip lastframe] = toggleobject(-4);

@@ -9,6 +9,7 @@ hwinfo = daqhwinfo;
 disp(sprintf('<<< MonkeyLogic >>> DAQ Toolbox Version: %s %s', hwinfo.ToolboxName, hwinfo.ToolboxVersion));
 disp(sprintf('<<< MonkeyLogic >>> DAQ Driver Version: %s %s', daq.getVendors().FullName, daq.getVendors().DriverVersion));
 
+
 %insert an additional adapter
 numFound = length(hwinfo.InstalledAdaptors);
 hwinfo.InstalledAdaptors(numFound+1) = cellstr('USB (Universal Serial Bus)');

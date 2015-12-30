@@ -8,7 +8,7 @@ function [DAQ, DaqError] = initio(IO)
 % Last modified 8/11/08 -WA (to make certain analog-input objects use DMA)
 % Last modified 11/17/15 -ER (Added DigitalInputStream for touchscreens and other future devices)
 
-disp('<<< MonkeyLogic >>> Starting up DAQ...')
+disp('<<< MonkeyLogic >>> Initializing I/O')
 
 %for manual editing:
 configIO.AI.BufferingConfig =  [16 1024]; %[1 2000];
@@ -441,8 +441,6 @@ for i = 1:length(fn),
         DAQ = rmfield(DAQ, fname);
     end
 end
-
-disp('<<< MonkeyLogic >>> Starting up DAQ Completed!')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ai DaqError] = init_ai(constructor, configIO)

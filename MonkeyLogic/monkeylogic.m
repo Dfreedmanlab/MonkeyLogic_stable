@@ -474,7 +474,7 @@ EyeSignalInUse = ~ScreenInfo.UseRawEyeSignal && ~isempty(DaqInfo.EyeSignal);
 JoystickInUse = ~ScreenInfo.UseRawJoySignal && ~isempty(DaqInfo.Joystick);
 TouchscreenInUse = ~ScreenInfo.UseRawTouchSignal && ~isempty(DaqInfo.TouchSignal);
 MouseInUse = ~ScreenInfo.UseRawMouseSignal && ~isempty(DaqInfo.MouseSignal);
-fprintf('<<< MonkeyLogic >>> Successfully initialized DAQ system.\n');
+fprintf('<<< MonkeyLogic >>> Successfully completed initializing I/O.\n');
 drawnow;
 
 % Initialize reward
@@ -497,7 +497,7 @@ if ~ScreenInfo.IsActive,
     save(errorfile);
     error('*** Video Initialization Error ***')
 end
-disp('<<< MonkeyLogic >>> Video graphics initialization completed.')
+disp('<<< MonkeyLogic >>> Video graphics initialization completed successfully.')
 
 % per MS: calculate video frame length for use with movies...
 disp('<<< MonkeyLogic >>> Calculating video frame length...')
