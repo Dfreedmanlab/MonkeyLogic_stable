@@ -38,19 +38,24 @@ if ~isempty(DaqInfo.AnalogInput),
     while ~isrunning(DaqInfo.AnalogInput), end
     trialtime(-1, ScreenInfo); %initialize trial timer
     set(gcf, 'CurrentAxes', findobj(ScreenInfo.ControlScreenHandle, 'tag', 'replica'));
-    drawnow; %flush all pending graphics
+
+    % flush all pending graphics
+    drawnow limitrate;
     while ~DaqInfo.AnalogInput.SamplesAvailable, end
 else
-    trialtime(-1, ScreenInfo); %initialize trial timer
+    % initialize trial timer
+    trialtime(-1, ScreenInfo);
 end
-%%% initialize video subroutines:
+
+% initialize video subroutines
 toggleobject(-1, TaskObject, ScreenInfo, DaqInfo);
 set_frame_order(-1, TaskObject);
 reposition_object(-1, TaskObject, ScreenInfo);
 set_object_path(-1, TaskObject, ScreenInfo);
 set_iti(-1);
 showcursor(-1, ScreenInfo);
-%%% initialize i/o subroutines:
+
+% initialize i/o subroutines
 eyejoytrack(-1, TaskObject, DaqInfo, ScreenInfo, EyeTransform, JoyTransform);
 idle(-1, ScreenInfo);
 joystick_position(-1, DaqInfo, ScreenInfo, JoyTransform);
@@ -65,49 +70,57 @@ goodmonkey(-1, DaqInfo);
 user_text(-1, ScreenInfo);
 user_warning(-1, ScreenInfo);
 bhv_variable(-1);
-%%% initialize end-trial subroutine;
+
+% initialize end-trial subroutine
 end_trial(-1, DaqInfo, ScreenInfo, EyeTransform, JoyTransform, trialtype);
-%%% initialize eventmarker subroutine
+
+% initialize eventmarker subroutine
 eventmarker(-1, DaqInfo, BehavioralCodes);
 
-if trialtype == 0, %a regular task trial
+if trialtype == 0,
+    % regular task trial
+    % fire code 9 (start trial) 3 times to ensure at least one is transmitted
     eventmarker(9);
     eventmarker(9);
     eventmarker(9);
-elseif trialtype == 1, %initialization trial
+
+elseif trialtype == 1,
+    % initialization trial
     user_warning('off');
     mov = 1;
     t = (1000*TaskObject(mov).NumFrames/ScreenInfo.RefreshRate) - 50;
     toggleobject(mov);
-    goodmonkey(-2); %will test output only if reward line exists
+
+    % will test output only if reward line exists
+    goodmonkey(-2);
     idle(t);
     toggleobject(mov);
     end_trial;
     return
-elseif trialtype == 2, %benchmark trial
+
+elseif trialtype == 2,
+    % benchmark trial
     user_warning('off');
-    disp('<<< MonkeyLogic >>> Entering benchmark mode...'); %mltimetest.m takes over from here
+
+    % mltimetest.m takes over from here
+    disp('<<< MonkeyLogic >>> Entering benchmark mode...');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EASY ESCAPE
+% Easy escape
 hotkey('esc', 'escape_screen;');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EYE OFFSET
+% EYE OFFSET
 hotkey('c', 'eye_position(-2);');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% REWARD
+% REWARD
 hotkey('r', 'goodmonkey(100);');
 hotkey('-', 'goodmonkey(-4,-10);');
 hotkey('=', 'goodmonkey(-4,10);');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WARNINGS
+% WARNINGS
 hotkey('w', 'user_warning(-2);');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SIMULATION MODE
+% SIMULATION MODE
 SIMULATION_MODE = TrialRecord.SimulationMode;
 
 hotkey('numrarr', 'simulation_positions(1,1,1);');
@@ -122,8 +135,9 @@ hotkey('darr', 'simulation_positions(1,4,-1);');
 
 hotkey('space', 'simulation_positions(2,5,-Inf);');
 hotkey('bksp', 'simulation_positions(2,5,Inf);');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% writes the Info field from the conditions file
+% if it exists in TrialRecord
 if isfield(TrialRecord, 'CurrentConditionInfo')
 	Info = TrialRecord.CurrentConditionInfo;       %#ok<NASGU>
 else
@@ -163,13 +177,16 @@ return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [tflip, framenumber] = toggleobject(stimuli, varargin)
-persistent TrialObject ScreenData DAQ togglecount ObjectStatusRecord yrasterthresh ltb lastframe activemovies % %taken from TaskObject & ScreenInfo
+% taken from TaskObject & ScreenInfo
+persistent TrialObject ScreenData DAQ togglecount ObjectStatusRecord yrasterthresh ltb lastframe activemovies
 
 tflip = [];
 framenumber = [];
 movie_advance_only = 0;
 update_cursor = 0;
-if stimuli == -1, %initialize
+
+if stimuli == -1,
+    % initialize
     TrialObject = varargin{1};
     ScreenData = varargin{2};
     DAQ = varargin{3};
@@ -205,7 +222,9 @@ elseif stimuli == -3, %call from reposition_object or set_object_path
         end
     end
     return
-elseif stimuli == -4, %update movies and/or subject's cursor only
+
+elseif stimuli == -4,
+    % update movies and/or subject's cursor only
     movie_advance_only = 1;
 	if ~isempty(varargin),
         cursorpos = varargin{1};
@@ -221,7 +240,8 @@ elseif stimuli == -5, %turn off all TrialObjects with status.  Called when trial
     return;
 end
 
-fastdraw = 0; %will draw to subject screen but not control screen if == 1
+% will draw to subject screen but not control screen if == 1
+fastdraw = 0;
 behavioralcode = [];
 statselect = 0;
 setstartframe = 0;
@@ -581,7 +601,8 @@ persistent numcodes CodeNumbers CodeTimes DaqDIO digoutflag z databits strobebit
 
 tstamp = round(trialtime);
 
-if codenumber == -1, %set trial-start time
+if codenumber == -1,
+    % set trial start time
     numcodes = 0;
     maxcodes = 4096;
     CodeNumbers = zeros(maxcodes, 1);
@@ -599,9 +620,13 @@ if codenumber == -1, %set trial-start time
         z = zeros(1, numdatabits+1);
         putvalue(DaqDIO, z);
     end
-    sbval = DAQ.StrobeBitEdge - 1; %falling edge -> 0 or rising edge -> 1
+
+    % falling edge -> 0 or rising edge -> 1
+    sbval = DAQ.StrobeBitEdge - 1;
     return
-elseif codenumber == -2, %return codes at end of trial
+
+elseif codenumber == -2,
+    % return codes at end of trial
     Codes.CodeTimes = CodeTimes(1:numcodes);
     Codes.CodeNumbers = CodeNumbers(1:numcodes);
     return
@@ -637,11 +662,15 @@ persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsample
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
     lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax ...
 	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys touchdata_x touchdata_y mousedata_x mousedata_y
+% Define static variables for collecting history of samples of AI.
+persistent history_AI_data history_AI_index history_AI_n;
 
 t1 = trialtime;
 ontarget = 0;
 rt = NaN;
 
+% these fxn1 cases with negative integer values are related to
+% generalized ML functions in trialholder.m (not user-facing)
 if fxn1 == -1,                      %initialize
     ejt_totaltime = 0;
     min_cyclerate = Inf;
@@ -665,7 +694,8 @@ if fxn1 == -1,                      %initialize
             AI = DAQ.AnalogInput;
         end
     else
-        AI = DAQ.AnalogInput2; %use a second board for on-line sampling (much faster sample updates)
+        % use a second board for on-line sampling (much faster sample updates)
+        AI = DAQ.AnalogInput2;
     end
     ScreenData = varargin{3};
     eTform = varargin{4};
@@ -831,7 +861,8 @@ elseif fxn1 == -7, %RFM
 	Xnew = 0;
 	Ynew = 0;						% variables to store mouse position
     
-    rfmkeys = 20 : 24;              % key codes for keys used for changing stimuli
+    % key codes for keys used for changing stimuli
+    rfmkeys = 20 : 24;
 	
     rfmscreeninfo = get(0, 'MonitorPosition');
     xoffset = rfmscreeninfo(2, 1);
@@ -850,10 +881,13 @@ elseif fxn1 == -7, %RFM
 %     system(sprintf('%smlhelper --cursor-clip %i %i %i %i', dirs.BaseDirectory, clipl, clipt, clipr, clipb));
 	system(sprintf('%smlhelper --clicks-disable', dirs.BaseDirectory));
 	
-	if ~isempty(RFM_TASK) && RFM_TASK == 2								%return from escape screen
-		mlvideo('setmouse', [(l + r)/2 (t + b)/2]);						%set the mouse to the center of the screen on returning from escape screen
+    % return from escape screen
+    if ~isempty(RFM_TASK) && RFM_TASK == 2
+        % set the mouse to the center of the screen on returning from escape screen
+        mlvideo('setmouse', [(l + r)/2 (t + b)/2]);
 	end
-	RFM_TASK = 1;					%required for check_keyboard
+    % required for check_keyboard
+    RFM_TASK = 1;
 	FIRST_FRAME = 1;
 elseif fxn1 == -8,
     ontarget = touchdata_x;
@@ -865,6 +899,7 @@ elseif fxn1 == -9,
     return;
 end
 
+% user facing functions start here
 eyetrack = 0;
 joytrack = 0;
 touchtrack = 0;
@@ -1628,7 +1663,7 @@ while t2 < maxtime,
                 end
             end
             tupdate = t2+ScreenData.UpdateInterval;
-            drawnow;
+            drawnow limitrate;
             if videoupdates,
                 drawnowok = 0;
             end
@@ -1726,7 +1761,8 @@ if ~isempty(varargin) && varargin{1} == -1,
     if isempty(DAQ.AnalogInput2),
         AI = DAQ.AnalogInput;
     else
-        AI = DAQ.AnalogInput2; %use a second board for on-line sampling (much faster sample updates)
+        % use a second board for on-line sampling (much faster sample updates)
+        AI = DAQ.AnalogInput2;
     end
     ScreenData = varargin{3};
     jTform = varargin{4};
@@ -1767,7 +1803,7 @@ if ~isempty(AI),
             cxpos_last = cxpos;
             cypos_last = cypos;
         end
-        drawnow;
+        drawnow limitrate;
         last_jtrace_update = trialtime;
     end
 else
@@ -1841,7 +1877,7 @@ if ~isempty(AI),
 
     if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
         set(ControlObject.EyeTraceHandle, 'xdata', ex, 'ydata', ey);
-        drawnow;
+        drawnow limitrate;
         last_etrace_update = trialtime;
     end
 else 
@@ -1905,7 +1941,7 @@ if isfield(ScreenData, 'UpdateInterval'),
         if isfield(ControlObject, 'TouchTraceHandle'),
             set(ControlObject.TouchTraceHandle, 'xdata', tx, 'ydata', ty);
         end
-        drawnow;
+        drawnow limitrate;
         last_etrace_update = trialtime;
     end
 end
@@ -1965,7 +2001,7 @@ if isfield(ScreenData, 'UpdateInterval'),
         if isfield(ControlObject, 'MouseTraceHandle'),
             set(ControlObject.MouseTraceHandle, 'xdata', mx, 'ydata', my);
         end
-        drawnow;
+        drawnow limitrate;
         last_etrace_update = trialtime;
     end
 end
@@ -2116,7 +2152,7 @@ rt = NaN;
 scancode = [];
 
 if ScreenData.Priority > 1,
-    prtnormal;
+    prtnormal();
 end
 while t2 < maxtime,
     scancode = mlkbd('getkey');
@@ -2127,9 +2163,9 @@ while t2 < maxtime,
     end
 end
 if ScreenData.Priority == 2,
-    prthigh;
+    prthigh();
 elseif ScreenData.Priority == 3,
-    prtrealtime;
+    prtrealtime();
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2713,7 +2749,8 @@ if trialtype > 0,
     if isfield(DAQ, 'AnalogInput'),
         if ~isempty(DAQ.AnalogInput),
             stop(DAQ.AnalogInput);
-            getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable); %remove & discard any AI samples
+			% remove & discard any AI samples
+            getdata(DAQ.AnalogInput, DAQ.AnalogInput.SamplesAvailable);
         end
     end
     TrialData.BehavioralCodes = [];
@@ -2721,6 +2758,7 @@ if trialtype > 0,
     return
 end
 
+% fire end codes (code 18) 3 times to increase likelihood of getting transmitted successfully
 eventmarker(18);
 eventmarker(18);
 eventmarker(18);
@@ -2840,13 +2878,19 @@ end
 newtform = [];
 if ~isempty(eTform)
     tri = [0 0; 1 0; 0 1];
+
+    % maketform() is provided by Image Processing Toolbox and is no longer MATLAB-recommended
+    % future versions should avoid using this function
     trans = maketform('affine', tri, tri+repmat([exOff eyOff],3,1));
     comp = maketform('composite',trans,eTform);
     cpi = [0 0; 1 0; 0 1; 1 1];
     cpo = tformfwd(comp,cpi);
+
+    % cp2tform is not recommended by MATLAB in the future. Use fitgeotrans() instead.
     newtform = cp2tform(cpi,cpo,'projective');
 end
 
+% write various bits of data to the TrialData struct
 TrialData.UserVars = bhv_variable(-2);
 TrialData.Escape = escape;
 TrialData.NewTransform = newtform;
