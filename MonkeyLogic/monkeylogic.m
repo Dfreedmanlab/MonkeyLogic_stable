@@ -592,7 +592,7 @@ end
 if thisisonlyatest, 
     disp('<<< MonkeyLogic >>> Initializing Latency Test...')
     C(1) = initstim('benchmarkpic.jpg', ScreenInfo);
-    C(2) = initstim('benchmarkmov.avi', ScreenInfo);
+    C(2) = initstim('initializing.avi', ScreenInfo);
     [TaskObject ScreenInfo.ActiveVideoBuffers] = create_taskobjects(C, ScreenInfo, DaqInfo, TrialRecord, MLPrefs.Directories, fidbhv);
     TaskObject = initcontrolscreen(2, ScreenInfo, TaskObject);
     tfile = [MLPrefs.Directories.BaseDirectory 'mltimetest.m'];
