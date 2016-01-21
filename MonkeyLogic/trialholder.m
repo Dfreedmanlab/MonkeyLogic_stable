@@ -1,6 +1,5 @@
 function TrialData = trialholder(TaskObject, ScreenInfo, DaqInfo, EyeTransform, JoyTransform, BehavioralCodes, TrialRecord, trialtype)
 global SIMULATION_MODE
-
 % This is the code into which a timing script is embedded (by
 % "embedtimingfile") to create the run-time trial function.  
 % 
@@ -23,6 +22,12 @@ global SIMULATION_MODE
 % modified 3/28/13 -DF (ttl bug fix/ modify/improve toggleobject)
 % modified 8/20/15 -ER (initial changes to add a touchscreen and mouse tracking controller)
 % modified 10/26/15 -ER (insert touch screen/usb data into its own digital datastream)
+persistent fastdraw;
+if verLessThan('matlab', '8.4.0')
+	fastdraw = 0;
+else
+	fastdraw = 1;
+end
 
 Codes = []; %#ok<NASGU>
 rt = NaN; %#ok<NASGU>
@@ -40,7 +45,12 @@ if ~isempty(DaqInfo.AnalogInput),
     set(gcf, 'CurrentAxes', findobj(ScreenInfo.ControlScreenHandle, 'tag', 'replica'));
 
     % flush all pending graphics
-    drawnow limitrate;
+    if fastdraw
+        drawnow limitrate;
+    else
+        drawnow;
+    end
+
     while ~DaqInfo.AnalogInput.SamplesAvailable, end
 else
     % initialize trial timer
@@ -664,6 +674,12 @@ persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsample
 	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys touchdata_x touchdata_y mousedata_x mousedata_y
 % Define static variables for collecting history of samples of AI.
 persistent history_AI_data history_AI_index history_AI_n;
+persistent fastdraw;
+if verLessThan('matlab', '8.4.0')
+	fastdraw = 0;
+else
+	fastdraw = 1;
+end
 
 t1 = trialtime;
 ontarget = 0;
@@ -1663,7 +1679,13 @@ while t2 < maxtime,
                 end
             end
             tupdate = t2+ScreenData.UpdateInterval;
-            drawnow limitrate;
+
+            if fastdraw
+                drawnow limitrate;
+            else
+                drawnow;
+            end
+            
             if videoupdates,
                 drawnowok = 0;
             end
@@ -1749,7 +1771,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [jx, jy] = joystick_position(varargin)
 persistent DAQ AI ScreenData joyx joyy jTform cxpos_last cypos_last last_jtrace_update ControlObject
-
+persistent fastdraw;
+if verLessThan('matlab', '8.4.0')
+	fastdraw = 0;
+else
+	fastdraw = 1;
+end
 t1 = trialtime;
 
 if ~isempty(varargin) && varargin{1} == -1,
@@ -1803,7 +1830,13 @@ if ~isempty(AI),
             cxpos_last = cxpos;
             cypos_last = cypos;
         end
-        drawnow limitrate;
+        
+        if fastdraw
+            drawnow limitrate;
+        else
+            drawnow;
+        end
+            
         last_jtrace_update = trialtime;
     end
 else
@@ -1815,6 +1848,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ex, ey] = eye_position(varargin)
 persistent DAQ AI ScreenData eyex eyey eTform exOff eyOff exTarget eyTarget last_etrace_update ControlObject
+persistent fastdraw;
+if verLessThan('matlab', '8.4.0')
+	fastdraw = 0;
+else
+	fastdraw = 1;
+end
+
 t1 = trialtime;
 
 if ~isempty(varargin), 
@@ -1877,7 +1917,13 @@ if ~isempty(AI),
 
     if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
         set(ControlObject.EyeTraceHandle, 'xdata', ex, 'ydata', ey);
-        drawnow limitrate;
+        
+        if fastdraw
+        	drawnow limitrate;
+        else
+            drawnow;
+        end
+    
         last_etrace_update = trialtime;
     end
 else 
@@ -1889,6 +1935,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [tx, ty] = touch_position(varargin)
 persistent DAQ ScreenData touchx touchy exOff eyOff exTarget eyTarget last_etrace_update ControlObject
+persistent fastdraw;
+if verLessThan('matlab', '8.4.0')
+	fastdraw = 0;
+else
+	fastdraw = 1;
+end
+
 t1 = trialtime;
 
 if ~isempty(varargin), 
@@ -1941,7 +1994,13 @@ if isfield(ScreenData, 'UpdateInterval'),
         if isfield(ControlObject, 'TouchTraceHandle'),
             set(ControlObject.TouchTraceHandle, 'xdata', tx, 'ydata', ty);
         end
-        drawnow limitrate;
+        
+        if fastdraw
+            drawnow limitrate;
+        else
+            drawnow;
+        end
+        
         last_etrace_update = trialtime;
     end
 end
@@ -1949,6 +2008,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [mx, my] = mouse_position(varargin)
 persistent DAQ ScreenData mousex mousey exOff eyOff exTarget eyTarget last_etrace_update ControlObject
+persistent fastdraw;
+if verLessThan('matlab', '8.4.0')
+	fastdraw = 0;
+else
+	fastdraw = 1;
+end
+
 t1 = trialtime;
 
 if ~isempty(varargin), 
@@ -2001,7 +2067,13 @@ if isfield(ScreenData, 'UpdateInterval'),
         if isfield(ControlObject, 'MouseTraceHandle'),
             set(ControlObject.MouseTraceHandle, 'xdata', mx, 'ydata', my);
         end
-        drawnow limitrate;
+        
+        if fastdraw
+            drawnow limitrate;
+        else
+            drawnow;
+        end
+        
         last_etrace_update = trialtime;
     end
 end
