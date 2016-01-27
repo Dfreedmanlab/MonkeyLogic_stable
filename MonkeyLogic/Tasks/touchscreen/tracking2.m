@@ -20,9 +20,6 @@ touchTargetLeftFilled       = 2;
 touchTargetRightNotFilled   = 3;
 touchTargetRightFilled      = 4;
 
-ontargetLeftTarget = 0;
-ontargetRightTarget = 0;
-
 numdev = xgldevices;
 for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 0);
