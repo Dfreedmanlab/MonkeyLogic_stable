@@ -10,13 +10,13 @@
 % This task is much more efficient than the other sample. However, it can
 % not display any advanced touch location stimuli.
 %
-% Jan 27, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% Jan 28, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 %
 % NOTE : Please make sure that the Enable Mouse/System Keys option located 
 % in the Advanced system menu is set to ON
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
-fixDuration = 5000; % duration in milliseconds to test for a touch/fixation
+fixDuration = 2000; % duration in milliseconds to test for a touch/fixation
    
 touchTargetLeftNotFilled    = 1;
 touchTargetLeftFilled       = 2;
@@ -30,20 +30,21 @@ end
 
 showcursor('on');
 scene_timer = tic;
+locations = [1 2];
+coordsX = [-5 5];
+coordsY = [ 0 0];
+random_locations = locations(randperm(length(locations)));
 
-locationsX = [5 -5];
-locationsY = [5 -5];
-random_locationsX = locationsX(randperm(length(locationsX)));
-random_locationsY = locationsY(randperm(length(locationsY)));
-
-reposition_object(touchTargetLeftNotFilled,random_locationsX(1), random_locationsY(1));  %x and %y are in DVA (degrees of visual angle, not pixels)
-reposition_object(touchTargetRightNotFilled,random_locationsX(2), random_locationsY(2));  %x and %y are in DVA (degrees of visual angle, not pixels)
-reposition_object(touchTargetLeftFilled,random_locationsX(1), random_locationsY(1));  %x and %y are in DVA (degrees of visual angle, not pixels)
-reposition_object(touchTargetRightFilled,random_locationsX(2), random_locationsY(2));  %x and %y are in DVA (degrees of visual angle, not pixels)
+reposition_object(touchTargetLeftNotFilled,	coordsX(random_locations(1)), coordsY(random_locations(1)));  %x and %y are in DVA (degrees of visual angle, not pixels)
+reposition_object(touchTargetRightNotFilled,coordsX(random_locations(2)), coordsY(random_locations(2)));  %x and %y are in DVA (degrees of visual angle, not pixels)
+reposition_object(touchTargetLeftFilled,	coordsX(random_locations(1)), coordsY(random_locations(1)));  %x and %y are in DVA (degrees of visual angle, not pixels)
+reposition_object(touchTargetRightFilled,	coordsX(random_locations(2)), coordsY(random_locations(2)));  %x and %y are in DVA (degrees of visual angle, not pixels)
 
     
 toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
 toggleobject(touchTargetRightNotFilled, 'Status', 'on');
+toggleobject(touchTargetLeftFilled, 'Status', 'off');
+toggleobject(touchTargetRightFilled, 'Status', 'off');
 
 while toc(scene_timer) < 10
 

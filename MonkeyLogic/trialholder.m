@@ -66,7 +66,7 @@ set_iti(-1);
 showcursor(-1, ScreenInfo);
 
 % initialize i/o subroutines
-eyejoytrack(-1, TaskObject, DaqInfo, ScreenInfo, EyeTransform, JoyTransform);
+eyejoytrack(-1, TaskObject, DaqInfo, ScreenInfo, EyeTransform, JoyTransform, TrialRecord);
 idle(-1, ScreenInfo);
 joystick_position(-1, DaqInfo, ScreenInfo, JoyTransform);
 eye_position(-1, DaqInfo, ScreenInfo, EyeTransform);
@@ -701,6 +701,8 @@ if fxn1 == -1,                      %initialize
     TrialObject = varargin{1};
     DAQ = varargin{2};
     AI = [];
+    TrialRecord = varargin{6};
+    disp(sprintf('Trial #%i *** initializing touchdata[] *** ', TrialRecord.CurrentTrialNumber));
     touchdata_x = [];
     touchdata_y = [];
     mousedata_x = [];
@@ -906,12 +908,12 @@ elseif fxn1 == -7, %RFM
     RFM_TASK = 1;
 	FIRST_FRAME = 1;
 elseif fxn1 == -8,
-    ontarget = touchdata_x;
-    rt = touchdata_y;
+    ontarget    = touchdata_x;
+    rt          = touchdata_y;
     return;
 elseif fxn1 == -9,
-    ontarget = mousedata_x;
-    rt = mousedata_y;
+    ontarget    = mousedata_x;
+    rt          = mousedata_y;
     return;
 end
 
