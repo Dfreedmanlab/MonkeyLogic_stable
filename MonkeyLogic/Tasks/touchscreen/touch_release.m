@@ -14,8 +14,8 @@
 % in the Advanced system menu is set to ON
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
-fixDuration = 2000; % duration in milliseconds to test for a fixation
-holdDuration = 5000;
+fixDuration = 5000; % duration in milliseconds to test for a fixation
+holdDuration = 750;
    
 touchTargetLeftNotFilled    = 1;
 touchTargetLeftFilled       = 2;
@@ -41,30 +41,40 @@ ontargets = eyejoytrack('touchtarget', [touchTargetLeftNotFilled touchTargetRigh
 
 if (ontargets == 1)
 
-	toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
-    toggleobject(touchTargetLeftFilled, 'Status', 'on');
     disp('<<< touch_release.m >>> Object 1 touchtarget');
+
+    toggleobject(touchTargetRightNotFilled, 'Status', 'off'); % TURN OFF THE OTHER TARGET TO INDICATE THAT YOU HAVE SELECTED THE CORRECT OBJECT
 
     ontargets = eyejoytrack('releasetarget', touchTargetLeftFilled,  windowSize, holdDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
+        toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
+        toggleobject(touchTargetLeftFilled, 'Status', 'on');
     	trialerror(1);
         disp('<<< touch_release.m >>> Object 1 releasetarget');
+    else 
+    	trialerror(3);
+        disp('<<< touch_release.m >>> Object 1 premature release');
 	end
         
 end
 
 if (ontargets == 2)
         
-	toggleobject(touchTargetRightNotFilled, 'Status', 'off');
-    toggleobject(touchTargetRightFilled, 'Status', 'on');
     disp('<<< touch_release.m >>> Object 2 touchtarget');
+
+    toggleobject(touchTargetLeftNotFilled, 'Status', 'off'); % TURN OFF THE OTHER TARGET TO INDICATE THAT YOU HAVE SELECTED THE CORRECT OBJECT
 
     ontargets = eyejoytrack('releasetarget', touchTargetRightFilled,  windowSize, holdDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
+        toggleobject(touchTargetRightNotFilled, 'Status', 'off');
+        toggleobject(touchTargetRightFilled, 'Status', 'on');
     	trialerror(2);
         disp('<<< touch_release.m >>> Object 2 releasetarget');
+    else 
+    	trialerror(4);
+        disp('<<< touch_release.m >>> Object 2 premature release');
 	end
         
 end
@@ -75,4 +85,4 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 1);
 end
 
-set_iti(750); % in milliseconds
+set_iti(3000); % in milliseconds

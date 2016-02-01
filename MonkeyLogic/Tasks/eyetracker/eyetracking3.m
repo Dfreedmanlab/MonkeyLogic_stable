@@ -8,8 +8,8 @@
 % February 01, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
-fixDuration = 2000; % duration in milliseconds to test for a fixation
-holdDuration = 5000;
+fixDuration = 5000; % duration in milliseconds to test for a fixation
+holdDuration = 750;
 
 gazeTargetLeftNotFilled    = 1;
 gazeTargetLeftFilled       = 2;
@@ -31,30 +31,40 @@ ontargets = eyejoytrack('acquirefix', [gazeTargetLeftNotFilled gazeTargetRightNo
 
 if (ontargets == 1)
 
-	toggleobject(gazeTargetLeftNotFilled, 'Status', 'off');
-    toggleobject(gazeTargetLeftFilled, 'Status', 'on');
     disp('<<< eyetracking3.m >>> Object 1 acquirefix');
+
+    toggleobject(gazeTargetRightNotFilled, 'Status', 'off'); % TURN OFF THE OTHER TARGET TO INDICATE THAT YOU HAVE SELECTED THE CORRECT OBJECT
 
     ontargets = eyejoytrack('holdfix', gazeTargetLeftFilled,  windowSize, holdDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
+        toggleobject(gazeTargetLeftNotFilled, 'Status', 'off');
+        toggleobject(gazeTargetLeftFilled, 'Status', 'on');
     	trialerror(1);
         disp('<<< eyetracking3.m >>> Object 1 holdfix');
+    else 
+    	trialerror(3);
+        disp('<<< eyetracking3.m >>> Object 1 premature holdfix');
 	end
         
 end
 
 if (ontargets == 2)
         
-	toggleobject(gazeTargetRightNotFilled, 'Status', 'off');
-    toggleobject(gazeTargetRightFilled, 'Status', 'on');
     disp('<<< eyetracking3.m >>> Object 2 acquirefix');
+
+    toggleobject(gazeTargetLeftNotFilled, 'Status', 'off'); % TURN OFF THE OTHER TARGET TO INDICATE THAT YOU HAVE SELECTED THE CORRECT OBJECT
 
     ontargets = eyejoytrack('holdfix', gazeTargetRightFilled,  windowSize, holdDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
+        toggleobject(gazeTargetRightNotFilled, 'Status', 'off');
+        toggleobject(gazeTargetRightFilled, 'Status', 'on');
     	trialerror(2);
         disp('<<< eyetracking3.m >>> Object 2 holdfix');
+    else 
+    	trialerror(4);
+        disp('<<< eyetracking3.m >>> Object 3 premature holdfix');
 	end
         
 end

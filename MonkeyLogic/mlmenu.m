@@ -12,8 +12,8 @@ function mlmenu(varargin)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'January 2016';
-currentversion = '01-28-2016 build 1.1.20';
+lastupdate = 'February 2016';
+currentversion = '02-01-2016 build 1.1.25';
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -1928,8 +1928,10 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'videotest',
 
+            disp('<<< MonkeyLogic >>> Starting video test');
             mlmessage('Initializing video...');
             drawnow;
+            
             
             bytesperpixel = 4;
             videodevice = get(findobj(gcf, 'tag', 'videodevice'), 'value');

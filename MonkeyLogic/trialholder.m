@@ -702,7 +702,7 @@ if fxn1 == -1,                      %initialize
     DAQ = varargin{2};
     AI = [];
     TrialRecord = varargin{6};
-    disp(sprintf('Trial #%i *** initializing touchdata[] *** ', TrialRecord.CurrentTrialNumber));
+    disp(sprintf('<<< MonkeyLogic >>> Trial #%i Initializing', TrialRecord.CurrentTrialNumber));
     touchdata_x = [];
     touchdata_y = [];
     mousedata_x = [];
@@ -917,7 +917,8 @@ elseif fxn1 == -9,
     return;
 end
 
-% user facing functions start here
+% user facing functions start here 
+% (fxn1 == some string passed from a timing file)
 eyetrack = 0;
 joytrack = 0;
 touchtrack = 0;
@@ -1000,7 +1001,7 @@ else
         touchobindex = tob1;
     elseif strcmpi(fxn1, 'releasetarget'),
         if length(tob1) > 1,
-            error('*** Must specify exactly one object on which to touch target ***');
+            error('*** Must specify exactly one object on which to touch release target YOU SPECIFIED MORE THAN ONE***');
         end
         touchtrack = 1;
         touchop = 1; %greater than
@@ -1017,7 +1018,7 @@ else
         mouseobindex = tob1;
     elseif strcmpi(fxn1, 'releasemouse'),
         if length(tob1) > 1,
-            error('*** Must specify exactly one object on which to mouse over target ***');
+            error('*** Must specify exactly one object on which to mouse-ver release target YOU SPECIFIED MORE THAN ONE***');
         end
         mousetrack = 1;
         mouseop = 1; %greater than
@@ -1046,6 +1047,7 @@ if length(varargin) > 3,
     fxn2 = maxtime;
     tob2 = varargin{4};
     trad2 = varargin{5};
+
     if length(trad2) < length(tob2),
         trad2 = trad2 * ones(size(tob2));
     end
@@ -1417,9 +1419,9 @@ while t2 < maxtime,
 
         if ~idle && mousetrack,
             mouse_dist = realsqrt((xp_mouse - mx).^2 + (yp_mouse - my).^2);
-            if mouseop, %mousetarget
+            if mouseop, %acquiremouse
                 mousestatus = mouse_dist > mouserad;
-            else %releasetarget
+            else %releasemouse
                 mousestatus = mouse_dist <= mouserad;
             end
         end

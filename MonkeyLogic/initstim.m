@@ -3,6 +3,7 @@ function C = initstim(fname, ScreenInfo)
 
 P = getpref('MonkeyLogic');
 sourcefile = [P.Directories.BaseDirectory fname];
+disp(sprintf('<<< MonkeyLogic >>> initstim is looking for %s', sourcefile));
 [pname fname ext] = fileparts(sourcefile);
 processedfile = [pname filesep fname '_preprocessed.mat'];
 if strcmpi(ext, '.avi'),
