@@ -9,7 +9,15 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors).
 % 
-% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% February 04, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+%
+% This will automatically enable the cursor, replicating the same behavior
+% achieved if enabling the Mouse/System Keys option in the advanced menu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dirs = getpref('MonkeyLogic', 'Directories');
+message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+system(message);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 scene_timer = tic;
 windowSize = 1.5; % in degrees of visual angle (DVA)

@@ -8,10 +8,15 @@
 % 
 % The position of the cursor is displayed using showcursor('on'). 
 %
-% February 01, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% February 04, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 %
-% NOTE : Please make sure that the Enable Mouse/System Keys option located 
-% in the Advanced system menu is set to ON
+% This will automatically enable the cursor, replicating the same behavior
+% achieved if enabling the Mouse/System Keys option in the advanced menu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dirs = getpref('MonkeyLogic', 'Directories');
+message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+system(message);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a fixation

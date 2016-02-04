@@ -154,6 +154,7 @@ MLConfig.ActualRefreshRate  = framerate;
 
 MLConfig.ComputerName = lower(getenv('COMPUTERNAME'));
 MLHELPER_OFF = MLConfig.MLHelperOff;
+%disp(sprintf('Setting MLHELPER_OFF to %i', MLHELPER_OFF));
 
 % Read conditions file
 Conditions_temp = load_conditions(condfile);
@@ -2718,6 +2719,7 @@ end
 function disable_cursor
 global MLHELPER_OFF
 if MLHELPER_OFF,
+    %disp('disable_cursor MLHELPER_OFF');
     return
 end
 thisfig = get(0,'CurrentFigure');
@@ -2734,6 +2736,7 @@ system(message);
 function enable_cursor
 global MLHELPER_OFF
 if MLHELPER_OFF,
+    %disp('enable_cursor MLHELPER_OFF');
     return
 end
 thisfig = get(0,'CurrentFigure');
