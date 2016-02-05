@@ -13,7 +13,8 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'February 2016';
-currentversion = '02-04-2016 build 1.1.27';
+currentversion = '02-05-2016 build 1.1.29';
+logger = mllog();
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -81,7 +82,8 @@ if isempty(mlf),
     disp(' ')
     disp(' ')
     disp(' ')
-    disp(sprintf('<<< MonkeyLogic >>> Revision : %s', currentversion))
+
+    logger.logMessage(sprintf('<<< MonkeyLogic >>> Revision : %s', currentversion))
     chknewupdates(lastupdate);
     envOS = getenv('OS');
     envCN = getenv('COMPUTERNAME');
@@ -92,29 +94,29 @@ if isempty(mlf),
         envPRC = getenv('CPU');
     end
     if ~isempty(envOS),
-        disp(sprintf('<<< MonkeyLogic >>> Operating System: %s...', envOS))
+        logger.logMessage(sprintf('<<< MonkeyLogic >>> Operating System: %s...', envOS))
     end
     if usejava('jvm'),
-        disp('<<< MonkeyLogic >>> *** JAVA Virtual Machine is Running ***');
+        logger.logMessage('<<< MonkeyLogic >>> *** JAVA Virtual Machine is Running ***');
     end
     if ~isempty(envCN),
-        disp(sprintf('<<< MonkeyLogic >>> Computer Name: %s...', envCN))
+        logger.logMessage(sprintf('<<< MonkeyLogic >>> Computer Name: %s...', envCN))
     end
     if ~isempty(envUSER),
-        disp(sprintf('<<< MonkeyLogic >>> Logged in as "%s"...', envUSER))
+        logger.logMessage(sprintf('<<< MonkeyLogic >>> Logged in as "%s"...', envUSER))
     else
         envUSER = 'Investigator';
     end
     if ~isempty(envNOP),
         envNOP = str2double(envNOP);
         if envNOP > 1,
-            disp(sprintf('<<< MonkeyLogic >>> Detected %i "%s" processors...', envNOP, envPRC))
+            logger.logMessage(sprintf('<<< MonkeyLogic >>> Detected %i "%s" processors...', envNOP, envPRC))
         else
-            disp(sprintf('<<< MonkeyLogic >>> Detected only %i "%s" processor...', envNOP, envPRC))
+            logger.logMessage(sprintf('<<< MonkeyLogic >>> Detected only %i "%s" processor...', envNOP, envPRC))
         end
     end
     envMVER = version;
-    disp(sprintf('<<< MonkeyLogic >>> Matlab version: %s...', envMVER))
+    logger.logMessage(sprintf('<<< MonkeyLogic >>> Matlab version: %s...', envMVER))
     numloops = 1000;
     t = zeros(numloops, 1);
     tic;
@@ -122,8 +124,8 @@ if isempty(mlf),
         t(i) = toc;
     end
     mrate = 1/(mean(diff(t))*1000);
-    disp(sprintf('<<< MonkeyLogic >>> Approximate Matlab cycle rate is %4.0f kHz', mrate))
-    disp('<<< MonkeyLogic >>> Launching Menu...')
+    logger.logMessage(sprintf('<<< MonkeyLogic >>> Approximate Matlab cycle rate is %4.0f kHz', mrate))
+    logger.logMessage('<<< MonkeyLogic >>> Launching Menu...')
     figure;
     figbg = [.65 .70 .80];
     bgpurple = [.8 .76 .82];
@@ -133,7 +135,7 @@ if isempty(mlf),
     scrnx = scrnsz(3);
     scrny = scrnsz(4);
     if scrnx < 1280 || scrny < 768,
-        disp('<<< MonkeyLogic >>> Warning: A primary-monitor resolution of at least 1280 x 768 is recommended...')
+        logger.logMessage('<<< MonkeyLogic >>> Warning: A primary-monitor resolution of at least 1280 x 768 is recommended...')
     end
     fxpos = 0.5 * (scrnx - figx);
     fypos = 0.5 * (scrny - figy);
@@ -148,7 +150,7 @@ if isempty(mlf),
     set(gcf, 'closerequestfcn', 'mlmenu; delete(get(0, ''userdata'')); set(0, ''userdata'', ''''); disp(''Closed MonkeyLogic.'')');
     
     mlvideo('mlinit');
-    disp('<<< MonkeyLogic >>> Initialized ML Video Graphics interface...')
+    logger.logMessage('<<< MonkeyLogic >>> Initialized ML Video Graphics interface...')
     
     ybase = 550;
     uicontrol('style', 'frame', 'position', [10 ybase+22 280 80], 'backgroundcolor', 0.85*figbg, 'foregroundcolor', 0.6*figbg);
@@ -331,15 +333,15 @@ if isempty(mlf),
     uicontrol('style', 'frame', 'position', [559 ybase+27 157 50], 'backgroundcolor', figbg, 'foregroundcolor', [.5 .5 .5]);
         pic = 'runbuttondim.jpg';
     uicontrol('style', 'pushbutton', 'position', [560 ybase+28 155 48], 'string', '', 'callback', 'mlmenu', 'tag', 'runbutton', 'backgroundcolor', [0.9 0.6 0.6], 'enable', 'inactive', 'cdata', imread(pic));
-    disp('<<< MonkeyLogic >>> Initialized Task Menu...')
+    logger.logMessage('<<< MonkeyLogic >>> Initialized Task Menu...')
     
     % VIDEO ######################################
     mlvideo('init');
     numdevices = mlvideo('devices');
     if numdevices > 1,
-        disp(sprintf('<<< MonkeyLogic >>> Found %i video devices...', numdevices))
+        logger.logMessage(sprintf('<<< MonkeyLogic >>> Found %i video devices...', numdevices))
     else
-        disp('<<< MonkeyLogic >>> Warning: Found only 1 video device...')
+        logger.logMessage('<<< MonkeyLogic >>> Warning: Found only 1 video device...')
     end
     mlvideo('release');
     
@@ -392,7 +394,7 @@ if isempty(mlf),
     uicontrol('style', 'edit', 'position', [xbase+45 ybase-22 33 20], 'string', num2str(defaultbgcolor(1)), 'userdata', defaultbgcolor(1), 'backgroundcolor', [1 1 1], 'tag', 'bgred', 'callback', 'mlmenu');
     uicontrol('style', 'edit', 'position', [xbase+78 ybase-22 33 20], 'string', num2str(defaultbgcolor(2)), 'userdata', defaultbgcolor(2), 'backgroundcolor', [1 1 1], 'tag', 'bggreen', 'callback', 'mlmenu');
     uicontrol('style', 'edit', 'position', [xbase+111 ybase-22 33 20], 'string', num2str(defaultbgcolor(3)), 'userdata', defaultbgcolor(3), 'backgroundcolor', [1 1 1], 'tag', 'bgblue', 'callback', 'mlmenu');
-    disp('<<< MonkeyLogic >>> Initialized Video Menu...')
+    logger.logMessage('<<< MonkeyLogic >>> Initialized Video Menu...')
     
     % Control Screen Options ###################################### 
     ybase = 73;
@@ -476,7 +478,7 @@ if isempty(mlf),
     set(h, 'color', 0.5*defaultjoycolor, 'linewidth', 3, 'markersize', 35, 'tag', 'sample_joy_target');
     h = plot(xpos, 0, '.');
     set(h, 'color', defaultjoycolor, 'markersize', defaultjoysize, 'tag', 'sample_joy_trace');
-    disp('<<< MonkeyLogic >>> Initialized Control-Screen Menu...')
+    logger.logMessage('<<< MonkeyLogic >>> Initialized Control-Screen Menu...')
     
     % INPUT / OUTPUT ######################################  
     AdaptorInfo = ioscan();
@@ -538,9 +540,9 @@ if isempty(mlf),
     end
     if ~any(duplicateboard),
         set(findobj(gcf, 'tag', 'aiduplication'), 'enable', 'off');
-        disp('<<< MonkeyLogic >>> Warning: no duplicate DAQ boards found for Analog Input duplication...')
+        logger.logMessage('<<< MonkeyLogic >>> Warning: no duplicate DAQ boards found for Analog Input duplication...')
     else
-        disp('<<< MonkeyLogic >>> Detected duplicate DAQ boards: enabling A-I duplication...')
+        logger.logMessage('<<< MonkeyLogic >>> Detected duplicate DAQ boards: enabling A-I duplication...')
     end
     uicontrol('style', 'pushbutton', 'position', [xbase+299 ybase-138 118 22], 'string', 'Test Analog Inputs', 'tag', 'aitest', 'enable', 'off', 'callback', 'mlmenu');
     
@@ -564,7 +566,7 @@ if isempty(mlf),
         codestr = '???';
         codesfile = 'n/a';
         enablestr = 'off';
-        disp('<<< MonkeyLogic >>> Warning: No behavioral codes description file found...')
+        logger.logMessage('<<< MonkeyLogic >>> Warning: No behavioral codes description file found...')
     else
         enablestr = 'on';
         codestr = defaultcodesfile;
@@ -620,7 +622,7 @@ if isempty(mlf),
     uicontrol('style', 'pushbutton', 'position', [xbase+15 ybase-70 203 20], 'string', 'n/a', 'tag', 'au_userdefinedcritfunction', 'enable', 'off', 'backgroundcolor', [1 1 1], 'callback', 'mlmenu', 'userdata', '');
     uicontrol('style', 'pushbutton', 'position', [xbase+15 ybase-103 203 20], 'string', 'n/a', 'tag', 'au_function', 'enable', 'off', 'backgroundcolor', [1 1 1], 'callback', 'mlmenu', 'userdata', '');
     
-    disp('<<< MonkeyLogic >>> Initialized I/O Menu...')
+    logger.logMessage('<<< MonkeyLogic >>> Initialized I/O Menu...')
     
     %%% PULL-DOWN MENUS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     filemenu = uimenu('label', 'File');
@@ -665,7 +667,7 @@ if isempty(mlf),
     uimenu(helpmenu, 'label', 'Online Help', 'callback', 'web(''http://www.monkeylogic.net'', ''-browser'')', 'accelerator', 'h');
     uimenu(helpmenu, 'label', 'About...', 'tag', 'menubar_aboutbutton', 'callback', 'mlmenu');
     if usejava('jvm'),
-        disp('<<< MonkeyLogic >>> Initialized drop-down menus...')
+        logger.logMessage('<<< MonkeyLogic >>> Initialized drop-down menus...')
     end
     
     if exist(cfgfile, 'file'),
@@ -674,8 +676,7 @@ if isempty(mlf),
     else % if doesn't exist, create default config file...
         savecfg;
     end
-    disp('<<< MonkeyLogic >>> Ready.')
-    disp(' ')
+    logger.logMessage('<<< MonkeyLogic >>> Ready.')
     
 elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) || reloadcondfile || ismember(get(gcbo, 'parent'), get(findobj('tag', 'monkeylogicmainmenu'), 'children')),
    
@@ -843,7 +844,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 f = wavread('science.wav');
                 sound(f, 48000);
             catch
-                disp('');
+                logger.logMessage('');
             end
         
         case 'editconds',
@@ -1928,7 +1929,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'videotest',
 
-            disp('<<< MonkeyLogic >>> Starting video test');
+            logger.logMessage('<<< MonkeyLogic >>> Starting video test');
             mlmessage('Initializing video...');
             drawnow;
             
@@ -3867,7 +3868,7 @@ set(findobj(gcf, 'tag', 'minicontrolscreen'), 'color', sbgcol);
 
 numdevices = length(get(findobj(gcf, 'tag', 'videodevice'), 'string'));
 if MLConfig.VideoDevice > numdevices,
-    disp(sprintf('*** WARNING: Assigned video device (#%i) not available ***', MLConfig.VideoDevice))
+    logger.logMessage(sprintf('*** WARNING: Assigned video device (#%i) not available ***', MLConfig.VideoDevice))
     MLConfig.VideoDevice = numdevices;
 end
 set(findobj(gcf, 'tag', 'videodevice'), 'value', MLConfig.VideoDevice);
@@ -3984,7 +3985,7 @@ for i = 1:length(fn),
         catch
             str = sprintf('*** WARNING: Assigned adaptor for %s not currently available ***', fn{i});
             mlmessage(str);
-            disp(str)
+            logger.logMessage(str)
         end
     end
 end
@@ -4218,7 +4219,7 @@ catch
     else
         cfgfile = [MLPrefs.Directories.BaseDirectory 'default_cfg.mat'];
     end
-    disp('... Saving new default configuration file ...')
+    logger.logMessage('... Saving new default configuration file ...')
     save(cfgfile, 'MLConfig');
 end
 setpref('MonkeyLogic', 'Directories', MLPrefs.Directories);
@@ -4259,7 +4260,7 @@ try
         setpref('MonkeyLogic', 'LastUpdateCheck', todaynum);
     end
 catch ME %likely no network...
-    disp(sprintf('>>> Unable to check for MonkeyLogic updates (%s) <<<', ME.identifier))
+    logger.logMessage(sprintf('>>> Unable to check for MonkeyLogic updates (%s) <<<', ME.identifier))
 end
 
 
