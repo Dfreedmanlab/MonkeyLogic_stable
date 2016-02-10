@@ -14,7 +14,7 @@ function mlmenu(varargin)
 
 lastupdate = 'February 2016';
 currentversion = '02-05-2016 build 1.1.29';
-logger = mllog();
+logger = mllog('mlmenu.log');
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -79,9 +79,7 @@ end
 set(0, 'userdata', h);
 
 if isempty(mlf),
-    disp(' ')
-    disp(' ')
-    disp(' ')
+    fprintf('\r\n\r\n\r\n');
 
     logger.logMessage(sprintf('<<< MonkeyLogic >>> Revision : %s', currentversion))
     chknewupdates(lastupdate);
@@ -671,7 +669,7 @@ if isempty(mlf),
     end
     
     if exist(cfgfile, 'file'),
-        loadcfg(cfgfile);
+        loadcfg(cfgfile, logger);
         update_minicontrolscreen;
     else % if doesn't exist, create default config file...
         savecfg;
@@ -797,7 +795,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             %update settings if config file already exists...
             cfgfile = [MLPrefs.Directories.ExperimentDirectory cfgfile];
             if exist(cfgfile, 'file'),
-                loadcfg(cfgfile);    
+                loadcfg(cfgfile, logger);    
             end
             set(findobj(gcf, 'tag', 'savebutton'), 'enable', 'off');
             set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'off');
@@ -872,7 +870,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
             [filename pathname] = uigetfile([MLPrefs.Directories.ExperimentDirectory '*_cfg.mat']);
             if filename ~= 0,
-                loadcfg([pathname filename]);
+                loadcfg([pathname filename], logger);
             end
             rbh = findobj(gcf, 'tag', 'runblocks');
             blocklist = get(rbh, 'userdata');
@@ -1277,7 +1275,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             end
             
             cfgname = get(findobj(gcf, 'tag', 'configfilename'), 'string');
-            loadcfg([MLPrefs.Directories.ExperimentDirectory cfgname]);
+            loadcfg([MLPrefs.Directories.ExperimentDirectory cfgname], logger);
             
             if strcmpi(p, 'off'),
                 mlmessage('Loaded personal hardware settings.');
@@ -3621,7 +3619,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function loadcfg(cfgfile)
+function loadcfg(cfgfile, logger)
 
 load(cfgfile);
 
