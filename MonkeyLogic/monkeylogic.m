@@ -2728,7 +2728,7 @@ if ~isempty(thisfig)
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory);
-fprint(message);
+fprintf(message);
 system(message);
 
 %%
@@ -2744,7 +2744,7 @@ if ~isempty(thisfig)
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
-fprint(message);
+fprintf(message);
 system(message);
 
 %%
@@ -2755,7 +2755,7 @@ if MLHELPER_OFF,
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --clicks-disable',dirs.BaseDirectory);
-fprint(message);
+fprintf(message);
 system(message);
 
 %%
@@ -2766,7 +2766,7 @@ if MLHELPER_OFF,
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --clicks-enable',dirs.BaseDirectory);
-fprint(message);
+fprintf(message);
 system(message);
 
 %%
