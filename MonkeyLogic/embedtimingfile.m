@@ -159,7 +159,7 @@ if ~exist(runtimedir, 'dir'),
     if ~success
         error('*** Unable to create "runtime" directory within the MonkeyLogic directory - you must create it manually ***');
     else
-        disp(sprintf('Created %s', runtimedir));
+        fprintf('Created %s', runtimedir);
         addpath(runtimedir);
     end
 end

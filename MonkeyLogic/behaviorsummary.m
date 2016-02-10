@@ -455,7 +455,7 @@ else
                 drawnow;
                 movie2avi(mframe, moviefilename, 'fps', fps, 'keyframe', fps, 'quality', 100);
                 delete(h);
-                disp(sprintf('Generated an AVI containing %i frames over %i milliseconds', mcount, t))
+                fprintf('Generated an AVI containing %i frames over %i milliseconds', mcount, t);
             end
             set(hinvisible, 'visible', 'on');
             set(codesbox, 'value', codeselection);

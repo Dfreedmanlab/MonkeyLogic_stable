@@ -56,7 +56,7 @@ for i = 1:numfields,
     elseif strcmp(fnfrag, 'TTL'),
         REQSYS.(fn) = {'DigitalIO'};
     else
-        disp(sprintf('Warning: Unable to test IO type %s for subsystem validity using "initio.m"', fn))
+        fprintf('Warning: Unable to test IO type %s for subsystem validity using "initio.m"', fn);
     end
 end
 
@@ -72,7 +72,7 @@ for i = 1:length(fnames),
             DaqError = cell(2, 1);
             DaqError{1} = '*** Error: Non-permitted I/O mapping ***';
             DaqError{2} = sprintf('Allowed Type for %s: %s %s ', fn, reqsys{:});
-            disp(sprintf('*** Error: Non-permitted I/O mapping for %s ***', fn))
+            fprintf('*** Error: Non-permitted I/O mapping for %s ***', fn);
             return
         end
     end
@@ -277,7 +277,7 @@ for i = 1:length(fnames),
             elseif ~any(board2) && configIO.AI.AnalogInputDuplication,
                 h = findobj('tag', 'monkeylogicmainmenu');
                 if ~isempty(h) && strcmpi(get(findobj(h, 'tag', 'aiduplication'), 'enable'), 'on'),
-                    disp(sprintf('Warning: No duplicate boards found to assign %s...', signame));
+                    fprintf('Warning: No duplicate boards found to assign %s...', signame);
                     disp('... must sample and store data from the same DAQ board (suboptimal performance will result)');
                 end
             end
