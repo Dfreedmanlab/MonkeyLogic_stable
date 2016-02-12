@@ -431,6 +431,7 @@ ScreenInfo.MouseTraceColor = MLConfig.JoyTraceColor;        % use Joystick setti
 ScreenInfo.MouseTraceSize = MLConfig.JoyTraceSize;          % use Joystick setting
 ScreenInfo.MouseTargetColor = 0.5*MLConfig.JoyTraceColor;   % use Joystick setting
 ScreenInfo.MouseTargetLinewidth = 3;                        % use Joystick setting
+
 ScreenInfo.OutOfBounds = 2*max([ScreenInfo.Xsize ScreenInfo.Ysize])/ScreenInfo.PixelsPerDegree;
 ScreenInfo.FixationSpotImageFile = MLConfig.FixationSpotImageFile;
 ScreenInfo.ShowCursor = 0;
@@ -628,7 +629,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 trialtype = 0;
 ScreenInfo.UsePreProcessedImages = MLConfig.UsePreProcessedImages;
-fprintf('<<< MonkeyLogic >>> BHV File: %s. Started running trials at %s...\n', datafile, datestr(rem(now, 1)))
+logger.logMessage(sprintf('<<< MonkeyLogic >>> BHV File: %s. Started running trials at %s...', datafile, datestr(rem(now, 1))));
 [pname fname] = fileparts(datafile);
 set(findobj('tag', 'mlmonitor'), 'name', sprintf('MonkeyLogic: %s Started running trials at %s  %s', fname, datestr(rem(now, 1)), datestr(date)));
 drawnow;

@@ -722,10 +722,10 @@ if fxn1 == -1,                      %initialize
 	ControlObject.EyeTraceHandle = findobj('tag', 'eyetrace');
     ControlObject.JoyTargetHandle = findobj('tag', 'target');
     ControlObject.JoyTraceHandle = findobj('tag', 'trace');
-	ControlObject.TouchTargetHandle = findobj('tag', 'fixcircle'); % same as eye
-	ControlObject.TouchTraceHandle = findobj('tag', 'eyetrace');   % same as eye
-	ControlObject.MouseTargetHandle = findobj('tag', 'fixcircle'); % same as eye
-	ControlObject.MouseTraceHandle = findobj('tag', 'eyetrace');   % same as eye
+	ControlObject.TouchTargetHandle = findobj('tag', 'touchcircle');
+	ControlObject.TouchTraceHandle = findobj('tag', 'touchtrace');
+	ControlObject.MouseTargetHandle = findobj('tag', 'mousecircle');
+	ControlObject.MouseTraceHandle = findobj('tag', 'mousetrace');
     ControlObject.ButtonLines = findobj('tag', 'ButtonLine');
     ControlObject.ButtonCircles = findobj('tag', 'ButtonCircle');
     ControlObject.ButtonThresh = findobj('tag', 'ButtonThresh');
@@ -1626,22 +1626,24 @@ while t2 < maxtime,
                 if (eyepresent)
                     cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_eye) - (ScreenData.CursorXsize/2));
                     cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_eye) - (ScreenData.CursorYsize/2));
+                    [tflip lastframe] = toggleobject(-4, [cxpos cypos]);  % this will ensure that a unique cursor is shown for each input device
                 end
                 if (joypresent)
                     cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_joy) - (ScreenData.CursorXsize/2));
                     cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_joy) - (ScreenData.CursorYsize/2));
+                    [tflip lastframe] = toggleobject(-4, [cxpos cypos]);  % this will ensure that a unique cursor is shown for each input device
                 end
                 if (touchpresent)
                     cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_touch) - (ScreenData.CursorXsize/2));
                     cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_touch) - (ScreenData.CursorYsize/2));
+                    [tflip lastframe] = toggleobject(-4, [cxpos cypos]);  % this will ensure that a unique cursor is shown for each input device
                 end
                 if (mousepresent)
                     cxpos = floor(ScreenData.Half_xs + (ScreenData.PixelsPerDegree*xp_mouse) - (ScreenData.CursorXsize/2));
                     cypos = floor(ScreenData.Half_ys - (ScreenData.PixelsPerDegree*yp_mouse) - (ScreenData.CursorYsize/2));
-                  
+                    [tflip lastframe] = toggleobject(-4, [cxpos cypos]);  % this will ensure that a unique cursor is shown for each input device
                 end
 			
-                [tflip lastframe] = toggleobject(-4, [cxpos cypos]);
             else
                 [tflip lastframe] = toggleobject(-4);
             end
@@ -1959,7 +1961,7 @@ if ~isempty(varargin),
         eyOff = 0;
         exTarget = 0;
         eyTarget = 0;
-        ControlObject.TouchTraceHandle = findobj('tag', 'eyetrace'); %uses eye setting
+        ControlObject.TouchTraceHandle = findobj('tag', 'touchtrace');
         if isempty(DAQ.TouchSignal),
             touchx = [];
             touchy = [];
@@ -2032,7 +2034,7 @@ if ~isempty(varargin),
         eyOff = 0;
         exTarget = 0;
         eyTarget = 0;
-        ControlObject.MouseTraceHandle = findobj('tag', 'eyetrace'); %uses eye setting
+        ControlObject.MouseTraceHandle = findobj('tag', 'mousetrace');
         if isempty(DAQ.MouseSignal),
             mousex = [];
             mousey = [];

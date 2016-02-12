@@ -331,7 +331,35 @@ elseif procnum == 2, %update window with task objects
     set(h, 'color', ScreenInfo.EyeTraceColor, 'markersize', ScreenInfo.EyeTraceSize, 'tag', 'eyetrace');
     set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
     zzzSetXOREraseMode(h);
-    
+
+    %create touchscreen circle:
+    for pnum = 1:numobjects,
+        h(pnum) = plot(0, 0, 'o');
+    end
+    set(h, 'markeredgecolor', ScreenInfo.TouchTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.TouchTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'touchcircle');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
+    %create touchscreen trace
+    h = plot(0, 0, '.');
+    set(h, 'color', ScreenInfo.TouchTraceColor, 'markersize', ScreenInfo.TouchTraceSize, 'tag', 'touchtrace');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
+    %create mouse circle:
+    for pnum = 1:numobjects,
+        h(pnum) = plot(0, 0, 'o');
+    end
+    set(h, 'markeredgecolor', ScreenInfo.MouseTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.MouseTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'mousecircle');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
+    %create mouse trace
+    h = plot(0, 0, '.');
+    set(h, 'color', ScreenInfo.MouseTraceColor, 'markersize', ScreenInfo.MouseTraceSize, 'tag', 'mousetrace');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
     %create button indicators
     numbuttons = 5; %max, for now at least
     hline = zeros(numbuttons, 1);

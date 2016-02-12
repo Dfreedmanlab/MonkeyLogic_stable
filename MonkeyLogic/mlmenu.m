@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'February 2016';
-currentversion = '02-10-2016 build 1.1.33';
+currentversion = '02-12-2016 build 1.1.34';
 logger = mllog('mlmenu.log');
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
