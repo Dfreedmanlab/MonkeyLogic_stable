@@ -20,7 +20,6 @@ ontargetLeftTarget = 0;
 ontargetRightTarget = 0;
 
 showcursor('on');
-scene_timer = tic;
 
 toggleobject(gazeTargetLeftNotFilled, 'Status', 'on');
 toggleobject(gazeTargetRightNotFilled, 'Status', 'on');
