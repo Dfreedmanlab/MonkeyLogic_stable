@@ -10,7 +10,7 @@
 % This task is much more efficient than the other sample. However, it can
 % not display any advanced touch location stimuli.
 %
-% February 04, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% February 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 %
 % This will automatically enable the cursor, replicating the same behavior
 % achieved if enabling the Mouse/System Keys option in the advanced menu
