@@ -8,7 +8,11 @@ function [DAQ, DaqError] = initio(IO)
 % Last modified 8/11/08 -WA (to make certain analog-input objects use DMA)
 % Last modified 11/17/15 -ER (Added DigitalInputStream for touchscreens and other future devices)
 
-disp('<<< MonkeyLogic >>> Initializing I/O')
+logger = log4m.getLogger('log.txt');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
+logger.info('initio.m', '<<< MonkeyLogic >>> Initializing I/O');
 
 %for manual editing:
 configIO.AI.BufferingConfig =  [16 1024]; %[1 2000];
@@ -56,7 +60,7 @@ for i = 1:numfields,
     elseif strcmp(fnfrag, 'TTL'),
         REQSYS.(fn) = {'DigitalIO'};
     else
-        fprintf('Warning: Unable to test IO type %s for subsystem validity using "initio.m"', fn);
+        logger.info('initio.m', sprintf('Warning: Unable to test IO type %s for subsystem validity using "initio.m"', fn));
     end
 end
 
@@ -72,7 +76,7 @@ for i = 1:length(fnames),
             DaqError = cell(2, 1);
             DaqError{1} = '*** Error: Non-permitted I/O mapping ***';
             DaqError{2} = sprintf('Allowed Type for %s: %s %s ', fn, reqsys{:});
-            fprintf('*** Error: Non-permitted I/O mapping for %s ***', fn);
+            logger.info('initio.m', sprintf('*** Error: Non-permitted I/O mapping for %s ***', fn));
             return
         end
     end
@@ -90,7 +94,7 @@ for i = 1:length(fnames),
 end
 if length(unique(aicstr)) > 1,
     DaqError{1} = '*** Error: All analog inputs must be on the same board ***';
-    disp(DaqError{1})
+    logger.info('initio.m', DaqError{1});
     return
 end
 
@@ -108,7 +112,7 @@ for i = 1:length(fnames),
 end
 if count > 1 && length(unique(butsys)) > 1,
    DaqError{1} = '*** Error: Button inputs must be either all analog or all digital ***';
-   disp(DaqError{1})
+   logger.info('initio.m', DaqError{1});
 end
 
 DAQ.AnalogInput = [];
@@ -131,7 +135,7 @@ end
 if EyeXpresent || EyeYpresent,
     if numfieldsEyeX ~= numfieldsEyeY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 eye signal inputs';
-        disp('I/O Error: Must define 0 or 2 eye signal inputs')
+        logger.info('initio.m', 'I/O Error: Must define 0 or 2 eye signal inputs');
         return 
     end
 end
@@ -145,7 +149,7 @@ end
 if JoyXpresent || JoyYpresent,
     if numfieldsJoyX ~= numfieldsJoyY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 joystick inputs';
-        disp('I/O Error: Must define 0 or 2 joystick inputs')
+        logger.info('initio.m', 'I/O Error: Must define 0 or 2 joystick inputs');
         return
     end
 end
@@ -159,7 +163,7 @@ end
 if TouchXpresent || TouchYpresent,
     if numfieldsTouchX ~= numfieldsTouchY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 touchscreen inputs';
-        disp('I/O Error: Must define 0 or 2 touchscreen inputs')
+        logger.info('initio.m', 'I/O Error: Must define 0 or 2 touchscreen inputs');
         return
     end
 end
@@ -173,7 +177,7 @@ end
 if MouseXpresent || MouseYpresent,
     if numfieldsMouseX ~= numfieldsMouseY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 mouse inputs';
-        disp('I/O Error: Must define 0 or 2 mouse inputs')
+        logger.info('initio.m', 'I/O Error: Must define 0 or 2 mouse inputs');
         return
     end
 end
@@ -204,7 +208,7 @@ for i = 1:length(fnames),
                 [DAQ.AnalogInput DaqError] = init_ai(IO.(signame).Constructor, configIO);
                 if ~isempty(DaqError),
                     DaqError{1} = sprintf('%s: %s', signame, DaqError{1});
-                    disp(DaqError{1})
+                    logger.info('initio.m', DaqError{1});
                     daqreset;
                     return
                 end
@@ -277,8 +281,8 @@ for i = 1:length(fnames),
             elseif ~any(board2) && configIO.AI.AnalogInputDuplication,
                 h = findobj('tag', 'monkeylogicmainmenu');
                 if ~isempty(h) && strcmpi(get(findobj(h, 'tag', 'aiduplication'), 'enable'), 'on'),
-                    fprintf('Warning: No duplicate boards found to assign %s...', signame);
-                    disp('... must sample and store data from the same DAQ board (suboptimal performance will result)');
+                    logger.info('initio.m', sprintf('Warning: No duplicate boards found to assign %s...', signame));
+                    logger.info('initio.m', '... must sample and store data from the same DAQ board (suboptimal performance will result)');
                 end
             end
             
@@ -329,19 +333,19 @@ for i = 1:length(fnames),
 
             if ~isfield(IO.CodesDigOut, 'Constructor'),
                DaqError{1} = '*** No digital lines assigned for event marker output ***';
-               disp(DaqError{1});
+               logger.info('initio.m', DaqError{1});
                daqreset;
                return
             end
             if ~isfield(IO.DigCodesStrobeBit, 'Constructor'),
                 DaqError{1} = '*** Must assign a strobe bit for behavioral code digital output ***';
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 daqreset;
                 return
             end
             if ~strcmp(IO.DigCodesStrobeBit.Constructor, IO.CodesDigOut.Constructor),
                 DaqError{1} = '*** Strobe bit line must be on the same board & subsystem as the behavioral code data lines ***';
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 daqreset;
                 return
             end
@@ -360,7 +364,7 @@ for i = 1:length(fnames),
                 DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, hwlines, 'out', 'BehaviorCodes');
             catch
                 DaqError{1} = '*** Unable to assign output digital lines for Behavioral Codes ***';
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 rethrow(lasterror);
                 daqreset;
                 return
@@ -372,7 +376,7 @@ for i = 1:length(fnames),
                 DAQ.BehavioralCodes.StrobeBit = addline(DAQ.BehavioralCodes.DIO, hwline, portnumber, 'out', 'StrobeBit');
             catch
                 DaqError{1} = sprintf('*** Unable to assign line %i on port %i as a digital strobe output bit ***', hwline, portnumber);
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 daqreset;
                 return
             end

@@ -45,6 +45,10 @@ global x_touch;
 global y_touch;
 global screen_ppd;
 
+logger = log4m.getLogger('log.txt');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
 switch fxn
             
     case 'waitflip',
@@ -94,8 +98,7 @@ switch fxn
         end
 
     case 'init',
-
-        disp('<<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...')
+        logger.info('mlvideo.m', '<<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...');
 
         xglrelease;
         xglinit;
