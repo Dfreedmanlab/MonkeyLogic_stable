@@ -41,9 +41,11 @@ function result = mlvideo(fxn, varargin)
 result = [];
 fxn = lower(fxn);
 
-global x_touch;
-global y_touch;
-global screen_ppd;
+persistent x_touch;
+persistent y_touch;
+persistent screen_ppd;
+
+persistent logger;
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
@@ -268,15 +270,16 @@ switch fxn
         result(2) = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
         
     case 'gettouch'
-		pos = xglgetcursor;
-        
+
+ 		pos = xglgetcursor;
+
         xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
 
         obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
         obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
         obj.sub_ppd_x = screen_ppd;
         obj.sub_ppd_y = screen_ppd;
-
+        
         mouse_state = mlvideo('getmousebuttons');   % get Button State
         left_button = mouse_state(1);               % get Button State Left
         right_button = mouse_state(2);              % get Button State Right
