@@ -35,7 +35,7 @@ classdef log4m < handle
     end
     
     methods (Static)
-        function obj = getLogger( logPath )
+        function obj = getLogger( fileName )
             %GETLOGGER Returns instance unique logger object.
             %   PARAMS:
             %       logPath - Relative or absolute path to desired logfile.
@@ -51,6 +51,10 @@ classdef log4m < handle
             
             persistent localObj;
             if isempty(localObj) || ~isvalid(localObj)
+
+                dirs = getpref('MonkeyLogic', 'Directories');
+                logPath = strcat(dirs.RunTimeDirectory, fileName);
+                
                 localObj = log4m(logPath);
             end
             obj = localObj;
@@ -114,14 +118,17 @@ classdef log4m < handle
             %       logPath - Name or full path of desired logfile
             %
             
-            [fid,message] = fopen(logPath, 'a');
+            [fid,message] = fopen(logPath, 'w');
             
             if(fid < 0)
                 error(['Problem with supplied logfile path: ' message]);
             end
-            fclose(fid);
             
+            fclose(fid);
+
             self.fullpath = logPath;
+
+            self.writeLog(self.INFO, sprintf('%s.m', class(self)), '<<< MonkeyLogic >>> Created a new log file');
         end
           
      
@@ -225,7 +232,8 @@ classdef log4m < handle
             
             % If necessary write to command window
             if( self.commandWindowLevel <= level )
-                fprintf('%s:%s\n', scriptName, message);
+                %fprintf('%s:%s\n', scriptName, message);
+                fprintf('%s\n', message);
             end
             
             %If currently set log level is too high, just skip this log

@@ -13,9 +13,9 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'February 2016';
-currentversion = '02-25-2016 build 1.2.37';
+currentversion = '02-29-2016 build 1.2.39';
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -3624,7 +3624,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loadcfg(cfgfile)
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 

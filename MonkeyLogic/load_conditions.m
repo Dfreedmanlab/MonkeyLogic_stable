@@ -17,7 +17,7 @@ function [Conditions, cerror] = load_conditions(varargin)
 % Modified 8/19/08 -WA (to handle non-integer RelativeFrequency values)
 % 
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 

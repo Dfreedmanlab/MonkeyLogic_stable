@@ -45,7 +45,7 @@ global x_touch;
 global y_touch;
 global screen_ppd;
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 

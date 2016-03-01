@@ -8,7 +8,7 @@ function [DAQ, DaqError] = initio(IO)
 % Last modified 8/11/08 -WA (to make certain analog-input objects use DMA)
 % Last modified 11/17/15 -ER (Added DigitalInputStream for touchscreens and other future devices)
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 

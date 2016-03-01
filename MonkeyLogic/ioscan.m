@@ -4,7 +4,7 @@ function AdaptorInfo = ioscan()
 % Modified 2/1/07 (bug in digitalio assignments fixed) --WA
 % Modified 1/4/08 (improved error handling) --WA
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 

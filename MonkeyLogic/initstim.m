@@ -1,6 +1,6 @@
 function C = initstim(fname, ScreenInfo)
 % Created 8/23/08 -WA
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 

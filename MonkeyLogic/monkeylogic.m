@@ -40,7 +40,7 @@ if isempty(varargin),
     end
     return
 end
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -1718,7 +1718,7 @@ if ~isempty(varargin),
     preloaded = varargin{1};
 end
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -2049,7 +2049,7 @@ vbuffer = vbuffer(1:vbufnum);
 function Instruction = parse_remote_command(RemoteCommand, PassCode)
 persistent lastcommandtime
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -2360,7 +2360,7 @@ function [ScreenInfo, MLConfig, UserChanges] = check_keyboard(MLConfig, EyeSigna
 global MLHELPER_OFF
 global RFM_TASK
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
