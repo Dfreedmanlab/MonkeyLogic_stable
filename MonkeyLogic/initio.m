@@ -135,7 +135,7 @@ end
 if EyeXpresent || EyeYpresent,
     if numfieldsEyeX ~= numfieldsEyeY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 eye signal inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 eye signal inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 eye signal inputs');
         return 
     end
 end
@@ -149,7 +149,7 @@ end
 if JoyXpresent || JoyYpresent,
     if numfieldsJoyX ~= numfieldsJoyY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 joystick inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 joystick inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 joystick inputs');
         return
     end
 end
@@ -163,7 +163,7 @@ end
 if TouchXpresent || TouchYpresent,
     if numfieldsTouchX ~= numfieldsTouchY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 touchscreen inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 touchscreen inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 touchscreen inputs');
         return
     end
 end
@@ -177,7 +177,7 @@ end
 if MouseXpresent || MouseYpresent,
     if numfieldsMouseX ~= numfieldsMouseY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 mouse inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 mouse inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 mouse inputs');
         return
     end
 end
