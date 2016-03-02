@@ -284,7 +284,7 @@ switch fxn
         left_button = mouse_state(1);               % get Button State Left
         right_button = mouse_state(2);              % get Button State Right
 
-        if ( (left_button == 1) || (right_button == 1) ) % update touch location if left mouse button is down
+        if ( (left_button == 1) || (right_button == 1) ) % update touch location if left or right mouse button is down
             x_touch =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
             y_touch = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
         else 
