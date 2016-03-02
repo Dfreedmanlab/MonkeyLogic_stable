@@ -357,25 +357,10 @@ for i = 1:length(fnames),
             end
             hwlines = IO.CodesDigOut.Line;
             try
-                DAQ.BehavioralCodes.DIO = eval(IO.CodesDigOut.Constructor);
-                if ~isfield(IO.CodesDigOut, 'Line'),
-                    lineabsenterror;
-                end
-                try
-                    if isscalar(IO.CodesDigOut.Channel) && ~iscell(IO.CodesDigOut.Line)
-                        DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line, 'out', 'BehaviorCodes');
-                    else
-                        nport = length(IO.CodesDigOut.Channel);
-                        for m=1:nport
-                            portnumber = IO.CodesDigOut.Channel(m);
-                            hwlines = IO.CodesDigOut.Line{m};
-                            addline(DAQ.BehavioralCodes.DIO, hwlines, portnumber, 'out', 'BehaviorCodes');
-                        end
-                        DAQ.BehavioralCodes.DataBits = DAQ.BehavioralCodes.DIO.Line;
-                    end
-                catch
-                    DaqError{1} = '*** Unable to assign output digital lines for Behavioral Codes ***';
-
+                % no need to specify the port number. Lines are coded in
+                % the following manner:
+                % e.g. for 3 ports with 8 lines in each port:
+                % Port0->Lines 0-7, Port1->Lines 8-15, Port2->Lines 16-23
                 DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, hwlines, 'out', 'BehaviorCodes');
             catch
                 DaqError{1} = '*** Unable to assign output digital lines for Behavioral Codes ***';
