@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'February 2016';
-currentversion = '03-02-2016 build 1.1.48';
+currentversion = '03-01-2016 build 1.2.45';
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
@@ -2907,38 +2907,30 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     return
                 end
                 
-                avports = AdatorInfo(boardnum).AvailablePorts{subsysnum};
-                avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
-                
-                nlines = length(avlines);
-                if strcmp('CodesDigOut', iovar),
-                    % first select ports (allows user to select multiple
-                    % ports)
-                    choose_dio_port(avports, 1);
-                    portindx = get(findobj('tag', 'availablechannels'), 'userdata');
-                    if isempty(portindx)
-                        return
-                    end
-                    InputOutput.(iovar).Channel = avports(portindx);
-                    linestoadd = [];
-                    for portindx = portindx(1) : portindx(end)
-                        thisport = avports(portindx);
-                        indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                        if isempty(indx)
-                            return
-                        end
-                        % e.g. nports = 3, nlines = 8: Port0->Lines 0-7,
-                        % Port1->Lines 8-15, Port2->Lines 16-23
-                        linestoadd = [linestoadd avlines(indx) + nlines * thisport]; %#ok<AGROW>
-                    end
-                    InputOutput.(iovar).Line = linestoadd;
-                else
-                    choose_dio_line(avlines);
-                indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                if isempty(indx),
-                    return
-                end
-                InputOutput.(iovar).Line = avlines(indx);
+                        if strcmp('CodesDigOut', iovar),
+                            avports = AdaptorInfo(boardnum).AvailablePorts{subsysnum};
+                            InputOutput.(iovar).Channel = avports(channelindx);
+
+                            nport = length(channelindx);
+                            Line = cell(1,nport);
+                            for m=1:nport
+                                n = channelindx(m);
+                                avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{n};
+                                thisport = avports(n);
+                                choose_dio_line(avlines,1,thisport);
+                                indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                                if isempty(indx), return; end
+                                Line{m} = avlines(indx);
+                            end
+                            InputOutput.(iovar).Line = Line;
+                        else
+                            avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
+                            choose_dio_line(avlines);
+                            indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                            if isempty(indx),
+                                return
+                            end
+                            InputOutput.(iovar).Line = avlines(indx);
                 end
                 
             elseif strcmp('Reward', iovar) && strcmpi(AdaptorInfo(boardnum).SubSystemsNames(subsysnum), 'digitalio'),
@@ -3234,7 +3226,7 @@ uicontrol('style', 'pushbutton', 'position', [92 35 70 30], 'string', 'Cancel', 
 set(gcf, 'closerequestfcn', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', []); delete(gcf)');
 if ~isempty(varargin) && varargin{1},
     set(h, 'max', 2); %enable multi-select
-    if varargin{2}
+    if 1 < length(varargin)
         portnum = varargin{2};
         set(f, 'name', ['Select Lines for Port ', num2str(portnum)]);
     else
