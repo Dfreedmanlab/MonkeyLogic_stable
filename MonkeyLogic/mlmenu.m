@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'February 2016';
-currentversion = '03-01-2016 build 1.2.45';
+currentversion = '03-01-2016 build 1.1.50';
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
@@ -2922,6 +2922,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                                 if isempty(indx), return; end
                                 Line{m} = avlines(indx);
                             end
+                    if 1==nport, Line = Line{1}; end
                             InputOutput.(iovar).Line = Line;
                         else
                             avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};

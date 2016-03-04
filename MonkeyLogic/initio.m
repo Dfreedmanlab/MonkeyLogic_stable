@@ -351,18 +351,13 @@ for i = 1:length(fnames),
             end
             
             DAQ.BehavioralCodes.DIO = eval(IO.CodesDigOut.Constructor);
-                if ~isfield(IO.CodesDigOut, 'Line'),
-                    lineabsenterror;
-                end
+            if ~isfield(IO.CodesDigOut, 'Line'), lineabsenterror; end
                 try
-                    if isscalar(IO.CodesDigOut.Channel) && ~iscell(IO.CodesDigOut.Line)
-                        DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line, 'out', 'BehaviorCodes');
+                if ~iscell(IO.CodesDigOut.Line)
+                    DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line, IO.CodesDigOut.Channel(1), 'out', 'BehaviorCodes');
                     else
-                        nport = length(IO.CodesDigOut.Channel);
-                        for m=1:nport
-                            portnumber = IO.CodesDigOut.Channel(m);
-                            hwlines = IO.CodesDigOut.Line{m};
-                            addline(DAQ.BehavioralCodes.DIO, hwlines, portnumber, 'out', 'BehaviorCodes');
+                    for m=1:length(IO.CodesDigOut.Channel)
+                        addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line{m}, IO.CodesDigOut.Channel(m), 'out', 'BehaviorCodes');
                         end
                         DAQ.BehavioralCodes.DataBits = DAQ.BehavioralCodes.DIO.Line;
                     end
