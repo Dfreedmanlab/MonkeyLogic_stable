@@ -2930,8 +2930,8 @@ end
 if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
 
     [ex, ey] = eyejoytrack(-8);  % get all touchscreen data
-    ex = touchscreen_dataclean(ex);
-    ey = touchscreen_dataclean(ey);
+%    ex = touchscreen_dataclean(ex);
+%    ey = touchscreen_dataclean(ey);
     
    	%h1 = plot(ex, ey);
     %set(h1, 'color', ScreenData.TouchTraceColor/2);
@@ -2943,8 +2943,6 @@ end
 if ~isempty(DAQ.MouseSignal) && ~SIMULATION_MODE,
 
     [ex, ey] = eyejoytrack(-9);  % get all mouse data
-    %ex = touchscreen_dataclean(ex);  %not necessary to clean mouse data
-    %ey = touchscreen_dataclean(ey);  %not necessary to clean mouse data
     
    	h1 = plot(ex, ey);
     set(h1, 'color', ScreenData.MouseTraceColor/2);

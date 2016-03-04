@@ -105,8 +105,8 @@ switch fxn
         xglrelease;
         xglinit;
         
-        x_touch = -180;
-        y_touch = -180;
+        x_touch = nan;
+        y_touch = nan;
         if (~isempty(varargin))
             screen_ppd = varargin{1};
         end
@@ -153,8 +153,8 @@ switch fxn
     case 'release',
         
         xglrelease;
-        x_touch = -180;
-        y_touch = -180;
+        x_touch = nan;
+        y_touch = nan;
         
     case 'createbuffer',
         
@@ -288,8 +288,8 @@ switch fxn
             x_touch =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
             y_touch = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
         else 
-            x_touch = -180; %out of bounds
-            y_touch = -180; %out of bounds
+            x_touch = nan; %out of bounds
+            y_touch = nan; %out of bounds
         end
         
         result(1) = x_touch;
