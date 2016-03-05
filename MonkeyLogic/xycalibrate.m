@@ -322,6 +322,10 @@ elseif ismember(gcbo, get(fig, 'children')),
                 end
             else
                 resetDAQflag = 0;
+                if (~DEBUG_ON_KEYBOARD) %MAC, Jan 2016 -- added to solve issue related to crashes when calibration was initiated during task
+               	 	mlkbd('init'); % disables the keyboard
+                    disp('<<< MonkeyLogic >>> Disabled Keyboard');
+                end
                 if BasicData.EyeOrJoy == 1,
                     xchan = DAQ.EyeSignal.XChannelIndex;
                     ychan = DAQ.EyeSignal.YChannelIndex;
