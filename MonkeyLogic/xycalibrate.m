@@ -101,10 +101,13 @@ if isempty(fig),
     xy = plot(0,0, 'o');
     tgt = plot(0,0, 'o');
     tgt_all = plot(0,0, 'o');
-    set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'erasemode', 'xor', 'tag', 'xy');
-    set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt');
-    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt_all');
-
+    set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'tag', 'xy');            % spatial characteristics of the gaze crosshair during calibration
+    set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 0 0], 'linewidth', 4, 'markersize', 30, 'tag', 'tgt');                % accentuates the target circumfrence by changing it to RED (hope you can see it)
+    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'tag', 'tgt_all');  % dims (low luminance) the other target locations until they are selected by the program.
+    zzzSetXOREraseMode(xy);
+    zzzSetXOREraseMode(tgt);
+    zzzSetXOREraseMode(tgt_all);
+    
     uicontrol('style', 'pushbutton', 'position', [50 ys-35 150 25], 'string', 'Start Calibration', 'tag', 'startcal', 'callback', 'xycalibrate;');
     uicontrol('style', 'pushbutton', 'position', [50 ys-65 150 25], 'string', 'Exit', 'tag', 'savequit', 'callback', 'xycalibrate;', 'enable', 'on');
     
@@ -606,7 +609,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                             pause(0.25);
                             set(xy, 'markerfacecolor', [0.5 0.5 0.5]);
                             set(tgt, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
-                            
+
                             t2 = maxduration;
                             
                             targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
@@ -900,3 +903,12 @@ current_dir = pwd;
 cd(dirs.BaseDirectory);
 system('mlhelper --cursor-enable');
 cd(current_dir);
+
+function zzzSetXOREraseMode(h)
+%Set HG objects EraseMode to 'xor' for legacy MATLAB versions before HG2
+%update in 2014b
+
+if verLessThan('matlab','8.4')
+    set(h,'EraseMode','xor');
+end
+return

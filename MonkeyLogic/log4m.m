@@ -52,6 +52,7 @@ classdef log4m < handle
             persistent localObj;
             if isempty(localObj) || ~isvalid(localObj)
 
+				% This is so that the log file is saved in the MonkeyLogic runtime directory
                 dirs = getpref('MonkeyLogic', 'Directories');
                 logPath = strcat(dirs.RunTimeDirectory, fileName);
                 
@@ -232,7 +233,7 @@ classdef log4m < handle
             
             % If necessary write to command window
             if( self.commandWindowLevel <= level )
-                %fprintf('%s:%s\n', scriptName, message);
+                %fprintf('%s:%s\n', scriptName, message);  % do not want to display the script name in the output window, just the file.
                 fprintf('%s\n', message);
             end
             
