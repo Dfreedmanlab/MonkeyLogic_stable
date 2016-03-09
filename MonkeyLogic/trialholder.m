@@ -2930,8 +2930,6 @@ end
 if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
 
     [ex, ey] = eyejoytrack(-8);  % get all touchscreen data
-%    ex = touchscreen_dataclean(ex);
-%    ey = touchscreen_dataclean(ey);
     
    	%h1 = plot(ex, ey);
     %set(h1, 'color', ScreenData.TouchTraceColor/2);

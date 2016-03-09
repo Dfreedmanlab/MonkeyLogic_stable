@@ -439,7 +439,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                 xlim = get(gca, 'xlim');
                 ylim = get(gca, 'ylim');
                 h = text(0.9*min(xlim), 0.9*min(ylim), 'Current Input: X= ---- V   Y= ---- V');
-                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [0.2 0.2 0.2], 'tag', 'xytxt_real_time');
+                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [1.0 1.0 1.0], 'tag', 'xytxt_real_time');
             end
             
             start(DAQ.AnalogInput);
@@ -491,14 +491,13 @@ elseif ismember(gcbo, get(fig, 'children')),
                     
                     [xp yp] = tformfwd(SigTransform, xv, yv);
                     set(xy, 'xdata', xp, 'ydata', yp);
-                    if (refresh_time == 200)
-                        xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xp, yp);
+                    if (refresh_time == 16)
+                        xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xv, yv);
                         set(findobj(gcf, 'tag', 'xytxt_real_time'), 'string', xystr);
                         refresh_time = 0;
                     else 
                         refresh_time = refresh_time + 1;
                     end
-                    
                     drawnow;
                     
                     t2 = toc*1000;
@@ -533,35 +532,31 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 xv = data(firstsample:lastsample, xchan);
                                 yv = data(firstsample:lastsample, ychan);
                                                                                                             
-                                max_xv = min(xv);
-                                min_xv = max(xv);
-                                max_yv = min(yv);
-                                min_yv = max(yv);
-                                median_xv = median(xv);
-                                median_yv = median(yv);
-                                mean_xv = nanmean(xv);
-                                mean_yv = nanmean(yv);
-
                                	switch calibrationPointTypeIndex,
 
                                     case 1,
-                                        [xp yp] = tformfwd(SigTransform, min_xv, min_yv);
                                         disp('<<< MonkeyLogic >>> Using minimum value')
+                                        xv = min(xv);
+                                        yv = min(yv);
                                     case 2,
-                                        [xp yp] = tformfwd(SigTransform, max_xv, max_yv);
                                         disp('<<< MonkeyLogic >>> Using maximum value')
+                                        xv = max(xv);
+                                        yv = max(yv);
                                     case 3,
-                                        [xp yp] = tformfwd(SigTransform, mean_xv, mean_yv);
                                         disp('<<< MonkeyLogic >>> Using mean value')
+                                        xv = nanmean(xv);
+                                        yv = nanmean(yv);
                                     case 4,
-                                        [xp yp] = tformfwd(SigTransform, median_xv, median_yv);
                                         disp('<<< MonkeyLogic >>> Using median value')
-
+                                        xv = nanmedian(xv);
+                                        yv = nanmedian(yv);
                                 end
                      
-                                cp(targetNum, 1:2) = [xp yp];
+                                cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
+                                [xp yp] = tformfwd(SigTransform, xv, yv);
 
+%  
                                 % update the location of the calibrated target
                                 %set(xy, 'xdata', [xp1 xp2 xp3 xp4], 'ydata', [yp1 yp2 yp3 yp4], 'markerfacecolor', [1 .3 .3]);
                                 set(xy, 'xdata', xp, 'ydata', yp, 'markerfacecolor', [1 .3 .3]);
