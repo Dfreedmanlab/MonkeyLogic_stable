@@ -35,7 +35,7 @@ MLPrefs.Directories = getpref('MonkeyLogic', 'Directories');
 validxsize =  [ 320   320    640   768    800    1024   1024  1152  1152   1280     1280   1280   1366   1400    1440   1600   1680     1920     1920   2048  2048  2560       2560    2560    2560    3840    4096];
 validysize =  [ 200   240    480   576    600    600    768   768   864    720      960    1024   768    1050    900    1200   1050     1080     1200   1080  1536  1440       1600    1920    2048    2160    3072];
 validlabels = {'CGA' 'QVGA' 'VGA' 'PAL'  'SVGA' 'WSVGA' 'XGA' '3:2' '4:3'  'HD720'  '4:3'  '5:4'  'HDTV' 'SXGA+' '8:5'  'UGA' 'WSXGA+' 'HD1080' 'WUXGA' '2K'  'QXGA' 'HD1440' 'WQXGA'  '5MEG' 'QSXGA' 'UHDTV'  '4K'};
-validrefresh = [60 72 75 85 100 120 240];
+validrefresh = [60 72 75 85 100 120 144 240];
 
 numvalidsizes = length(validxsize);
 validsizestrings = cell(1, numvalidsizes);
