@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'March 2016';
-currentversion = '03-28-2016 build 1.1.61'; 
+currentversion = '03-28-2016 build 1.1.62'; 
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
