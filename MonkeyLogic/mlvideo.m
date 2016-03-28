@@ -271,27 +271,29 @@ switch fxn
         
     case 'gettouch'
 
- 		pos = xglgetcursor;
+        mouse_state = xglgetcursor_buttonstate; %lets call xgl directly to get mouse button status
 
-        xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+        left_button = mouse_state(1); % get Button State Left
+        right_button = mouse_state(2); % get Button State Right
 
-        obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
-        obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
-        obj.sub_ppd_x = screen_ppd;
-        obj.sub_ppd_y = screen_ppd;
-        
-        mouse_state = mlvideo('getmousebuttons');   % get Button State
-        left_button = mouse_state(1);               % get Button State Left
-        right_button = mouse_state(2);              % get Button State Right
+        if ( (left_button == 1) || (right_button == 1) ) % update touch location only if left or right mouse button is down
 
-        if ( (left_button == 1) || (right_button == 1) ) % update touch location if left or right mouse button is down
-            x_touch =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
+            pos = xglgetcursor; %get coordinates of touch
+
+            xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+
+            obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2; % finds the center pixels of the subject screen
+            obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
+            obj.sub_ppd_x = screen_ppd;
+            obj.sub_ppd_y = screen_ppd;
+
+            x_touch = (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
             y_touch = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
-        else 
+        else
             x_touch = nan; %out of bounds
             y_touch = nan; %out of bounds
         end
-        
+
         result(1) = x_touch;
         result(2) = y_touch;
         
