@@ -357,6 +357,7 @@ for i = 1:length(fnames),
                     DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line, IO.CodesDigOut.Channel(1), 'out', 'BehaviorCodes');
                     else
                     for m=1:length(IO.CodesDigOut.Channel)
+                        if isempty(IO.CodesDigOut.Line{m}), continue; end
                         addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line{m}, IO.CodesDigOut.Channel(m), 'out', 'BehaviorCodes');
                         end
                         DAQ.BehavioralCodes.DataBits = DAQ.BehavioralCodes.DIO.Line;
