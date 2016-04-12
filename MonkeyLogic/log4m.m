@@ -122,7 +122,8 @@ classdef log4m < handle
             [fid,message] = fopen(logPath, 'w');
             
             if(fid < 0)
-                error(['Problem with supplied logfile path: ' message]);
+                disp(['Problem with supplied logfile path: ' message]);
+                return;
             end
             
             fclose(fid);

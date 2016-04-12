@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'March 2016';
-currentversion = '04-12-2016 build 1.1.69'; 
+currentversion = '04-12-2016 build 1.1.71'; 
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
@@ -4217,8 +4217,13 @@ catch
     else
         cfgfile = [MLPrefs.Directories.BaseDirectory 'default_cfg.mat'];
     end
-    logger.info('mlmenu.m', '... Saving new default configuration file ...')
-    save(cfgfile, 'MLConfig');
+    try
+        logger.info('mlmenu.m', '... Saving new default configuration file ...')
+        save(cfgfile, 'MLConfig');
+    catch
+        disp('*** Warning, you need to specify a correct experiment directory path! ***');
+    end
+    
 end
 setpref('MonkeyLogic', 'Directories', MLPrefs.Directories);
 
