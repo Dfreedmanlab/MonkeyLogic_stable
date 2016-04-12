@@ -15,8 +15,10 @@
 % the 'acquiretarget' command to 'acquirefix', or else you will get an
 % error.
 %
-% Oct 29, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
+
+%showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
 
 left = 1;           %left target number
 right = 2;          %right target number
@@ -24,7 +26,7 @@ windowSize = 1.5;   %degrees of visual angle surrounding the target. I believe t
 duration = 3000;    %in milliseconds
 
 toggleobject([left right], 'Status', 'on');
-showcursor('on');
+
 ontarget = eyejoytrack('acquiretarget', [left right], windowSize, duration);
 if ~ontarget,
      trialerror(4); % no response

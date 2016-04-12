@@ -10,7 +10,7 @@
 % This task is much more efficient than the other sample. However, it can
 % not display any advanced touch location stimuli.
 %
-% Dec 21, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a touch/fixation
@@ -28,7 +28,8 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 0);
 end
 
-showcursor('on');
+%showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
+
 scene_timer = tic;
 target_selected = [0, 0];
 

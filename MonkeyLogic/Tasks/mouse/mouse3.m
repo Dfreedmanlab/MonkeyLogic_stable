@@ -9,7 +9,7 @@
 % 
 % The position of the cursor is displayed using showcursor('on')
 %
-% Dec 24, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a touch/fixation
@@ -27,7 +27,8 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 0);
 end
 
-showcursor('on');
+%showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
+
 scene_timer = tic;
 target_selected = [0, 0];
 
@@ -41,7 +42,6 @@ while toc(scene_timer) < 10
    	left_button = mouse_state(1);               % get Button State Left
     right_button = mouse_state(2);              % get Button State Right
 
-        
     if (ontargets == 1) && (left_button == 1)
         toggleobject(mouseTargetLeftNotFilled, 'Status', 'off');
         toggleobject(mouseTargetLeftFilled, 'Status', 'on');

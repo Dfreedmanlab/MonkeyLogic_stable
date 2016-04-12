@@ -5,7 +5,7 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors). 
 % 
-% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a fixation
@@ -18,7 +18,8 @@ gazeTargetRightFilled      = 4;
 ontargetLeftTarget = 0;
 ontargetRightTarget = 0;
 
-showcursor('on');
+%showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
+
 scene_timer = tic;
 target_fixed = [0, 0];
 
