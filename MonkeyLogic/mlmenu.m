@@ -13,7 +13,7 @@ function mlmenu(varargin)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
 lastupdate = 'March 2016';
-currentversion = '04-12-2016 build 1.1.71'; 
+currentversion = '04-13-2016 build 1.1.75'; 
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
@@ -151,7 +151,7 @@ if isempty(mlf),
     set(gcf, 'closerequestfcn', 'mlmenu; delete(get(0, ''userdata'')); set(0, ''userdata'', ''''); disp(''Closed MonkeyLogic.'')');
     
     mlvideo('mlinit');
-    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized ML Video Graphics interface...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized Video Graphics interface...')
     
     ybase = 550;
     uicontrol('style', 'frame', 'position', [10 ybase+22 280 80], 'backgroundcolor', 0.85*figbg, 'foregroundcolor', 0.6*figbg);
@@ -2304,7 +2304,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 set(findobj(gcf, 'tag', 'savebutton'), 'enable', 'off');
                 set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'off');
                 datafile = get(findobj(gcf, 'tag', 'datafile'), 'userdata');
-                if exist(datafile, 'file'),
+               if exist(datafile, 'file'),
                     a = questdlg('Overwrite existing data file?', 'Data file already exists');
                     if strcmpi(a, 'No'),
                         mlmessage('Enter a new data file name to run the task');

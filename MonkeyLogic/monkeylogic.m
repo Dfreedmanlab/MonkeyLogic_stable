@@ -2750,7 +2750,7 @@ if ~isempty(thisfig)
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory);
-fprintf(message);
+%fprintf(message);
 system(message);
 
 %%
@@ -2766,7 +2766,7 @@ if ~isempty(thisfig)
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
-fprintf(message);
+%fprintf(message);
 system(message);
 
 %%
