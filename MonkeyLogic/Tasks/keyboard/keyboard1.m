@@ -9,9 +9,12 @@
 % will assign the eyetracker x and y to the analog inputs. Therefore,
 % analog data will be collected during the trial, but it will not control
 % trial execution (using eyejoytrack). You can unmap the eyetracker in the
-% GUI without impacting trial execution.
+% GUI without impacting trial execution. The same can be done with the 
+% touchscreen/mouse. Data will be displayed in the control window.
 % 
-% April 05, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 14, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 targetNumber   = 1;
 scene_timer = tic;

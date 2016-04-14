@@ -496,7 +496,7 @@ end
 
 %Subject's Controller Cursor (Eyetracker, joystick, touchscreen, mouse, etc.)
 if update_cursor,
-    if ( (cursorpos(1) >= 0) && (cursorpos(2) >= 0) )
+    if ( (cursorpos(1) >= 0) && (cursorpos(2) >= 0) && (cursorpos(1) < ScreenData.Xsize) && (cursorpos(2) < ScreenData.Ysize))
         mlvideo('blit', ScreenData.Device, ScreenData.CursorBuffer, cursorpos(1), cursorpos(2), ScreenData.CursorXsize, ScreenData.CursorYsize);
     end
     if ScreenData.PhotoDiode > 1, %keep current photodiode trigger on-screen (so doesn't flash with cursor)
@@ -673,7 +673,6 @@ persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsample
     lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax ...
 	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys 
 
-%persistent touchdata_x touchdata_y mousedata_x mousedata_y
 % Define static variables for collecting history of samples of AI.
 persistent history_AI_data history_AI_index history_AI_n;
 
@@ -706,10 +705,7 @@ if fxn1 == -1,                      %initialize
     AI = [];
     TrialRecord = varargin{6};
     disp(sprintf('<<< MonkeyLogic >>> Trial #%i Initializing', TrialRecord.CurrentTrialNumber));
-    %touchdata_x = [];
-    %touchdata_y = [];
-    %mousedata_x = [];
-    %mousedata_y = [];
+
     if isempty(DAQ.AnalogInput2),
         if ~isempty(DAQ.AnalogInput),
             AI = DAQ.AnalogInput;
@@ -790,6 +786,12 @@ if fxn1 == -1,                      %initialize
                 buttonx(buttonnumber) = buttonsdio.(bname).Index;
             end
         end
+    end
+    
+    if touchpresent || mousepresent
+        dirs = getpref('MonkeyLogic', 'Directories');
+        message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+        system(message);
     end
     
     data = [];
@@ -913,14 +915,6 @@ elseif fxn1 == -7, %RFM
     % required for check_keyboard
     RFM_TASK = 1;
 	FIRST_FRAME = 1;
-elseif fxn1 == -8,
-    ontarget    = 0;%touchdata_x;
-    rt          = 0;%touchdata_y;
-    return;
-elseif fxn1 == -9,
-    ontarget    = 0;%mousedata_x;
-    rt          = 0;%mousedata_y;
-    return;
 end
 
 % user facing functions start here 
@@ -1387,12 +1381,6 @@ while t2 < maxtime,
             touch_data = mlmouse('gettouch_degrees');
             xp_touch = touch_data(touchx);
             yp_touch = touch_data(touchy);
-            % create a memory buffer of touch data (this is not necessary
-            % for all other forms of analoginput because they use the NIDAQ
-            % buffer).
-            %touchdata_x = [touchdata_x, xp_touch];
-            %touchdata_y = [touchdata_y, yp_touch];
-            
         end
 
         if ~idle && touchtrack,
@@ -1415,12 +1403,6 @@ while t2 < maxtime,
             mouse_data = mlmouse('getmouse_degrees');
             xp_mouse = mouse_data(mousex);
             yp_mouse = mouse_data(mousey);
-            % create a memory buffer of touch data (this is not necessary
-            % for all other forms of analoginput because they use the NIDAQ
-            % buffer).
-            %mousedata_x = [mousedata_x, xp_mouse];
-            %mousedata_y = [mousedata_y, yp_mouse];
-            
         end
 
         if ~idle && mousetrack,
@@ -2000,6 +1982,15 @@ end
 data = mlmouse('gettouch_degrees');
 tx = data(1);
 ty = data(2);
+
+% if the user has not made contact with the screen (left button down), then
+% replace the value of NaN with -181 so that it neither crashes ML nor
+% displays the touch location anywhere in the visual range.
+if isnan(tx) || isnan(ty),
+    tx = -181;
+    ty = -181;
+    return
+end
 
 if isfield(ScreenData, 'UpdateInterval'),
     if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
@@ -2935,12 +2926,6 @@ end
 
 if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
 
-    %[ex, ey] = eyejoytrack(-8);  % get all touchscreen data
-    %disp('size ex)');
-    %size(ex)
-    %disp('size ey)');
-    %size(ey)
-    
     mlmouse('stop');
 	data = mlmouse('getalltouchdata_degrees');
 

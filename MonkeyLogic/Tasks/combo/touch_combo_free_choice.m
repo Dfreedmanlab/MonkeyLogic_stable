@@ -10,15 +10,9 @@
 % This task is much more efficient than the other sample. However, it can
 % not display any advanced touch location stimuli.
 %
-% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 13, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 %
-% This will automatically enable the cursor, replicating the same behavior
-% achieved if enabling the Mouse/System Keys option in the advanced menu
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-dirs = getpref('MonkeyLogic', 'Directories');
-message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
-system(message);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a touch/fixation

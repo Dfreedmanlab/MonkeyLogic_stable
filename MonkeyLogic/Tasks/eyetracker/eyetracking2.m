@@ -5,7 +5,9 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors). 
 % 
-% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 14, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a fixation

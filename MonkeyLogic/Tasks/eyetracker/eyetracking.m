@@ -8,7 +8,9 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors).
 % 
-% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 14, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 scene_timer = tic;
 windowSize = 1.5; % in degrees of visual angle (DVA)

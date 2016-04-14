@@ -15,8 +15,9 @@
 % the 'acquiretarget' command to 'acquirefix', or else you will get an
 % error.
 %
-% April 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
-
+% April 14, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
 
