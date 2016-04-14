@@ -142,7 +142,31 @@ switch fxn
 
         result = 1;
 
-	case 'getmouse_degrees'
+    case 'gettouch_pix'
+        if (mouse_started == false)
+            start(mouse);	% start sampling
+            mouse_started = true;
+        end
+        
+        %logger.info('mlmouse.m', '<<< MonkeyLogic >>> getmouse_pix');
+        [x,y,left,right,timestamp] = decodemouse(getsample(mouse));
+
+        if ( (left == 1) || (right == 1) ) % update touch location only if left or right mouse button is down
+            
+            x_touch =  (x - screen_x)/screen_ppd;
+            y_touch = -(y - screen_y)/screen_ppd;
+        
+        else
+            x_touch = nan; %out of bounds
+            y_touch = nan; %out of bounds
+        end
+
+        data(1) = x_touch;
+        data(2) = y_touch;
+        
+        result = 1;
+
+    case 'getmouse_degrees'
         if (mouse_started == false)
             start(mouse);	% start sampling
             mouse_started = true;
@@ -191,8 +215,11 @@ switch fxn
         %logger.info('mlmouse.m', '<<< MonkeyLogic >>> getalltouchdata_pix');
         [x,y,left,right,timestamp] = decodemouse(getdata(mouse));
 
-        data = [x y];
-        
+        no_contact_made_indexes = find(left==0);
+          
+        data = [(x - screen_x)/screen_ppd -(y - screen_y)/screen_ppd] ;
+        data(no_contact_made_indexes, :) = NaN;
+       
         result = 1;
     
     case 'getallmousedata_degrees'
