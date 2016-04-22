@@ -52,10 +52,17 @@ classdef log4m < handle
             persistent localObj;
             if isempty(localObj) || ~isvalid(localObj)
 
-				% This is so that the log file is saved in the MonkeyLogic runtime directory
-                dirs = getpref('MonkeyLogic', 'Directories');
-                logPath = strcat(dirs.RunTimeDirectory, fileName);
                 
+				% This is so that the log file is saved in the MonkeyLogic runtime directory
+                try 
+                    dirs = getpref('MonkeyLogic', 'Directories');
+                catch 
+                    set_ml_directories
+                    dirs = getpref('MonkeyLogic', 'Directories');
+                end
+                
+                logPath = strcat(dirs.RunTimeDirectory, fileName);
+
                 localObj = log4m(logPath);
             end
             obj = localObj;

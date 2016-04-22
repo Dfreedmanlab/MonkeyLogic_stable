@@ -12,8 +12,8 @@ function mlmenu(varargin)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'March 2016';
-currentversion = '04-14-2016 build 1.1.79'; 
+lastupdate = 'April 2016';
+currentversion = '04-22-2016 build 1.1.80'; 
 
 logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
