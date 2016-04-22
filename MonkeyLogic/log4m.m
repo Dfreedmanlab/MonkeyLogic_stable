@@ -57,13 +57,16 @@ classdef log4m < handle
                 try 
                     dirs = getpref('MonkeyLogic', 'Directories');
                 catch 
-                    set_ml_directories
-                    dirs = getpref('MonkeyLogic', 'Directories');
+                    if (set_ml_directories == 1)
+                        dirs = getpref('MonkeyLogic', 'Directories');
+                    else
+                        self.logLevel = 0;
+                    end
+                        logPath = strcat('C:\\', fileName);
+                        localObj = log4m(logPath);
+                    
                 end
-                
-                logPath = strcat(dirs.RunTimeDirectory, fileName);
-
-                localObj = log4m(logPath);
+           
             end
             obj = localObj;
         end
