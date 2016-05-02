@@ -533,7 +533,7 @@ void Session::FocusWindow::Init ()
     };
     RegisterClassEx (&wc);
     hwnd = CreateWindow (title.c_str (), title.c_str (),
-        WS_OVERLAPPEDWINDOW, 0, 0, 100, 100,
+        WS_POPUP, 0, 0, 100, 100,
         GetDesktopWindow (), NULL, wc.hInstance, NULL);
     if (hwnd == NULL)
         throw "Could not create application focus window";
@@ -594,7 +594,7 @@ void Session::Device::Init (D3D &d3d, unsigned d, FocusWindow &focus_window, con
     RegisterClassEx (&wc);
     // Create the window.
     hwnd = CreateWindow (title.c_str (), title.c_str (),
-        WS_OVERLAPPEDWINDOW, 0, 0, dm.width, dm.height,
+        WS_POPUP, 0, 0, dm.width, dm.height,
         GetDesktopWindow (), NULL, wc.hInstance, NULL);
     if (hwnd == NULL)
         throw "Could not create application device window";

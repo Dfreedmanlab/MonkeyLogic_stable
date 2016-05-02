@@ -62,11 +62,9 @@ classdef log4m < handle
                     else
                         self.logLevel = 0;
                     end
-                        logPath = strcat('C:\\', fileName);
-                        localObj = log4m(logPath);
-                    
                 end
-           
+                logPath = strcat('C:\\', fileName);
+                localObj = log4m(logPath);
             end
             obj = localObj;
         end
