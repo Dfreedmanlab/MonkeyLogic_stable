@@ -2293,6 +2293,9 @@ ScreenInfo.CursorYsize = yis;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ScreenInfo = close_video(ScreenInfo, varargin)
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 
 for i = 1:length(ScreenInfo.ActiveVideoBuffers),
     mlvideo('releasebuffer', ScreenInfo.Device, ScreenInfo.ActiveVideoBuffers(i));
