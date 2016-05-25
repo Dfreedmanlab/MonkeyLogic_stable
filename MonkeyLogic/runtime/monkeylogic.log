@@ -1,0 +1,147 @@
+2016-04-12 14:27:48,990 INFO mlmenu.m - <<< MonkeyLogic >>> Revision : 04-12-2016 build 1.1.71
+2016-04-12 14:27:48,995 INFO mlmenu.m - <<< MonkeyLogic >>> Operating System: Windows_NT...
+2016-04-12 14:27:48,998 INFO mlmenu.m - <<< MonkeyLogic >>> *** JAVA Virtual Machine is Running ***
+2016-04-12 14:27:49,001 INFO mlmenu.m - <<< MonkeyLogic >>> Computer Name: WIN10-64BIT...
+2016-04-12 14:27:49,004 INFO mlmenu.m - <<< MonkeyLogic >>> Logged in as "rykli"...
+2016-04-12 14:27:49,007 INFO mlmenu.m - <<< MonkeyLogic >>> Detected 8 "x86" processors...
+2016-04-12 14:27:49,010 INFO mlmenu.m - <<< MonkeyLogic >>> Matlab version: 8.5.0.197613 (R2015a)...
+2016-04-12 14:27:49,014 INFO mlmenu.m - <<< MonkeyLogic >>> Approximate Matlab cycle rate is 3065 kHz
+2016-04-12 14:27:49,017 INFO mlmenu.m - <<< MonkeyLogic >>> Launching Menu...
+2016-04-12 14:27:49,048 INFO mlmenu.m - <<< MonkeyLogic >>> Initialized ML Video Graphics interface...
+2016-04-12 14:27:49,280 INFO mlmenu.m - <<< MonkeyLogic >>> Initialized Task Menu...
+2016-04-12 14:27:49,283 INFO mlvideo.m - <<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...
+2016-04-12 14:27:49,291 INFO mlmenu.m - <<< MonkeyLogic >>> Found 2 video devices...
+2016-04-12 14:27:49,342 INFO mlmenu.m - <<< MonkeyLogic >>> Initialized Video Menu...
+2016-04-12 14:27:49,404 INFO mlmenu.m - <<< MonkeyLogic >>> Initialized Control-Screen Menu...
+2016-04-12 14:27:49,408 INFO ioscan.m - <<< MonkeyLogic >>> Gathering I/O board info (running ioscan.m)...
+2016-04-12 14:27:49,551 INFO ioscan.m - <<< MonkeyLogic >>> DAQ Driver Version: National Instruments 15.1 NI-DAQmx
+2016-04-12 14:27:49,554 INFO ioscan.m - <<< MonkeyLogic >>> DAQ Toolbox Version: NIMH daqtoolbox (Apr 7, 2016 build 28)
+2016-04-12 14:27:49,657 INFO ioscan.m - <<< MonkeyLogic >>> Found 4 I/O adaptors:
+2016-04-12 14:27:49,660 INFO ioscan.m - ... 1) nidaq
+2016-04-12 14:27:49,663 INFO ioscan.m - ... 2) parallel
+2016-04-12 14:27:49,666 INFO ioscan.m - ... 3) winsound
+2016-04-12 14:27:49,669 INFO ioscan.m - ... 4) USB (Universal Serial Bus)
+2016-04-12 14:27:49,709 INFO mlmenu.m - <<< MonkeyLogic >>> Warning: no duplicate DAQ boards found for Analog Input duplication...
+2016-04-12 14:27:49,769 INFO mlmenu.m - <<< MonkeyLogic >>> Initialized I/O Menu...
+2016-04-12 14:27:49,788 INFO mlmenu.m - <<< MonkeyLogic >>> Initialized drop-down menus...
+2016-04-12 14:27:50,400 INFO mlmenu.m - <<< MonkeyLogic >>> Ready.
+2016-04-12 14:29:27,544 INFO loadconditions.m - <<< MonkeyLogic >>> Loading conditions file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\\touch_combo_free_choice.txt
+2016-04-12 14:29:33,004 INFO monkeylogic.m - 
+2016-04-12 14:29:33,156 INFO monkeylogic.m - <<< MonkeyLogic >>> Using configuration file: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\touch_combo_free_choice_cfg.mat
+2016-04-12 14:29:33,210 INFO mlvideo.m - <<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...
+2016-04-12 14:29:34,937 INFO loadconditions.m - <<< MonkeyLogic >>> Loading conditions file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\\touch_combo_free_choice.txt
+2016-04-12 14:29:34,977 INFO monkeylogic.m - <<< MonkeyLogic >>> Loaded & parsed conditions file: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\\touch_combo_free_choice.txt
+2016-04-12 14:29:34,987 INFO monkeylogic.m - <<< MonkeyLogic >>> Embedding C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\touch_combo_free_choice.m...
+2016-04-12 14:29:38,477 INFO monkeylogic.m - <<< MonkeyLogic >>> Successfully created the run-time function from the timing script
+2016-04-12 14:29:38,485 INFO monkeylogic.m - <<< MonkeyLogic >>> Initialized task parameters...
+2016-04-12 14:29:38,491 INFO monkeylogic.m - <<< MonkeyLogic >>> Reading behavioral codes file: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\codes.txt...
+2016-04-12 14:29:38,513 INFO monkeylogic.m - <<< MonkeyLogic >>> Opening C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\jhgjhg.bhv...
+2016-04-12 14:29:38,559 INFO loadconditions.m - <<< MonkeyLogic >>> Loading conditions file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\\touch_combo_free_choice.txt
+2016-04-12 14:29:38,572 INFO monkeylogic.m - <<< MonkeyLogic >>> Initialized data file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\jhgjhg.bhv...
+2016-04-12 14:29:38,916 INFO initio.m - <<< MonkeyLogic >>> Initializing I/O
+2016-04-12 14:29:38,933 INFO ioscan.m - <<< MonkeyLogic >>> Gathering I/O board info (running ioscan.m)...
+2016-04-12 14:29:39,077 INFO ioscan.m - <<< MonkeyLogic >>> DAQ Driver Version: National Instruments 15.1 NI-DAQmx
+2016-04-12 14:29:39,080 INFO ioscan.m - <<< MonkeyLogic >>> DAQ Toolbox Version: NIMH daqtoolbox (Apr 7, 2016 build 28)
+2016-04-12 14:29:39,175 INFO ioscan.m - <<< MonkeyLogic >>> Found 4 I/O adaptors:
+2016-04-12 14:29:39,178 INFO ioscan.m - ... 1) nidaq
+2016-04-12 14:29:39,181 INFO ioscan.m - ... 2) parallel
+2016-04-12 14:29:39,184 INFO ioscan.m - ... 3) winsound
+2016-04-12 14:29:39,187 INFO ioscan.m - ... 4) USB (Universal Serial Bus)
+2016-04-12 14:29:39,266 INFO monkeylogic.m - <<< MonkeyLogic >>> Successfully completed initializing I/O.
+2016-04-12 14:29:39,416 INFO monkeylogic.m - <<< MonkeyLogic >>> Video graphics initialization started...
+2016-04-12 14:29:39,443 INFO mlvideo.m - <<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...
+2016-04-12 14:29:40,732 INFO monkeylogic.m - <<< MonkeyLogic >>> Video graphics initialization completed successfully.
+2016-04-12 14:29:40,735 INFO monkeylogic.m - <<< MonkeyLogic >>> Calculating video frame length...
+2016-04-12 14:29:40,824 INFO monkeylogic.m - ...Average video frame length = 8.333 ms
+2016-04-12 14:29:40,842 INFO initstim.m - <<< MonkeyLogic >>> Looking for C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\initializing.avi
+2016-04-12 14:29:42,778 INFO monkeylogic.m - <<< MonkeyLogic >>> Initialization trial starting...
+2016-04-12 14:29:43,552 INFO monkeylogic.m - <<< MonkeyLogic >>> Successfully initialized Timing Files.
+2016-04-12 14:29:43,558 INFO monkeylogic.m - <<< MonkeyLogic >>> BHV File: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\combo\jhgjhg.bhv. Started running trials at  2:29 PM...
+2016-04-12 14:33:38,320 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 760 ms) ***
+
+2016-04-12 14:33:40,646 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 761 ms) ***
+
+2016-04-12 14:33:42,083 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 762 ms) ***
+
+2016-04-12 14:33:43,366 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 764 ms) ***
+
+2016-04-12 14:33:45,682 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 763 ms) ***
+
+2016-04-12 14:33:47,331 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 762 ms) ***
+
+2016-04-12 14:33:50,704 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 769 ms) ***
+
+2016-04-12 14:33:52,278 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 766 ms) ***
+
+2016-04-12 14:33:54,915 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 761 ms) ***
+
+2016-04-12 14:33:56,430 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 761 ms) ***
+
+2016-04-12 14:33:58,867 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 765 ms) ***
+
+2016-04-12 14:34:01,574 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 763 ms) ***
+
+2016-04-12 14:34:04,861 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 807 ms) ***
+
+2016-04-12 14:34:06,381 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 762 ms) ***
+
+2016-04-12 14:34:07,844 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 766 ms) ***
+
+2016-04-12 14:34:09,242 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 764 ms) ***
+
+2016-04-12 14:34:16,204 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 775 ms) ***
+
+2016-04-12 14:34:17,685 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 764 ms) ***
+
+2016-04-12 14:34:18,733 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 761 ms) ***
+
+2016-04-12 14:34:19,912 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 766 ms) ***
+
+2016-04-12 14:34:21,313 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 767 ms) ***
+
+2016-04-12 14:34:22,580 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 759 ms) ***
+
+2016-04-12 14:34:24,476 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 763 ms) ***
+
+2016-04-12 14:34:26,604 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 767 ms) ***
+
+2016-04-12 14:34:28,046 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 766 ms) ***
+
+2016-04-12 14:34:30,032 INFO monkeylogic.m - *** Warning: Desired ITI exceeded (ITI ~= 752 ms) ***
+
+2016-04-12 14:34:34,926 INFO monkeylogic.m - <<< MonkeyLogic >>> Finished running trials at  2:34 PM.
+2016-04-12 14:34:34,930 INFO monkeylogic.m - <<< MonkeyLogic >>> Completed 18 correct trials over 52 total trials.
+2016-04-12 14:35:07,591 INFO loadconditions.m - <<< MonkeyLogic >>> Loading conditions file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\\touch_release.txt
+2016-04-12 14:35:13,023 INFO monkeylogic.m - 
+2016-04-12 14:35:13,063 INFO monkeylogic.m - <<< MonkeyLogic >>> Using configuration file: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\touch_release_cfg.mat
+2016-04-12 14:35:13,103 INFO mlvideo.m - <<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...
+2016-04-12 14:35:14,488 INFO loadconditions.m - <<< MonkeyLogic >>> Loading conditions file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\\touch_release.txt
+2016-04-12 14:35:14,494 INFO monkeylogic.m - <<< MonkeyLogic >>> Loaded & parsed conditions file: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\\touch_release.txt
+2016-04-12 14:35:14,500 INFO monkeylogic.m - <<< MonkeyLogic >>> Embedding C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\touch_release.m...
+2016-04-12 14:35:18,397 INFO monkeylogic.m - <<< MonkeyLogic >>> Successfully created the run-time function from the timing script
+2016-04-12 14:35:18,404 INFO monkeylogic.m - <<< MonkeyLogic >>> Initialized task parameters...
+2016-04-12 14:35:18,408 INFO monkeylogic.m - <<< MonkeyLogic >>> Reading behavioral codes file: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\codes.txt...
+2016-04-12 14:35:18,423 INFO monkeylogic.m - <<< MonkeyLogic >>> Opening C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\sdfg.bhv...
+2016-04-12 14:35:18,436 INFO loadconditions.m - <<< MonkeyLogic >>> Loading conditions file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\\touch_release.txt
+2016-04-12 14:35:18,443 INFO monkeylogic.m - <<< MonkeyLogic >>> Initialized data file C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\sdfg.bhv...
+2016-04-12 14:35:18,635 INFO initio.m - <<< MonkeyLogic >>> Initializing I/O
+2016-04-12 14:35:18,641 INFO ioscan.m - <<< MonkeyLogic >>> Gathering I/O board info (running ioscan.m)...
+2016-04-12 14:35:18,788 INFO ioscan.m - <<< MonkeyLogic >>> DAQ Driver Version: National Instruments 15.1 NI-DAQmx
+2016-04-12 14:35:18,791 INFO ioscan.m - <<< MonkeyLogic >>> DAQ Toolbox Version: NIMH daqtoolbox (Apr 7, 2016 build 28)
+2016-04-12 14:35:18,887 INFO ioscan.m - <<< MonkeyLogic >>> Found 4 I/O adaptors:
+2016-04-12 14:35:18,890 INFO ioscan.m - ... 1) nidaq
+2016-04-12 14:35:18,893 INFO ioscan.m - ... 2) parallel
+2016-04-12 14:35:18,896 INFO ioscan.m - ... 3) winsound
+2016-04-12 14:35:18,898 INFO ioscan.m - ... 4) USB (Universal Serial Bus)
+2016-04-12 14:35:18,903 INFO monkeylogic.m - <<< MonkeyLogic >>> Successfully completed initializing I/O.
+2016-04-12 14:35:18,909 INFO monkeylogic.m - <<< MonkeyLogic >>> Video graphics initialization started...
+2016-04-12 14:35:18,912 INFO mlvideo.m - <<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...
+2016-04-12 14:35:20,054 INFO monkeylogic.m - <<< MonkeyLogic >>> Video graphics initialization completed successfully.
+2016-04-12 14:35:20,067 INFO monkeylogic.m - <<< MonkeyLogic >>> Calculating video frame length...
+2016-04-12 14:35:20,159 INFO monkeylogic.m - ...Average video frame length = 8.312 ms
+2016-04-12 14:35:20,164 INFO initstim.m - <<< MonkeyLogic >>> Looking for C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\initializing.avi
+2016-04-12 14:35:20,560 INFO monkeylogic.m - <<< MonkeyLogic >>> Initialization trial starting...
+2016-04-12 14:35:21,282 INFO monkeylogic.m - <<< MonkeyLogic >>> Successfully initialized Timing Files.
+2016-04-12 14:35:21,286 INFO monkeylogic.m - <<< MonkeyLogic >>> BHV File: C:\Users\rykli\Desktop\MonkeyLogic_stable\trunk\MonkeyLogic\Tasks\touchscreen\sdfg.bhv. Started running trials at  2:35 PM...
+2016-04-12 14:36:24,283 INFO monkeylogic.m - <<< MonkeyLogic >>> Finished running trials at  2:36 PM.
+2016-04-12 14:36:24,287 INFO monkeylogic.m - <<< MonkeyLogic >>> Completed 0 correct trials over 10 total trials.

@@ -27,6 +27,7 @@ MLPrefs.Directories.ExperimentDirectory = expdir;
 setpref('MonkeyLogic', 'Directories', MLPrefs.Directories);
 if ispref('MonkeyLogic', 'Directories'),
     success = 1;
+    MLPrefs.Directories
 else
     disp('*** Unable to set directory preferences ***')
 end

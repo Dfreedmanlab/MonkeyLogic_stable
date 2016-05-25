@@ -16,13 +16,15 @@ global DEBUG_ON_MOUSE;
 % modified 3/04/14 -ER (tried to reduce the amount of keyboard and mouse functionality that is disabled in order to simplify program debugging)
 % modified 3/14/14 -ER (added ability to disable XGL using the DEBUG_ON variables. Set to true will disable XGL and allow setting breakpoints regardless of jvm)
 % modified 4/05/14 -ER (added additional statistics used to accept a calibration target)
+% modified 4/23/14 -ER (added GUI options to select which statistical method to use when accepeting a calibration point)
+%                      (added a GUI option to reset the calibration)
 						
 fig = findobj('tag', 'xycalibrate');
 SigTransform = [];
 
-DEBUG_ON_VIDEO = 0;
-DEBUG_ON_KEYBOARD = 0;
-DEBUG_ON_MOUSE = 0;
+DEBUG_ON_VIDEO = 0;     % set to 1 in order to disable video (makes debugging easier)
+DEBUG_ON_KEYBOARD = 0;  % set to 1 in order to continue using the keyboard
+DEBUG_ON_MOUSE = 0;     % set to 1 in order to continue using the mouse
 
 if isempty(fig),
     if isempty(varargin),
@@ -39,6 +41,7 @@ if isempty(fig),
     else
         BasicData.SigTransform = [];
     end
+    
     if length(varargin) > 4,
         MLHELPER_OFF = varargin{5};
     else
@@ -49,6 +52,10 @@ if isempty(fig),
     else
         cp = targetlist;
     end
+    
+    % enable in order to reset calibration each time you start the xycalibrate program
+    %cp = targetlist;
+    
     BasicData.EyeOrJoy = ScreenInfo.EyeOrJoy;
     BasicData.FixSpot = ScreenInfo.FixationPoint;
     BasicData.ControlPoints = cp;
@@ -56,7 +63,7 @@ if isempty(fig),
 
     cpsize = 200;
     xs = 800;
-    ys = 600;
+    ys = 700;
     xd = xs/ScreenInfo.PixelsPerDegree;
     yd = ys/ScreenInfo.PixelsPerDegree;
     
@@ -94,19 +101,23 @@ if isempty(fig),
     xy = plot(0,0, 'o');
     tgt = plot(0,0, 'o');
     tgt_all = plot(0,0, 'o');
-    set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'erasemode', 'xor', 'tag', 'xy');
-    set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt');
-    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt_all');
-
+    set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'tag', 'xy');            % spatial characteristics of the gaze crosshair during calibration
+    set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 0 0], 'linewidth', 4, 'markersize', 30, 'tag', 'tgt');                % accentuates the target circumfrence by changing it to RED (hope you can see it)
+    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'tag', 'tgt_all');  % dims (low luminance) the other target locations until they are selected by the program.
+    zzzSetXOREraseMode(xy);
+    zzzSetXOREraseMode(tgt);
+    zzzSetXOREraseMode(tgt_all);
+    
     uicontrol('style', 'pushbutton', 'position', [50 ys-35 150 25], 'string', 'Start Calibration', 'tag', 'startcal', 'callback', 'xycalibrate;');
+    uicontrol('style', 'pushbutton', 'position', [50 ys-65 150 25], 'string', 'Exit', 'tag', 'savequit', 'callback', 'xycalibrate;', 'enable', 'on');
     
     ys2 = ys+3;
-    uicontrol('style', 'frame', 'position', [20 ys2-260 210 172], 'backgroundcolor', bg);
-    uicontrol('style', 'text', 'position', [70 ys2-103 110 20], 'string', 'Transform & Targets', 'backgroundcolor', bg);
-    uicontrol('style', 'popupmenu', 'position', [60 ys2-121 125 20], 'string', {'Affine', 'Projective', 'Polynomial'}', 'tag', 'ttype', 'backgroundcolor', [1 1 1], 'value', 2, 'enable', 'inactive');
-    h = uicontrol('style', 'listbox', 'position', [60 ys2-229 125 100], 'backgroundcolor', [1 1 1], 'tag', 'targetlist', 'fontsize', 10, 'callback', 'xycalibrate;');  
-    uicontrol('style', 'text', 'position', [60 ys2-257 50 18], 'string', 'Edit:', 'backgroundcolor', bg, 'horizontalalignment', 'left');
-    uicontrol('style', 'edit', 'position', [83 ys2-254 100 20], 'backgroundcolor', [1 1 1], 'tag', 'editbox', 'callback', 'xycalibrate;');
+    uicontrol('style', 'frame', 'position', [20 ys2-253 210 172], 'backgroundcolor', bg);
+    uicontrol('style', 'text', 'position', [70 ys2-96 110 20], 'string', 'Transform & Targets', 'backgroundcolor', bg);
+    uicontrol('style', 'popupmenu', 'position', [60 ys2-114 125 20], 'string', {'Affine', 'Projective', 'Polynomial'}', 'tag', 'ttype', 'backgroundcolor', [1 1 1], 'value', 2, 'enable', 'inactive');
+    h = uicontrol('style', 'listbox', 'position', [60 ys2-222 125 100], 'backgroundcolor', [1 1 1], 'tag', 'targetlist', 'fontsize', 10, 'callback', 'xycalibrate;');  
+    uicontrol('style', 'text', 'position', [60 ys2-250 50 18], 'string', 'Edit:', 'backgroundcolor', bg, 'horizontalalignment', 'left');
+    uicontrol('style', 'edit', 'position', [83 ys2-247 100 20], 'backgroundcolor', [1 1 1], 'tag', 'editbox', 'callback', 'xycalibrate;');
     targetstring = cell(size(targetlist, 1), 1);
     for targetNum = 1:size(targetlist, 1),
         targetstring{targetNum} = sprintf('%i:  [%i     %i]', targetNum, targetlist(targetNum, 1), targetlist(targetNum, 2));
@@ -122,16 +133,20 @@ if isempty(fig),
     uicontrol('style', 'popupmenu', 'position', [105 ys2-320 50 25], 'string', num2str(pdur), 'userdata', pdur, 'backgroundcolor', [1 1 1], 'tag', 'pulseduration', 'value', 1, 'enable', 'off');
     uicontrol('style', 'text', 'position', [160 ys2-320 60 20], 'string', 'milliseconds', 'backgroundcolor', bg, 'horizontalalignment', 'left');
     pnum = [1 2 3 4 5]';
-    uicontrol('style', 'text', 'position', [60 ys2-345 120 20], 'string', 'Number of Pulses', 'backgroundcolor', bg, 'horizontalalignment', 'left');
+    uicontrol('style', 'text', 'position', [60 ys2-346 120 20], 'string', 'Number of Pulses', 'backgroundcolor', bg, 'horizontalalignment', 'left');
     uicontrol('style', 'popupmenu', 'position', [150 ys2-341 40 20], 'string', num2str(pnum), 'userdata', pnum, 'value', 3, 'backgroundcolor', [1 1 1], 'tag', 'numpulses', 'enable', 'off');
     
-    uicontrol('style', 'text', 'position', [30 ys-370 120 18], 'string', 'N: Next Target', 'backgroundcolor', bg, 'horizontalalignment', 'left');
-    uicontrol('style', 'text', 'position', [160 ys-370 80 18], 'string', 'P: Previous Target', 'backgroundcolor', bg, 'horizontalalignment', 'left');
-    uicontrol('style', 'text', 'position', [30 ys-383 120 18], 'string', 'Space: Process Target', 'backgroundcolor', bg,'horizontalalignment', 'left');
-    uicontrol('style', 'text', 'position', [160 ys-383 80 18], 'string', 'Q: Quit', 'backgroundcolor', bg, 'horizontalalignment', 'left');
+    
+    uicontrol('style', 'frame', 'position', [20 ys2-470 210 100], 'backgroundcolor', bg);
+    uicontrol('style', 'pushbutton', 'position', [50 ys-380 150 25], 'string', 'Reset Calibration', 'tag', 'resetcalibration', 'callback', 'xycalibrate;', 'enable', 'on');
 
-    uicontrol('style', 'pushbutton', 'position', [50 ys-70 150 25], 'string', 'Exit', 'tag', 'savequit', 'callback', 'xycalibrate;', 'enable', 'on');
-        
+    uicontrol('style', 'text', 'position', [30 ys-407 120 18], 'string', 'N: Next Target', 'backgroundcolor', bg, 'horizontalalignment', 'left');
+    uicontrol('style', 'text', 'position', [160 ys-407 60 18], 'string', 'P: Previous Target', 'backgroundcolor', bg, 'horizontalalignment', 'left');
+    uicontrol('style', 'text', 'position', [30 ys-420 120 18], 'string', 'Space: Process Target', 'backgroundcolor', bg,'horizontalalignment', 'left');
+    uicontrol('style', 'text', 'position', [160 ys-420 60 18], 'string', 'Q: Quit', 'backgroundcolor', bg, 'horizontalalignment', 'left');
+
+    uicontrol('style', 'popupmenu', 'position', [60 ys-450 125 20], 'string', {'Min', 'Max', 'Mean', 'Median'}', 'tag', 'calibrationpointtype', 'backgroundcolor', [1 1 1], 'value', 3);
+
     rx = cpsize/xs;
     rxy = (xs+cpsize)/ys;
     subplot('position', [0.1*rx 0.1*rx 0.8*rx 0.8*rx*rxy]);
@@ -171,7 +186,6 @@ if isempty(fig),
     tgt_all = findobj(gcf, 'tag', 'tgt_all');   
      
     set(tgt_all, 'xdata', targetlist(:, 1), 'ydata', targetlist(:, 2));
-
             
     disp('<<< MonkeyLogic >>> Calibration ready...');
     
@@ -277,6 +291,8 @@ elseif ismember(gcbo, get(fig, 'children')),
             xy = findobj(gcf,'tag', 'xy');
             tgt = findobj(gcf, 'tag', 'tgt');
             tgt_all = findobj(gcf, 'tag', 'tgt_all');
+            calibrationPointTypeIndex = get(findobj(gcf, 'tag', 'calibrationpointtype'), 'value');
+            calibrationPointTypeString = get(findobj(gcf, 'tag', 'calibrationpointtype'), 'string');
 
             if isfield(DAQ, 'EyeX'), %i.e., DAQ is uninitialized
 				disp('<<< MonkeyLogic >>> Initializing I/O ... (please wait a while)');
@@ -309,6 +325,10 @@ elseif ismember(gcbo, get(fig, 'children')),
                 end
             else
                 resetDAQflag = 0;
+                if (~DEBUG_ON_KEYBOARD) %MAC, Jan 2016 -- added to solve issue related to crashes when calibration was initiated during task
+               	 	mlkbd('init'); % disables the keyboard
+                    disp('<<< MonkeyLogic >>> Disabled Keyboard');
+                end
                 if BasicData.EyeOrJoy == 1,
                     xchan = DAQ.EyeSignal.XChannelIndex;
                     ychan = DAQ.EyeSignal.YChannelIndex;
@@ -419,7 +439,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                 xlim = get(gca, 'xlim');
                 ylim = get(gca, 'ylim');
                 h = text(0.9*min(xlim), 0.9*min(ylim), 'Current Input: X= ---- V   Y= ---- V');
-                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [0.2 0.2 0.2], 'tag', 'xytxt_real_time');
+                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [1.0 1.0 1.0], 'tag', 'xytxt_real_time');
             end
             
             start(DAQ.AnalogInput);
@@ -471,14 +491,13 @@ elseif ismember(gcbo, get(fig, 'children')),
                     
                     [xp yp] = tformfwd(SigTransform, xv, yv);
                     set(xy, 'xdata', xp, 'ydata', yp);
-                    if (refresh_time == 200)
-                        xystr = sprintf('Current Input: X= %2.1f V   Y= %2.1f V', xp, yp);
+                    if (refresh_time == 16)
+                        xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xv, yv);
                         set(findobj(gcf, 'tag', 'xytxt_real_time'), 'string', xystr);
                         refresh_time = 0;
                     else 
                         refresh_time = refresh_time + 1;
                     end
-                    
                     drawnow;
                     
                     t2 = toc*1000;
@@ -512,41 +531,35 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 
                                 xv = data(firstsample:lastsample, xchan);
                                 yv = data(firstsample:lastsample, ychan);
-                                                                
-                                xv = nanmean(xv);
-                                yv = nanmean(yv);
-                                
-                                % same as with real-time gaze position, add
-                                % the new current sample to the rolling
-                                % buffer. But, this time add the mean
-                                % real-time sample!
-                                
-                                % add the data sample to the end of a a rolling buffer
-                                % (similar to yT plot in i/o test)
-                                % data_buffer(length(data_buffer), 1) = mean_xv;
-                                % data_buffer(length(data_buffer), 2) = mean_yv;
-                                % data_buffer(1:length(data_buffer)-1, 1) = data_buffer(2:length(data_buffer), 1);
-                                % data_buffer(1:length(data_buffer)-1, 2) = data_buffer(2:length(data_buffer), 2);
-                                
-                                % xv = nanmean(data_buffer(1:length(data_buffer)-1,1));
-                                % yv = nanmean(data_buffer(1:length(data_buffer)-1,2));
-                    
-                                max_xv = min(xv);
-                                min_xv = max(xv);
-                                max_yv = min(yv);
-                                min_yv = max(yv);
-                                median_xv = median(xv);
-                                median_yv = median(yv);
-                                
+                                                                                                            
+                               	switch calibrationPointTypeIndex,
+
+                                    case 1,
+                                        disp('<<< MonkeyLogic >>> Using minimum value')
+                                        xv = min(xv);
+                                        yv = min(yv);
+                                    case 2,
+                                        disp('<<< MonkeyLogic >>> Using maximum value')
+                                        xv = max(xv);
+                                        yv = max(yv);
+                                    case 3,
+                                        disp('<<< MonkeyLogic >>> Using mean value')
+                                        xv = nanmean(xv);
+                                        yv = nanmean(yv);
+                                    case 4,
+                                        disp('<<< MonkeyLogic >>> Using median value')
+                                        xv = nanmedian(xv);
+                                        yv = nanmedian(yv);
+                                end
+                     
                                 cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
-                                [xp1 yp1] = tformfwd(SigTransform, xv, yv);
-                                [xp2 yp2] = tformfwd(SigTransform, min_xv, min_yv);
-                                [xp3 yp3] = tformfwd(SigTransform, max_xv, max_yv);
-                                [xp4 yp4] = tformfwd(SigTransform, median_xv, median_yv);
+                                [xp yp] = tformfwd(SigTransform, xv, yv);
 
+%  
                                 % update the location of the calibrated target
-                                set(xy, 'xdata', [xp1 xp2 xp3 xp4], 'ydata', [yp1 yp2 yp3 yp4], 'markerfacecolor', [1 .3 .3]);
+                                %set(xy, 'xdata', [xp1 xp2 xp3 xp4], 'ydata', [yp1 yp2 yp3 yp4], 'markerfacecolor', [1 .3 .3]);
+                                set(xy, 'xdata', xp, 'ydata', yp, 'markerfacecolor', [1 .3 .3]);
 
                                 xystr = sprintf('Last Input: X= %2.1f V   Y= %2.1f V', xv, yv);
                                 set(findobj(gcf, 'tag', 'xytxt'), 'string', xystr);
@@ -591,12 +604,13 @@ elseif ismember(gcbo, get(fig, 'children')),
                             pause(0.25);
                             set(xy, 'markerfacecolor', [0.5 0.5 0.5]);
                             set(tgt, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
-                            
+
                             t2 = maxduration;
                             
                             targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
 
-                            tries = numtargets;
+                            %tries = numtargets;
+                            
                             % automatically step to the next stimulus
                             % target location after user accepts a
                             % calibration point by pressing the space bar
@@ -604,17 +618,17 @@ elseif ismember(gcbo, get(fig, 'children')),
                             % 'n' if they wish to cycle through the targets
                             % manually. Does not repeat already calibrated
                             % targets.
-                            while (targetCalibrated(targetNum) == 1)
+                            %while (targetCalibrated(targetNum) == 1)
                                 targetNum = targetNum + 1;
                                 if targetNum > numtargets,
                                     targetNum = 1;
                                 end
-                                tries = tries - 1;
-                                if (tries == 0)
+                                %tries = tries - 1;
+                                %if (tries == 0)
                                     % all targets have been calibrated
-                                    break;
-                                end
-                            end
+                                %    break;
+                                %end
+                            %end
                                                         
                         elseif kb == 25, %p for previous
                             t2 = maxduration;
@@ -689,6 +703,13 @@ elseif ismember(gcbo, get(fig, 'children')),
             %                 t_item = t_item((cln+1):length(t_item));
             %             end
             %             set(findobj(gcf, 'tag', 'editbox'), 'string', t_item, 'userdata', t_item);
+
+        case 'resetcalibration',
+           	targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
+            cp = targetlist;
+            SigTransform = updategrid(cp, targetlist);
+            
+            disp('<<< MonkeyLogic >>> Reset calibration...');
 
         case 'givereward',
 
@@ -877,3 +898,12 @@ current_dir = pwd;
 cd(dirs.BaseDirectory);
 system('mlhelper --cursor-enable');
 cd(current_dir);
+
+function zzzSetXOREraseMode(h)
+%Set HG objects EraseMode to 'xor' for legacy MATLAB versions before HG2
+%update in 2014b
+
+if verLessThan('matlab','8.4')
+    set(h,'EraseMode','xor');
+end
+return

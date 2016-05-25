@@ -264,8 +264,9 @@ elseif procnum == 2, %update window with task objects
             if max(Ob.ControlObjectColor) > 1,
                 Ob.ControlObjectColor = Ob.ControlObjectColor/255;
             end
-            set(h, 'markeredgecolor', Ob.ControlObjectColor, 'markersize', msize, 'markerfacecolor', 'none', 'tag', sprintf('Object %i', obnum), 'linewidth', 2, 'erasemode', 'xor');
+            set(h, 'markeredgecolor', Ob.ControlObjectColor, 'markersize', msize, 'markerfacecolor', 'none', 'tag', sprintf('Object %i', obnum), 'linewidth', 2);
             set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds); %off screen
+            zzzSetXOREraseMode(h);
             TaskObject(obnum).ControlObjectHandle = h;
             if Ob.Modality == 2, %movie,
                 set(h, 'linewidth', 4, 'markeredgecolor', [0 1 0]);
@@ -279,7 +280,8 @@ elseif procnum == 2, %update window with task objects
             TaskObject(obnum).XPos = 0.5*hxd;
             TaskObject(obnum).YPos = 0.8*hyd;
             h = text(ScreenInfo.OutOfBounds, ScreenInfo.OutOfBounds, Ob.Name);
-            set(h, 'color', obcol, 'fontweight', 'bold', 'fontsize', 20, 'horizontalalignment', 'center', 'erasemode', 'xor');
+            set(h, 'color', obcol, 'fontweight', 'bold', 'fontsize', 20, 'horizontalalignment', 'center');
+            zzzSetXOREraseMode(h);
             TaskObject(obnum).ControlObjectHandle = h;
         end
     end
@@ -306,26 +308,58 @@ elseif procnum == 2, %update window with task objects
     for pnum = 1:numobjects,
         h(pnum) = plot(0, 0, 'o');
     end
-    set(h, 'markeredgecolor', ScreenInfo.JoyTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.JoyTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'target', 'erasemode', 'xor');
+    set(h, 'markeredgecolor', ScreenInfo.JoyTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.JoyTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'target');
     set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
 
     %create joystick trace
     h = plot(0, 0, '.');
-    set(h, 'color', ScreenInfo.JoyTraceColor, 'markersize', ScreenInfo.JoyTraceSize, 'tag', 'trace', 'erasemode', 'xor');
+    set(h, 'color', ScreenInfo.JoyTraceColor, 'markersize', ScreenInfo.JoyTraceSize, 'tag', 'trace');
     set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
 
     %create eye fix circle:
     for pnum = 1:numobjects,
         h(pnum) = plot(0, 0, 'o');
     end
-    set(h, 'markeredgecolor', ScreenInfo.EyeTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.EyeTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'fixcircle', 'erasemode', 'xor');
+    set(h, 'markeredgecolor', ScreenInfo.EyeTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.EyeTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'fixcircle');
     set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
 
     %create eye trace
     h = plot(0, 0, '.');
-    set(h, 'color', ScreenInfo.EyeTraceColor, 'markersize', ScreenInfo.EyeTraceSize, 'tag', 'eyetrace', 'erasemode', 'xor');
+    set(h, 'color', ScreenInfo.EyeTraceColor, 'markersize', ScreenInfo.EyeTraceSize, 'tag', 'eyetrace');
     set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
-    
+    zzzSetXOREraseMode(h);
+
+    %create touchscreen circle:
+    for pnum = 1:numobjects,
+        h(pnum) = plot(0, 0, 'o');
+    end
+    set(h, 'markeredgecolor', ScreenInfo.TouchTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.TouchTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'touchcircle');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
+    %create touchscreen trace
+    h = plot(0, 0, '.');
+    set(h, 'color', ScreenInfo.TouchTraceColor, 'markersize', ScreenInfo.TouchTraceSize, 'tag', 'touchtrace');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
+    %create mouse circle:
+    for pnum = 1:numobjects,
+        h(pnum) = plot(0, 0, 'o');
+    end
+    set(h, 'markeredgecolor', ScreenInfo.MouseTargetColor, 'markersize', 20, 'linewidth', ScreenInfo.MouseTargetLinewidth, 'markerfacecolor', 'none', 'tag', 'mousecircle');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
+    %create mouse trace
+    h = plot(0, 0, '.');
+    set(h, 'color', ScreenInfo.MouseTraceColor, 'markersize', ScreenInfo.MouseTraceSize, 'tag', 'mousetrace');
+    set(h, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(h);
+
     %create button indicators
     numbuttons = 5; %max, for now at least
     hline = zeros(numbuttons, 1);
@@ -339,9 +373,12 @@ elseif procnum == 2, %update window with task objects
         hbutton(i) = plot(0, 0, 'o');
         hthresh(i) = plot(0, 0, 'diamond');
     end
-    set(hline, 'tag', 'ButtonLine', 'linewidth', 3, 'color', [.5 0 0], 'xdata', hx+ScreenInfo.OutOfBounds, 'erasemode', 'xor');
-    set(hbutton, 'tag', 'ButtonCircle', 'markersize', 15, 'linewidth', 2, 'markerfacecolor', [0.7 0 0], 'markeredgecolor', [1 0 0], 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds, 'erasemode', 'xor');
-    set(hthresh, 'tag', 'ButtonThresh', 'markersize', 10, 'linewidth', 3, 'markerfacecolor', [0 0.7 0], 'markeredgecolor', [0 1 0], 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds, 'erasemode', 'xor');
+    set(hline, 'tag', 'ButtonLine', 'linewidth', 3, 'color', [.5 0 0], 'xdata', hx+ScreenInfo.OutOfBounds);
+    set(hbutton, 'tag', 'ButtonCircle', 'markersize', 15, 'linewidth', 2, 'markerfacecolor', [0.7 0 0], 'markeredgecolor', [1 0 0], 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    set(hthresh, 'tag', 'ButtonThresh', 'markersize', 10, 'linewidth', 3, 'markerfacecolor', [0 0.7 0], 'markeredgecolor', [0 1 0], 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
+    zzzSetXOREraseMode(hline);
+    zzzSetXOREraseMode(hbutton);
+    zzzSetXOREraseMode(hthresh);
     
     %set(gca, 'color', [0 0 0]);
     output = TaskObject; %return expanded TrialObject structure
@@ -634,6 +671,17 @@ elseif procnum == 7, %update warning text
 end
 
 return
+
+
+function zzzSetXOREraseMode(h)
+%Set HG objects EraseMode to 'xor' for legacy MATLAB versions before HG2
+%update in 2014b
+
+if verLessThan('matlab','8.4')
+    set(h,'EraseMode','xor');
+end
+return
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% SCREEN DRAW TEST
 ScreenInfo.Xsize = 800; %#ok<UNRCH>
 ScreenInfo.Ysize = 600;

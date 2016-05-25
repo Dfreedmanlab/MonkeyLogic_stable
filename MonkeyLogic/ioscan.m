@@ -1,8 +1,23 @@
-function AdaptorInfo = ioscan(adaptors)
+function AdaptorInfo = ioscan()
 %
 % created by WA, July, 2006
 % Modified 2/1/07 (bug in digitalio assignments fixed) --WA
 % Modified 1/4/08 (improved error handling) --WA
+
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
+logger.info('ioscan.m', '<<< MonkeyLogic >>> Gathering I/O board info (running ioscan.m)...');
+hwinfo = daqhwinfo;
+logger.info('ioscan.m', sprintf('<<< MonkeyLogic >>> DAQ Driver Version: %s %s', daq.getVendors().FullName, daq.getVendors().DriverVersion));
+logger.info('ioscan.m', sprintf('<<< MonkeyLogic >>> DAQ Toolbox Version: %s %s', hwinfo.ToolboxName, hwinfo.ToolboxVersion));
+
+%insert an additional adapter
+numFound = length(hwinfo.InstalledAdaptors);
+hwinfo.InstalledAdaptors(numFound+1) = cellstr('USB (Universal Serial Bus)');
+
+adaptors = hwinfo.InstalledAdaptors;
 
 if ~iscell(adaptors),
     adaptors = {adaptors};
@@ -18,15 +33,28 @@ for adaptornum = 1:length(adaptors),
     end
     if isempty(adapinfo.InstalledBoardIds),
         totalboards = totalboards + 1;
-        AdaptorInfo(totalboards).Name = sprintf('%s (Not Connected)', adaptors{adaptornum});
-        AdaptorInfo(totalboards).SubSystemsConstructors = {''};
-        AdaptorInfo(totalboards).SubSystemsNames = {''};
-        AdaptorInfo(totalboards).AvailableChannels = {[]};
-        AdaptorInfo(totalboards).AvailablePorts = {[]};
-        AdaptorInfo(totalboards).AvailableLines = {[]};
-        AdaptorInfo(totalboards).SampleRate = 0;
-        AdaptorInfo(totalboards).MaxSampleRate = 0;
-        AdaptorInfo(totalboards).MinSampleRate = 0;
+        if strcmp(adaptors{adaptornum}, 'USB (Universal Serial Bus)')
+            AdaptorInfo(totalboards).Name = sprintf('%s', adaptors{adaptornum});
+            AdaptorInfo(totalboards).SubSystemsConstructors = {''};
+            AdaptorInfo(totalboards).SubSystemsNames = {'DigitalInputStream'};
+            AdaptorInfo(totalboards).AvailableChannels = {[1 2]};
+            AdaptorInfo(totalboards).AvailablePorts = {[]};
+            AdaptorInfo(totalboards).AvailableLines = {[]};
+            AdaptorInfo(totalboards).SampleRate = 60;
+            AdaptorInfo(totalboards).MaxSampleRate = 60;
+            AdaptorInfo(totalboards).MinSampleRate = 60;
+        else
+            AdaptorInfo(totalboards).Name = sprintf('%s (Not Connected)', adaptors{adaptornum});
+            AdaptorInfo(totalboards).SubSystemsConstructors = {''};
+            AdaptorInfo(totalboards).SubSystemsNames = {''};
+            AdaptorInfo(totalboards).AvailableChannels = {[]};
+            AdaptorInfo(totalboards).AvailablePorts = {[]};
+            AdaptorInfo(totalboards).AvailableLines = {[]};
+            AdaptorInfo(totalboards).SampleRate = 0;
+            AdaptorInfo(totalboards).MaxSampleRate = 0;
+            AdaptorInfo(totalboards).MinSampleRate = 0;
+        end
+        
     else
         numboards = length(adapinfo.InstalledBoardIds);
         for bnum = 1:numboards,
@@ -78,7 +106,7 @@ for adaptornum = 1:length(adaptors),
                     end
                 end
             else
-                AdaptorInfo(totalboards).Name = sprintf('%s (Not Supported)', adaptors{adaptornum});
+                AdaptorInfo(totalboards).Name = sprintf('%s (DAQ Device Not Supported)', adaptors{adaptornum});
                 AdaptorInfo(totalboards).SubSystemsConstructors = {''};
                 AdaptorInfo(totalboards).SubSystemsNames = {''};
                 AdaptorInfo(totalboards).AvailableChannels = {[]};
@@ -90,6 +118,11 @@ for adaptornum = 1:length(adaptors),
             end
         end
     end
+end
+
+logger.info('ioscan.m', sprintf('<<< MonkeyLogic >>> Found %i I/O adaptors:', length(adaptors)));
+for i = 1:length(adaptors),
+	logger.info('ioscan.m', sprintf('... %i) %s', i, adaptors{i}));
 end
 AdaptorInfo = AdaptorInfo(1:totalboards);
 

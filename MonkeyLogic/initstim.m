@@ -1,8 +1,12 @@
 function C = initstim(fname, ScreenInfo)
 % Created 8/23/08 -WA
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 
 P = getpref('MonkeyLogic');
 sourcefile = [P.Directories.BaseDirectory fname];
+logger.info('initstim.m', sprintf('<<< MonkeyLogic >>> Looking for %s', sourcefile));
 [pname fname ext] = fileparts(sourcefile);
 processedfile = [pname filesep fname '_preprocessed.mat'];
 if strcmpi(ext, '.avi'),

@@ -5,6 +5,7 @@ function runtimescript = embedtimingfile(timingfile, trialholder)
 % Created by WA, July, 2006
 % Modified 7/25/08 -WA
 % Modified 9/08/08 -SM (to handle block comments)
+logger = log4m.getLogger('monkeylogic.log');
 
 [pname funcname] = fileparts(timingfile);
 funcname = [funcname '_runtime'];
@@ -159,7 +160,7 @@ if ~exist(runtimedir, 'dir'),
     if ~success
         error('*** Unable to create "runtime" directory within the MonkeyLogic directory - you must create it manually ***');
     else
-        disp(sprintf('Created %s', runtimedir));
+        logger.info('embedtimingfile.m', sprintf('<<< MonkeyLogic >>> Created %s', runtimedir));
         addpath(runtimedir);
     end
 end

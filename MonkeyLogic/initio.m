@@ -6,6 +6,13 @@ function [DAQ, DaqError] = initio(IO)
 % Modified 2/19/08 -WA (incorporated DJF changes to analog channel input range parameters)
 % Modified 2/21/08 -WA (incorporated code for "Buttons" & reward configuration settings)
 % Last modified 8/11/08 -WA (to make certain analog-input objects use DMA)
+% Last modified 11/17/15 -ER (Added DigitalInputStream for touchscreens and other future devices)
+
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
+logger.info('initio.m', '<<< MonkeyLogic >>> Initializing I/O');
 
 %for manual editing:
 configIO.AI.BufferingConfig =  [16 1024]; %[1 2000];
@@ -13,10 +20,18 @@ configIO.AI.InputRange = [-10 10];
 configIO.Reward.TriggerValue = 5; %if analog, number of volts to trigger or hold at (will be "1" if digital).
 
 %from menu:
-configIO.AI.SampleRate = IO.Configuration.AnalogInputFrequency;
-configIO.AI.InputType = IO.Configuration.AnalogInputType;
-configIO.AI.AnalogInputDuplication = IO.Configuration.AnalogInputDuplication;
-configIO.Reward.Polarity = IO.Configuration.RewardPolarity; %+1 for positive-edge reward trigger, -1 for negative edge
+if isfield(IO.Configuration, 'AnalogInputFrequency')
+    configIO.AI.SampleRate = IO.Configuration.AnalogInputFrequency;
+end
+if isfield(IO.Configuration, 'AnalogInputType')
+    configIO.AI.InputType = IO.Configuration.AnalogInputType;
+end
+if isfield(IO.Configuration, 'AnalogInputDuplication')
+    configIO.AI.AnalogInputDuplication = IO.Configuration.AnalogInputDuplication;
+end
+if isfield(IO.Configuration, 'RewardPolarity')
+    configIO.Reward.Polarity = IO.Configuration.RewardPolarity; %+1 for positive-edge reward trigger, -1 for negative edge
+end
 
 IO = rmfield(IO, 'Configuration');
 daqreset;
@@ -27,8 +42,11 @@ for i = 1:numfields,
     fn = fnames{i};
     DAQ.(fn) = [];
     fnfrag = fn(1:3);
+
     if strcmp(fnfrag, 'Eye') || strcmp(fnfrag, 'Joy') || strcmp(fnfrag, 'Gen'),
         REQSYS.(fn) = {'AnalogInput'};
+    elseif strcmp(fnfrag, 'Tou') || strcmp(fnfrag, 'Mou'),
+        REQSYS.(fn) = {'DigitalInputStream'};
     elseif strcmp(fnfrag, 'Rew'),
         REQSYS.(fn) = {'DigitalIO' 'AnalogOutput'};
     elseif strcmp(fnfrag, 'Cod') || strcmp(fnfrag, 'Dig'),
@@ -42,7 +60,7 @@ for i = 1:numfields,
     elseif strcmp(fnfrag, 'TTL'),
         REQSYS.(fn) = {'DigitalIO'};
     else
-        disp(sprintf('Warning: Unable to test IO type %s for subsystem validity using "initio.m"', fn))
+        logger.info('initio.m', sprintf('Warning: Unable to test IO type %s for subsystem validity using "initio.m"', fn));
     end
 end
 
@@ -58,7 +76,7 @@ for i = 1:length(fnames),
             DaqError = cell(2, 1);
             DaqError{1} = '*** Error: Non-permitted I/O mapping ***';
             DaqError{2} = sprintf('Allowed Type for %s: %s %s ', fn, reqsys{:});
-            disp(sprintf('*** Error: Non-permitted I/O mapping for %s ***', fn))
+            logger.info('initio.m', sprintf('*** Error: Non-permitted I/O mapping for %s ***', fn));
             return
         end
     end
@@ -76,7 +94,7 @@ for i = 1:length(fnames),
 end
 if length(unique(aicstr)) > 1,
     DaqError{1} = '*** Error: All analog inputs must be on the same board ***';
-    disp(DaqError{1})
+    logger.info('initio.m', DaqError{1});
     return
 end
 
@@ -94,7 +112,7 @@ for i = 1:length(fnames),
 end
 if count > 1 && length(unique(butsys)) > 1,
    DaqError{1} = '*** Error: Button inputs must be either all analog or all digital ***';
-   disp(DaqError{1})
+   logger.info('initio.m', DaqError{1});
 end
 
 DAQ.AnalogInput = [];
@@ -102,6 +120,8 @@ DAQ.AnalogInput2 = [];
 DAQ.AnalogOutput = [];
 DAQ.EyeSignal = [];
 DAQ.Joystick = [];
+DAQ.TouchSignal = [];
+DAQ.MouseSignal = [];
 DAQ.Buttons = [];
 DAQ.General = [];
 DAQ.BehavioralCodes = [];
@@ -115,7 +135,7 @@ end
 if EyeXpresent || EyeYpresent,
     if numfieldsEyeX ~= numfieldsEyeY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 eye signal inputs';
-        disp('I/O Error: Must define 0 or 2 eye signal inputs')
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 eye signal inputs');
         return 
     end
 end
@@ -129,18 +149,45 @@ end
 if JoyXpresent || JoyYpresent,
     if numfieldsJoyX ~= numfieldsJoyY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 joystick inputs';
-        disp('I/O Error: Must define 0 or 2 joystick inputs')
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 joystick inputs');
+        return
+    end
+end
+
+TouchXpresent = isfield(IO.TouchX, 'Adaptor');
+TouchYpresent = isfield(IO.TouchY, 'Adaptor');
+if TouchXpresent || TouchYpresent,
+    numfieldsTouchX = length(fieldnames(IO.TouchX));
+    numfieldsTouchY = length(fieldnames(IO.TouchY));
+end
+if TouchXpresent || TouchYpresent,
+    if numfieldsTouchX ~= numfieldsTouchY,
+        DaqError{1} = 'I/O Error: Must define 0 or 2 touchscreen inputs';
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 touchscreen inputs');
+        return
+    end
+end
+
+MouseXpresent = isfield(IO.MouseX, 'Adaptor');
+MouseYpresent = isfield(IO.MouseY, 'Adaptor');
+if MouseXpresent || MouseYpresent,
+    numfieldsMouseX = length(fieldnames(IO.MouseX));
+    numfieldsMouseY = length(fieldnames(IO.MouseY));
+end
+if MouseXpresent || MouseYpresent,
+    if numfieldsMouseX ~= numfieldsMouseY,
+        DaqError{1} = 'I/O Error: Must define 0 or 2 mouse inputs';
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 mouse inputs');
         return
     end
 end
 
 %Look for duplicate boards:
-hwinfo = daqhwinfo;
-AdaptorInfo = ioscan(hwinfo.InstalledAdaptors);
+AdaptorInfo = ioscan();
 adaptors = {AdaptorInfo(:).Name};
-numadaptors = length(adaptors);
-duplicateboard = zeros(numadaptors, 1);
-for i = 1:numadaptors,
+
+duplicateboard = zeros(length(adaptors), 1);
+for i = 1:length(adaptors), %if 2 or more boards by the same name exist, then duplicate them
     matches = strcmp(adaptors(i), adaptors);
     if sum(matches) > 1,
         f = find(matches);
@@ -152,6 +199,7 @@ end
 for i = 1:length(fnames),
     signame = fnames{i};
     sigpresent = isfield(IO.(signame), 'Adaptor');
+
     if sigpresent,
         if strcmpi(IO.(signame).Subsystem, 'AnalogInput'),
 
@@ -160,7 +208,7 @@ for i = 1:length(fnames),
                 [DAQ.AnalogInput DaqError] = init_ai(IO.(signame).Constructor, configIO);
                 if ~isempty(DaqError),
                     DaqError{1} = sprintf('%s: %s', signame, DaqError{1});
-                    disp(DaqError{1})
+                    logger.info('initio.m', DaqError{1});
                     daqreset;
                     return
                 end
@@ -233,8 +281,8 @@ for i = 1:length(fnames),
             elseif ~any(board2) && configIO.AI.AnalogInputDuplication,
                 h = findobj('tag', 'monkeylogicmainmenu');
                 if ~isempty(h) && strcmpi(get(findobj(h, 'tag', 'aiduplication'), 'enable'), 'on'),
-                    disp(sprintf('Warning: No duplicate boards found to assign %s...', signame));
-                    disp('... must sample and store data from the same DAQ board (suboptimal performance will result)');
+                    logger.info('initio.m', sprintf('Warning: No duplicate boards found to assign %s...', signame));
+                    logger.info('initio.m', '... must sample and store data from the same DAQ board (suboptimal performance will result)');
                 end
             end
             
@@ -246,7 +294,18 @@ for i = 1:length(fnames),
             else
                 DAQ.AnalogInput.BufferingConfig = configIO.AI.BufferingConfig; %shrink buffers for more frequent data transfers
             end
-                        
+             
+        elseif strcmpi(IO.(signame).Subsystem, 'DigitalInputStream'),
+            if strcmp(signame, 'TouchX'),
+                DAQ.TouchSignal.XChannelIndex = IO.(signame).Channel;
+            elseif strcmp(signame, 'TouchY'),
+                DAQ.TouchSignal.YChannelIndex = IO.(signame).Channel;
+            elseif strcmp(signame, 'MouseX'),
+                DAQ.MouseSignal.XChannelIndex = IO.(signame).Channel;
+            elseif strcmp(signame, 'MouseY'),
+                DAQ.MouseSignal.YChannelIndex = IO.(signame).Channel;
+            end
+            
         elseif strcmp(signame, 'Reward'),
 
             if strcmpi(IO.Reward.Subsystem, 'AnalogOutput'),
@@ -274,38 +333,38 @@ for i = 1:length(fnames),
 
             if ~isfield(IO.CodesDigOut, 'Constructor'),
                DaqError{1} = '*** No digital lines assigned for event marker output ***';
-               disp(DaqError{1});
+               logger.info('initio.m', DaqError{1});
                daqreset;
                return
             end
             if ~isfield(IO.DigCodesStrobeBit, 'Constructor'),
                 DaqError{1} = '*** Must assign a strobe bit for behavioral code digital output ***';
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 daqreset;
                 return
             end
             if ~strcmp(IO.DigCodesStrobeBit.Constructor, IO.CodesDigOut.Constructor),
                 DaqError{1} = '*** Strobe bit line must be on the same board & subsystem as the behavioral code data lines ***';
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 daqreset;
                 return
             end
             
             DAQ.BehavioralCodes.DIO = eval(IO.CodesDigOut.Constructor);
-            portnumber = IO.CodesDigOut.Channel;
-            if ~isfield(IO.CodesDigOut, 'Line'),
-                lineabsenterror;
-            end
-            hwlines = IO.CodesDigOut.Line;
-            try
-                % no need to specify the port number. Lines are coded in
-                % the following manner:
-                % e.g. for 3 ports with 8 lines in each port:
-                % Port0->Lines 0-7, Port1->Lines 8-15, Port2->Lines 16-23
-                DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, hwlines, 'out', 'BehaviorCodes');
+            if ~isfield(IO.CodesDigOut, 'Line'), lineabsenterror; end
+                try
+                if ~iscell(IO.CodesDigOut.Line)
+                    DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line, IO.CodesDigOut.Channel(1), 'out', 'BehaviorCodes');
+                    else
+                    for m=1:length(IO.CodesDigOut.Channel)
+                        if isempty(IO.CodesDigOut.Line{m}), continue; end
+                        addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line{m}, IO.CodesDigOut.Channel(m), 'out', 'BehaviorCodes');
+                        end
+                        DAQ.BehavioralCodes.DataBits = DAQ.BehavioralCodes.DIO.Line;
+                    end
             catch
                 DaqError{1} = '*** Unable to assign output digital lines for Behavioral Codes ***';
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 rethrow(lasterror);
                 daqreset;
                 return
@@ -317,7 +376,7 @@ for i = 1:length(fnames),
                 DAQ.BehavioralCodes.StrobeBit = addline(DAQ.BehavioralCodes.DIO, hwline, portnumber, 'out', 'StrobeBit');
             catch
                 DaqError{1} = sprintf('*** Unable to assign line %i on port %i as a digital strobe output bit ***', hwline, portnumber);
-                disp(DaqError{1});
+                logger.info('initio.m', DaqError{1});
                 daqreset;
                 return
             end
@@ -366,7 +425,7 @@ if ~isempty(DAQ.AnalogOutput),
     set(DAQ.AnalogOutput, 'TriggerType', 'Manual');
 end
 
-rmf = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'CodesDigOut' 'DigCodesStrobeBit'};
+rmf = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'MouseX' 'MouseY' 'CodesDigOut' 'DigCodesStrobeBit'};
 for i = 1:length(rmf),
     if isfield(DAQ, rmf{i}),
         DAQ = rmfield(DAQ, rmf{i});

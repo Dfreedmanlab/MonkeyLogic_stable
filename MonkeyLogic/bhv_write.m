@@ -23,7 +23,7 @@ function status = bhv_write(mode, fidbhv, WriteData, varargin)
 persistent numtrialpointer
 
 status = 0;
-bhvfileversion = 3.1;
+bhvfileversion = 3.3;
 
 switch mode,
     case 1, %write header
@@ -354,7 +354,59 @@ switch mode,
         fwrite(fidbhv, numyjoypoints, 'uint32');
         fwrite(fidbhv, yjoy, 'float32');
         
-        %%%%% Versions > 2.5
+        %%%%% Versions > 3.2
+        if (isfield(WriteData, 'TouchSignal'))
+
+            if isempty(WriteData.TouchSignal),
+                numxtouchpoints = 0;
+                numytouchpoints = 0;
+                xtouch = [];
+                ytouch = [];
+            else
+                [rows cols] = size(WriteData.TouchSignal);
+                numxtouchpoints = rows;
+                xtouch = WriteData.TouchSignal(:, 1);
+                if cols > 1,
+                    numytouchpoints = numxtouchpoints;
+                    ytouch = WriteData.TouchSignal(:, 2);
+                else
+                    numytouchpoints = 0;
+                    ytouch = [];
+                end
+            end
+            fwrite(fidbhv, numxtouchpoints, 'uint32');
+            fwrite(fidbhv, xtouch, 'float32');
+            fwrite(fidbhv, numytouchpoints, 'uint32');
+            fwrite(fidbhv, ytouch, 'float32');
+        end
+        
+        %%%%% Versions > 3.3
+        if (isfield(WriteData, 'MouseSignal'))
+
+            if isempty(WriteData.MouseSignal),
+                numxmousepoints = 0;
+                numymousepoints = 0;
+                xmouse = [];
+                ymouse = [];
+            else
+                [rows cols] = size(WriteData.MouseSignal);
+                numxmousepoints = rows;
+                xmouse = WriteData.MouseSignal(:, 1);
+                if cols > 1,
+                    numymousepoints = numxmousepoints;
+                    ymouse = WriteData.MouseSignal(:, 2);
+                else
+                    numymousepoints = 0;
+                    ymouse = [];
+                end
+            end
+            fwrite(fidbhv, numxmousepoints, 'uint32');
+            fwrite(fidbhv, xmouse, 'float32');
+            fwrite(fidbhv, numymousepoints, 'uint32');
+            fwrite(fidbhv, ymouse, 'float32');
+        end
+ 
+       %%%%% Versions > 2.5
         for i = 1:9,
             gname = sprintf('Gen%i', i);
             if ~isfield(WriteData,'GeneralAnalog') || isempty(WriteData.GeneralAnalog.(gname)),

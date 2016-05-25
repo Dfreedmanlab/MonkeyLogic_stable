@@ -10,9 +10,14 @@ function mlmenu(varargin)
 % Modified 2/01/12 -WA (to remove overwrite_hardware_cfg subfunction - had broken the ability to write new cfg files when none present)
 % Modified 2/28/14 -ER (to allow the user to select multiple analog channels for I/O testing)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
+% Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'April 2014';
-currentversion = '4-05-2014 build 1.0.26';
+lastupdate = 'May 2016';
+currentversion = '05-23-2016 build 1.1.85'; 
+
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 
 mlf = findobj('tag', 'monkeylogicmainmenu');
 if ~isempty(mlf) && isempty(gcbo),
@@ -30,7 +35,7 @@ MLPrefs.Directories = getpref('MonkeyLogic', 'Directories');
 validxsize =  [ 320   320    640   768    800    1024   1024  1152  1152   1280     1280   1280   1366   1400    1440   1600   1680     1920     1920   2048  2048  2560       2560    2560    2560    3840    4096];
 validysize =  [ 200   240    480   576    600    600    768   768   864    720      960    1024   768    1050    900    1200   1050     1080     1200   1080  1536  1440       1600    1920    2048    2160    3072];
 validlabels = {'CGA' 'QVGA' 'VGA' 'PAL'  'SVGA' 'WSVGA' 'XGA' '3:2' '4:3'  'HD720'  '4:3'  '5:4'  'HDTV' 'SXGA+' '8:5'  'UGA' 'WSXGA+' 'HD1080' 'WUXGA' '2K'  'QXGA' 'HD1440' 'WQXGA'  '5MEG' 'QSXGA' 'UHDTV'  '4K'};
-validrefresh = [60 72 75 85 100 120 240];
+validrefresh = [60 72 75 85 100 120 144 240];
 
 numvalidsizes = length(validxsize);
 validsizestrings = cell(1, numvalidsizes);
@@ -77,10 +82,9 @@ end
 set(0, 'userdata', h);
 
 if isempty(mlf),
-    disp(' ')
-    disp(' ')
-    disp(' ')
-    disp(sprintf('<<< MonkeyLogic >>> Revision Date: %s', currentversion))
+    fprintf('\r\n\r\n\r\n');
+
+    logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Revision : %s', currentversion))
     chknewupdates(lastupdate);
     envOS = getenv('OS');
     envCN = getenv('COMPUTERNAME');
@@ -91,29 +95,29 @@ if isempty(mlf),
         envPRC = getenv('CPU');
     end
     if ~isempty(envOS),
-        disp(sprintf('<<< MonkeyLogic >>> Operating System: %s...', envOS))
+        logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Operating System: %s...', envOS))
     end
     if usejava('jvm'),
-        disp('<<< MonkeyLogic >>> *** JAVA Virtual Machine is Running ***');
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> *** JAVA Virtual Machine is Running ***');
     end
     if ~isempty(envCN),
-        disp(sprintf('<<< MonkeyLogic >>> Computer Name: %s...', envCN))
+        logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Computer Name: %s...', envCN))
     end
     if ~isempty(envUSER),
-        disp(sprintf('<<< MonkeyLogic >>> Logged in as "%s"...', envUSER))
+        logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Logged in as "%s"...', envUSER))
     else
         envUSER = 'Investigator';
     end
     if ~isempty(envNOP),
         envNOP = str2double(envNOP);
         if envNOP > 1,
-            disp(sprintf('<<< MonkeyLogic >>> Detected %i "%s" processors...', envNOP, envPRC))
+            logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Detected %i "%s" processors...', envNOP, envPRC))
         else
-            disp(sprintf('<<< MonkeyLogic >>> Detected only %i "%s" processor...', envNOP, envPRC))
+            logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Detected only %i "%s" processor...', envNOP, envPRC))
         end
     end
     envMVER = version;
-    disp(sprintf('<<< MonkeyLogic >>> Matlab version: %s...', envMVER))
+    logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Matlab version: %s...', envMVER))
     numloops = 1000;
     t = zeros(numloops, 1);
     tic;
@@ -121,8 +125,8 @@ if isempty(mlf),
         t(i) = toc;
     end
     mrate = 1/(mean(diff(t))*1000);
-    disp(sprintf('<<< MonkeyLogic >>> Approximate Matlab cycle rate is %4.0f kHz', mrate))
-    disp('<<< MonkeyLogic >>> Launching Menu...')
+    logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Approximate Matlab cycle rate is %4.0f kHz', mrate))
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Launching Menu...')
     figure;
     figbg = [.65 .70 .80];
     bgpurple = [.8 .76 .82];
@@ -132,7 +136,7 @@ if isempty(mlf),
     scrnx = scrnsz(3);
     scrny = scrnsz(4);
     if scrnx < 1280 || scrny < 768,
-        disp('<<< MonkeyLogic >>> Warning: A primary-monitor resolution of at least 1280 x 768 is recommended...')
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> Warning: A primary-monitor resolution of at least 1280 x 768 is recommended...')
     end
     fxpos = 0.5 * (scrnx - figx);
     fypos = 0.5 * (scrny - figy);
@@ -147,7 +151,7 @@ if isempty(mlf),
     set(gcf, 'closerequestfcn', 'mlmenu; delete(get(0, ''userdata'')); set(0, ''userdata'', ''''); disp(''Closed MonkeyLogic.'')');
     
     mlvideo('mlinit');
-    disp('<<< MonkeyLogic >>> Initialized DirectX / OpenGL interface...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized Video Graphics interface...')
     
     ybase = 550;
     uicontrol('style', 'frame', 'position', [10 ybase+22 280 80], 'backgroundcolor', 0.85*figbg, 'foregroundcolor', 0.6*figbg);
@@ -330,15 +334,15 @@ if isempty(mlf),
     uicontrol('style', 'frame', 'position', [559 ybase+27 157 50], 'backgroundcolor', figbg, 'foregroundcolor', [.5 .5 .5]);
         pic = 'runbuttondim.jpg';
     uicontrol('style', 'pushbutton', 'position', [560 ybase+28 155 48], 'string', '', 'callback', 'mlmenu', 'tag', 'runbutton', 'backgroundcolor', [0.9 0.6 0.6], 'enable', 'inactive', 'cdata', imread(pic));
-    disp('<<< MonkeyLogic >>> Initialized Task Menu...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized Task Menu...')
     
     % VIDEO ######################################
     mlvideo('init');
     numdevices = mlvideo('devices');
     if numdevices > 1,
-        disp(sprintf('<<< MonkeyLogic >>> Found %i video devices...', numdevices))
+        logger.info('mlmenu.m', sprintf('<<< MonkeyLogic >>> Found %i video devices...', numdevices))
     else
-        disp('<<< MonkeyLogic >>> Warning: Found only 1 video device...')
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> Warning: Found only 1 video device...')
     end
     mlvideo('release');
     
@@ -391,7 +395,7 @@ if isempty(mlf),
     uicontrol('style', 'edit', 'position', [xbase+45 ybase-22 33 20], 'string', num2str(defaultbgcolor(1)), 'userdata', defaultbgcolor(1), 'backgroundcolor', [1 1 1], 'tag', 'bgred', 'callback', 'mlmenu');
     uicontrol('style', 'edit', 'position', [xbase+78 ybase-22 33 20], 'string', num2str(defaultbgcolor(2)), 'userdata', defaultbgcolor(2), 'backgroundcolor', [1 1 1], 'tag', 'bggreen', 'callback', 'mlmenu');
     uicontrol('style', 'edit', 'position', [xbase+111 ybase-22 33 20], 'string', num2str(defaultbgcolor(3)), 'userdata', defaultbgcolor(3), 'backgroundcolor', [1 1 1], 'tag', 'bgblue', 'callback', 'mlmenu');
-    disp('<<< MonkeyLogic >>> Initialized Video Menu...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized Video Menu...')
     
     % Control Screen Options ###################################### 
     ybase = 73;
@@ -475,19 +479,11 @@ if isempty(mlf),
     set(h, 'color', 0.5*defaultjoycolor, 'linewidth', 3, 'markersize', 35, 'tag', 'sample_joy_target');
     h = plot(xpos, 0, '.');
     set(h, 'color', defaultjoycolor, 'markersize', defaultjoysize, 'tag', 'sample_joy_trace');
-    disp('<<< MonkeyLogic >>> Initialized Control-Screen Menu...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized Control-Screen Menu...')
     
     % INPUT / OUTPUT ######################################  
-    disp('<<< MonkeyLogic >>> Gathering I/O board info...')
-    hwinfo = daqhwinfo;
-    disp(sprintf('<<< MonkeyLogic >>> DAQ Toolbox Version: %s %s', hwinfo.ToolboxName, hwinfo.ToolboxVersion));
-    disp(sprintf('<<< MonkeyLogic >>> DAQ Driver Version: %s %s', daq.getVendors().FullName, daq.getVendors().DriverVersion));
-    AdaptorInfo = ioscan(hwinfo.InstalledAdaptors);
+    AdaptorInfo = ioscan();
     adaptors = {AdaptorInfo(:).Name};
-    disp(sprintf('<<< MonkeyLogic >>> Found %i I/O adaptors:', length(adaptors)))
-    for i = 1:length(adaptors),
-        disp(sprintf('... %i) %s', i, adaptors{i}))
-    end
     
     ybase = 575;
     uicontrol('style', 'text', 'position', [790 ybase+105 100 15], 'string', 'Interface boards', 'backgroundcolor', fbg);
@@ -510,8 +506,8 @@ if isempty(mlf),
     
     uicontrol('style', 'pushbutton', 'position', [xbase+355 ybase+1 70 25], 'string', 'Check', 'tag', 'checkio', 'callback', 'mlmenu');
     
-    iolist = {'Eye Signal X' 'Eye Signal Y' 'Joystick X' 'Joystick Y' 'Reward' 'Behavioral Codes' 'Codes Strobe' 'Vertical Sync' 'PhotoDiode' 'Button 1' 'Button 2' 'Button 3' 'Button 4' 'Button 5' 'General Input 1' 'General Input 2' 'General Input 3' 'Stimulation 1' 'Stimulation 2' 'Stimulation 3' 'Stimulation 4' 'TTL 1' 'TTL 2' 'TTL 3' 'TTL 4', 'TTL 5', 'TTL 6'};
-    iovarnames = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'Reward' 'CodesDigOut' 'DigCodesStrobeBit' 'Vsync' 'PhotoDiode' 'Button1' 'Button2' 'Button3' 'Button4' 'Button5' 'Gen1' 'Gen2' 'Gen3' 'Stim1' 'Stim2' 'Stim3' 'Stim4' 'TTL1' 'TTL2' 'TTL3' 'TTL4' 'TTL5' 'TTL6'}';
+    iolist = {'Eye Signal X' 'Eye Signal Y' 'Joystick X' 'Joystick Y' 'Touchscreen X' 'Touchscreen Y' 'Mouse X' 'Mouse Y' 'Reward' 'Behavioral Codes' 'Codes Strobe' 'Vertical Sync' 'PhotoDiode' 'Button 1' 'Button 2' 'Button 3' 'Button 4' 'Button 5' 'General Input 1' 'General Input 2' 'General Input 3' 'Stimulation 1' 'Stimulation 2' 'Stimulation 3' 'Stimulation 4' 'TTL 1' 'TTL 2' 'TTL 3' 'TTL 4', 'TTL 5', 'TTL 6'};
+    iovarnames = {'EyeX' 'EyeY' 'JoyX' 'JoyY' 'TouchX' 'TouchY' 'MouseX' 'MouseY' 'Reward' 'CodesDigOut' 'DigCodesStrobeBit' 'Vsync' 'PhotoDiode' 'Button1' 'Button2' 'Button3' 'Button4' 'Button5' 'Gen1' 'Gen2' 'Gen3' 'Stim1' 'Stim2' 'Stim3' 'Stim4' 'TTL1' 'TTL2' 'TTL3' 'TTL4' 'TTL5' 'TTL6'}';
     for i = 1: length(iovarnames),
         InputOutput.(iovarnames{i}) = struct;
         InputOutput.(iovarnames{i}).Label = iolist{i};
@@ -545,9 +541,9 @@ if isempty(mlf),
     end
     if ~any(duplicateboard),
         set(findobj(gcf, 'tag', 'aiduplication'), 'enable', 'off');
-        disp('<<< MonkeyLogic >>> Warning: no duplicate DAQ boards found for Analog Input duplication...')
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> Warning: no duplicate DAQ boards found for Analog Input duplication...')
     else
-        disp('<<< MonkeyLogic >>> Detected duplicate DAQ boards: enabling A-I duplication...')
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> Detected duplicate DAQ boards: enabling A-I duplication...')
     end
     uicontrol('style', 'pushbutton', 'position', [xbase+299 ybase-138 118 22], 'string', 'Test Analog Inputs', 'tag', 'aitest', 'enable', 'off', 'callback', 'mlmenu');
     
@@ -571,7 +567,7 @@ if isempty(mlf),
         codestr = '???';
         codesfile = 'n/a';
         enablestr = 'off';
-        disp('<<< MonkeyLogic >>> Warning: No behavioral codes description file found...')
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> Warning: No behavioral codes description file found...')
     else
         enablestr = 'on';
         codestr = defaultcodesfile;
@@ -627,7 +623,7 @@ if isempty(mlf),
     uicontrol('style', 'pushbutton', 'position', [xbase+15 ybase-70 203 20], 'string', 'n/a', 'tag', 'au_userdefinedcritfunction', 'enable', 'off', 'backgroundcolor', [1 1 1], 'callback', 'mlmenu', 'userdata', '');
     uicontrol('style', 'pushbutton', 'position', [xbase+15 ybase-103 203 20], 'string', 'n/a', 'tag', 'au_function', 'enable', 'off', 'backgroundcolor', [1 1 1], 'callback', 'mlmenu', 'userdata', '');
     
-    disp('<<< MonkeyLogic >>> Initialized I/O Menu...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized I/O Menu...')
     
     %%% PULL-DOWN MENUS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     filemenu = uimenu('label', 'File');
@@ -667,12 +663,12 @@ if isempty(mlf),
     uimenu(advancedmenu, 'label', 'Preload Video Data', 'tag', 'menubar_preload', 'callback', 'mlmenu');
     uimenu(advancedmenu, 'label', 'Enable Mouse/System Keys', 'tag', 'menubar_mlhelper', 'callback', 'mlmenu');
     uimenu(advancedmenu, 'label', 'Use Personal Hardware Settings', 'tag', 'menubar_personalhardware', 'callback', 'mlmenu', 'enable', 'off');
-    
+ 
     helpmenu = uimenu('label', 'Help');
     uimenu(helpmenu, 'label', 'Online Help', 'callback', 'web(''http://www.monkeylogic.net'', ''-browser'')', 'accelerator', 'h');
     uimenu(helpmenu, 'label', 'About...', 'tag', 'menubar_aboutbutton', 'callback', 'mlmenu');
     if usejava('jvm'),
-        disp('<<< MonkeyLogic >>> Initialized drop-down menus...')
+        logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized drop-down menus...')
     end
     
     if exist(cfgfile, 'file'),
@@ -681,8 +677,7 @@ if isempty(mlf),
     else % if doesn't exist, create default config file...
         savecfg;
     end
-    disp('<<< MonkeyLogic >>> Ready.')
-    disp(' ')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Ready.')
     
 elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) || reloadcondfile || ismember(get(gcbo, 'parent'), get(findobj('tag', 'monkeylogicmainmenu'), 'children')),
    
@@ -845,12 +840,12 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'aboutbutton',
             
-            mlmessage(sprintf('MonkeyLogic Revision Date: %s', currentversion));
+            mlmessage(sprintf('>>> Revision : %s <<<', currentversion));
             try
                 f = wavread('science.wav');
                 sound(f, 48000);
             catch
-                disp('');
+                logger.info('mlmenu.m', '');
             end
         
         case 'editconds',
@@ -1935,8 +1930,10 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
             
         case 'videotest',
 
+            logger.info('mlmenu.m', '<<< MonkeyLogic >>> Starting video test');
             mlmessage('Initializing video...');
             drawnow;
+            
             
             bytesperpixel = 4;
             videodevice = get(findobj(gcf, 'tag', 'videodevice'), 'value');
@@ -2307,7 +2304,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 set(findobj(gcf, 'tag', 'savebutton'), 'enable', 'off');
                 set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'off');
                 datafile = get(findobj(gcf, 'tag', 'datafile'), 'userdata');
-                if exist(datafile, 'file'),
+               if exist(datafile, 'file'),
                     a = questdlg('Overwrite existing data file?', 'Data file already exists');
                     if strcmpi(a, 'No'),
                         mlmessage('Enter a new data file name to run the task');
@@ -2910,38 +2907,31 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     return
                 end
                 
-                avports = AdatorInfo(boardnum).AvailablePorts{subsysnum};
-                avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
-                
-                nlines = length(avlines);
-                if strcmp('CodesDigOut', iovar),
-                    % first select ports (allows user to select multiple
-                    % ports)
-                    choose_dio_port(avports, 1);
-                    portindx = get(findobj('tag', 'availablechannels'), 'userdata');
-                    if isempty(portindx)
-                        return
-                    end
-                    InputOutput.(iovar).Channel = avports(portindx);
-                    linestoadd = [];
-                    for portindx = portindx(1) : portindx(end)
-                        thisport = avports(portindx);
-                        indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                        if isempty(indx)
-                            return
-                        end
-                        % e.g. nports = 3, nlines = 8: Port0->Lines 0-7,
-                        % Port1->Lines 8-15, Port2->Lines 16-23
-                        linestoadd = [linestoadd avlines(indx) + nlines * thisport]; %#ok<AGROW>
-                    end
-                    InputOutput.(iovar).Line = linestoadd;
-                else
-                    choose_dio_line(avlines);
-                indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                if isempty(indx),
-                    return
-                end
-                InputOutput.(iovar).Line = avlines(indx);
+                        if strcmp('CodesDigOut', iovar),
+                            avports = AdaptorInfo(boardnum).AvailablePorts{subsysnum};
+                            InputOutput.(iovar).Channel = avports(channelindx);
+
+                            nport = length(channelindx);
+                            Line = cell(1,nport);
+                            for m=1:nport
+                                n = channelindx(m);
+                                avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{n};
+                                thisport = avports(n);
+                                choose_dio_line(avlines,1,thisport);
+                                indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                                if isempty(indx), continue; end
+                                Line{m} = avlines(indx);
+                            end
+                    if 1==nport, Line = Line{1}; end
+                            InputOutput.(iovar).Line = Line;
+                        else
+                            avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
+                            choose_dio_line(avlines);
+                            indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                            if isempty(indx),
+                                return
+                            end
+                            InputOutput.(iovar).Line = avlines(indx);
                 end
                 
             elseif strcmp('Reward', iovar) && strcmpi(AdaptorInfo(boardnum).SubSystemsNames(subsysnum), 'digitalio'),
@@ -3237,7 +3227,7 @@ uicontrol('style', 'pushbutton', 'position', [92 35 70 30], 'string', 'Cancel', 
 set(gcf, 'closerequestfcn', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', []); delete(gcf)');
 if ~isempty(varargin) && varargin{1},
     set(h, 'max', 2); %enable multi-select
-    if varargin{2}
+    if 1 < length(varargin)
         portnum = varargin{2};
         set(f, 'name', ['Select Lines for Port ', num2str(portnum)]);
     else
@@ -3627,6 +3617,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loadcfg(cfgfile)
 
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
 load(cfgfile);
 
 validscreensizes = get(findobj(gcf, 'tag' ,'screenres'), 'userdata');
@@ -3872,7 +3866,7 @@ set(findobj(gcf, 'tag', 'minicontrolscreen'), 'color', sbgcol);
 
 numdevices = length(get(findobj(gcf, 'tag', 'videodevice'), 'string'));
 if MLConfig.VideoDevice > numdevices,
-    disp(sprintf('*** WARNING: Assigned video device (#%i) not available ***', MLConfig.VideoDevice))
+    logger.info('mlmenu.m', sprintf('*** WARNING: Assigned video device (#%i) not available ***', MLConfig.VideoDevice))
     MLConfig.VideoDevice = numdevices;
 end
 set(findobj(gcf, 'tag', 'videodevice'), 'value', MLConfig.VideoDevice);
@@ -3989,7 +3983,7 @@ for i = 1:length(fn),
         catch
             str = sprintf('*** WARNING: Assigned adaptor for %s not currently available ***', fn{i});
             mlmessage(str);
-            disp(str)
+            logger.info('mlmenu.m', str)
         end
     end
 end
@@ -4223,8 +4217,13 @@ catch
     else
         cfgfile = [MLPrefs.Directories.BaseDirectory 'default_cfg.mat'];
     end
-    disp('... Saving new default configuration file ...')
-    save(cfgfile, 'MLConfig');
+    try
+        logger.info('mlmenu.m', '... Saving new default configuration file ...')
+        save(cfgfile, 'MLConfig');
+    catch
+        disp('*** Warning, you need to specify a correct experiment directory path! ***');
+    end
+    
 end
 setpref('MonkeyLogic', 'Directories', MLPrefs.Directories);
 
@@ -4240,7 +4239,9 @@ z = 65536*r+256*g+b;
 rgb = z(:)';
 
 function chknewupdates(lastupdate)
-
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 checkinterval = 30; %in days
 if ~ispref('MonkeyLogic', 'LastUpdateCheck'),
     lastchecknum = floor(now)-checkinterval-1;
@@ -4264,7 +4265,7 @@ try
         setpref('MonkeyLogic', 'LastUpdateCheck', todaynum);
     end
 catch ME %likely no network...
-    disp(sprintf('>>> Unable to check for MonkeyLogic updates (%s) <<<', ME.identifier))
+    logger.info('mlmenu.m', sprintf('>>> Unable to check for MonkeyLogic updates (%s) <<<', ME.identifier))
 end
 
 

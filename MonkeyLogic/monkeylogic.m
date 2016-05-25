@@ -29,9 +29,7 @@ global MLHELPER_OFF
 % Add user-defined variables to the BHV file from the timing script (e.g., "bhvaddvariable")
 % Make alpha values active for stimuli (transparency)
 global errorfile					%global because other functions also use it (like create_taskobjects)
-
 errorfile = 'ml_error_workspace.mat';
-disp(sprintf('\r\r\r'))
 if isempty(varargin),
     f = findobj('tag', 'monkeylogicmainmenu');
     if isempty(f),
@@ -42,6 +40,11 @@ if isempty(varargin),
     end
     return
 end
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
+logger.info('monkeylogic.m', sprintf('\r\r\r'));
 
 if length(varargin) > 2,
     thisisonlyatest = varargin{3};
@@ -88,7 +91,7 @@ if exist(cfgfile, 'file'),
         end
     end
    
-    fprintf('<<< MonkeyLogic >>> Using configuration file: %s\n', cfgfile);
+    logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Using configuration file: %s', cfgfile));
     xs = MLConfig.ScreenX;
     ys = MLConfig.ScreenY;
 else
@@ -113,7 +116,7 @@ ScreenX = validxsize(resval);
 ScreenY = validysize(resval);
 
 try
-	mlvideo('init');
+	mlvideo('init', MLConfig.PixelsPerDegree);
 	mlvideo('initdevice', videodevice);
 	mlvideo('setmode', videodevice, ScreenX, ScreenY, bytesperpixel, refreshrate, bufferpages);
 	mlvideo('showcursor', videodevice, 0);
@@ -154,6 +157,7 @@ MLConfig.ActualRefreshRate  = framerate;
 
 MLConfig.ComputerName = lower(getenv('COMPUTERNAME'));
 MLHELPER_OFF = MLConfig.MLHelperOff;
+%logger.info('monkeylogic.m', sprintf('Setting MLHELPER_OFF to %i', MLHELPER_OFF));
 
 % Read conditions file
 Conditions_temp = load_conditions(condfile);
@@ -205,7 +209,7 @@ else %standard task-loop (using a conditions text file and timing files, etc)
         Txy = cat(1, Txy, [tx ty]);
     end
     Txy = unique(Txy, 'rows');
-    disp(sprintf('<<< MonkeyLogic >>> Loaded & parsed conditions file: %s', condfile))
+    logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Loaded & parsed conditions file: %s', condfile))
     drawnow;
     
     %Make certain all timing files are on the path:
@@ -217,17 +221,17 @@ else %standard task-loop (using a conditions text file and timing files, etc)
             tfile = [MLPrefs.Directories.ExperimentDirectory tfarray{i}];
             [pname fname] = fileparts(tfarray{i});
             clear(fname); %force reload
-            disp(sprintf('<<< MonkeyLogic >>> Embedding %s...', tfile));
+            logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Embedding %s...', tfile));
             RunTimeFiles{i} = embedtimingfile(tfile, 'trialholder.m');
         catch
             save(errorfile);
-            error('*** Unable to embed timing script(s) ***');
+            logger.info('monkeylogic.m', '*** Unable to embed timing script(s) ***');
         end
     end
     if numtfiles == 1,
-        disp('<<< MonkeyLogic >>> Successfully created the run-time function from the timing script');
+        logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Successfully created the run-time function from the timing script');
     else
-        disp(sprintf('<<< MonkeyLogic >>> Successfully created %i run-time functions from %i timing scripts...', numtfiles, numtfiles));
+        logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Successfully created %i run-time functions from %i timing scripts...\n', numtfiles, numtfiles));
     end
     drawnow;
 
@@ -292,7 +296,7 @@ Instruction.Value = [];
 if MLConfig.Alerts.Enable,
     if isempty(MLConfig.Alerts.AlertFunction),
         MLConfig.Alerts.Enable = 0;
-        disp('Warning: No alert function selected');
+        logger.info('monkeylogic.m', 'Warning: No alert function selected');
     else
         [pname fname ext] = fileparts(MLConfig.Alerts.AlertFunction);
         if strcmpi(ext, '.html') || strcmpi(ext, '.htm'),
@@ -306,14 +310,14 @@ if MLConfig.Alerts.Enable,
                     MLConfig.Alerts.WebPage.FTPdir = fgetl(fftp);
                     MLConfig.Alerts.WebPage.Enable = 1;
                 catch
-                    disp('Warning: Unable to gather required ftp info from "ftpinfo.txt"');
+                    logger.info('monkeylogic.m', 'Warning: Unable to gather required ftp info from "ftpinfo.txt"');
                 end
                 fclose(fftp);
                 if MLConfig.Alerts.WebPage.Enable,
                     mlwebsummary(1, MLConfig, [fname '.html']);
                 end
             else
-                disp('Warning: No "ftpinfo.txt" file found for web updates...')
+                logger.info('monkeylogic.m', 'Warning: No "ftpinfo.txt" file found for web updates...')
             end
             MLConfig.Alerts.Enable = 0; %so only perform web page updates.
         else
@@ -325,7 +329,7 @@ if MLConfig.Alerts.Enable,
             if MLConfig.Alerts.UserCriteria,
                 if isempty(MLConfig.Alerts.UserCriteriaFunction),
                     MLConfig.Alerts.UserCriteria = 0;
-                    disp('Warning: No function selected for user-defined alerts');
+                    logger.info('monkeylogic.m', 'Warning: No function selected for user-defined alerts');
                 else
                     MLConfig.Alerts.UserCriteriaFunctionName = prep_m_file(MLConfig.Alerts.UserCriteriaFunction, MLPrefs.Directories);
                     if isempty(MLConfig.Alerts.UserCriteriaFunctionName),
@@ -338,7 +342,7 @@ if MLConfig.Alerts.Enable,
     end
 end
 
-disp('<<< MonkeyLogic >>> Initialized task parameters...')
+logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Initialized task parameters...')
 drawnow;
 
 % Get list of behavioral codes
@@ -350,7 +354,7 @@ if exist(codesfile, 'file'),
         error('Error opening %s file', codesfile)
         BehavioralCodes = [];
     else
-        disp(sprintf('<<< MonkeyLogic >>> Reading behavioral codes file: %s...', codesfile))
+        logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Reading behavioral codes file: %s...', codesfile))
         fgetl(fidcodes); %get & discard header
         count = 0;
         while ~feof(fidcodes),
@@ -366,12 +370,12 @@ if exist(codesfile, 'file'),
     end
 	clear count codesfile header textline fidcodes;
 else
-	disp('Warning: Behavioral codes text file not found...')
+	logger.info('monkeylogic.m', 'Warning: Behavioral codes text file not found...')
 	BehavioralCodes = [];
 end
 
 % Open data file ("BHV" format)
-disp(sprintf('<<< MonkeyLogic >>> Opening %s...', datafile));
+logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Opening %s...', datafile));
 WriteData = struct([]);
 if appendflag == 0,
     fidbhv = fopen(datafile, 'w');
@@ -383,7 +387,7 @@ if fidbhv == -1,
     error('*** Unable to open data file: %s ***', datafile);
 end
 bhv_write(1, fidbhv, MLConfig, condfile, RunTimeFiles, Conditions, MLConfig.EyeTransform, MLConfig.JoyTransform);
-disp(sprintf('<<< MonkeyLogic >>> Initialized data file %s...', datafile));
+logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Initialized data file %s...', datafile));
 MLConfig.DataFile = datafile;
 
 % Set up subject screen parameters
@@ -407,15 +411,30 @@ ScreenInfo.UseRawJoySignal = MLConfig.UseRawJoySignal; %use raw input signal (i.
 if isempty(MLConfig.JoyTransform),
     ScreenInfo.UseRawJoySignal = 1;
 end
+ScreenInfo.UseRawTouchSignal = 0; %use raw input signal (i.e., pre-calibrated touchscreen)
+ScreenInfo.UseRawMouseSignal = 0; %use raw input signal (i.e., pre-calibrated mouse)
 ScreenInfo.UpdateInterval = MLConfig.UpdateInterval;
+%%
 ScreenInfo.EyeTraceColor = MLConfig.EyeTraceColor;
 ScreenInfo.EyeTraceSize = MLConfig.EyeTraceSize;
 ScreenInfo.EyeTargetColor = 0.5*MLConfig.EyeTraceColor;
 ScreenInfo.EyeTargetLinewidth = 2;
+%%
 ScreenInfo.JoyTraceColor = MLConfig.JoyTraceColor;
 ScreenInfo.JoyTraceSize = MLConfig.JoyTraceSize;
 ScreenInfo.JoyTargetColor = 0.5*MLConfig.JoyTraceColor;
 ScreenInfo.JoyTargetLinewidth = 3;
+%%
+ScreenInfo.TouchTraceColor = MLConfig.JoyTraceColor;        % use Joystick setting
+ScreenInfo.TouchTraceSize = MLConfig.JoyTraceSize;          % use Joystick setting
+ScreenInfo.TouchTargetColor = 0.5*MLConfig.JoyTraceColor;   % use Joystick setting
+ScreenInfo.TouchTargetLinewidth = 3;                        % use Joystick setting
+%%
+ScreenInfo.MouseTraceColor = MLConfig.JoyTraceColor;        % use Joystick setting
+ScreenInfo.MouseTraceSize = MLConfig.JoyTraceSize;          % use Joystick setting
+ScreenInfo.MouseTargetColor = 0.5*MLConfig.JoyTraceColor;   % use Joystick setting
+ScreenInfo.MouseTargetLinewidth = 3;                        % use Joystick setting
+
 ScreenInfo.OutOfBounds = 2*max([ScreenInfo.Xsize ScreenInfo.Ysize])/ScreenInfo.PixelsPerDegree;
 ScreenInfo.FixationSpotImageFile = MLConfig.FixationSpotImageFile;
 ScreenInfo.ShowCursor = 0;
@@ -444,13 +463,12 @@ set(findobj(ScreenInfo.ControlScreenHandle, 'tag', 'conderrors'), 'userdata', bl
 drawnow;
 
 % Initialize I/O
-disp(sprintf('<<< MonkeyLogic >>> Starting up DAQ...'))
 [DaqInfo DaqError] = initio(MLConfig.InputOutput);
 if ~isempty(DaqError),
     daqreset;
     clear DaqInfo
     for i = 1:length(DaqError),
-        disp(DaqError{i});
+        logger.info('monkeylogic.m', DaqError{i});
         save(errorfile);
         error('*** DAQ initialization error ***');
     end
@@ -459,7 +477,9 @@ end
 DaqInfo.StrobeBitEdge = MLConfig.StrobeBitEdge;
 EyeSignalInUse = ~ScreenInfo.UseRawEyeSignal && ~isempty(DaqInfo.EyeSignal);
 JoystickInUse = ~ScreenInfo.UseRawJoySignal && ~isempty(DaqInfo.Joystick);
-fprintf('<<< MonkeyLogic >>> Successfully initialized DAQ system.\n');
+TouchscreenInUse = ~ScreenInfo.UseRawTouchSignal && ~isempty(DaqInfo.TouchSignal);
+MouseInUse = ~ScreenInfo.UseRawMouseSignal && ~isempty(DaqInfo.MouseSignal);
+logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Successfully completed initializing I/O.');
 drawnow;
 
 % Initialize reward
@@ -473,7 +493,8 @@ ScreenInfo.BytesPerPixel = 4;
 ScreenInfo.Half_xs = round(xs/2);
 ScreenInfo.Half_ys = round(ys/2);
 
-disp(sprintf('<<< MonkeyLogic >>> Starting up video...'))
+logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Video graphics initialization started...');
+
 ScreenInfo = init_video(ScreenInfo);
 if ~ScreenInfo.IsActive,
     error_escape(ScreenInfo, DaqInfo, fidbhv);
@@ -481,10 +502,10 @@ if ~ScreenInfo.IsActive,
     save(errorfile);
     error('*** Video Initialization Error ***')
 end
-disp(sprintf('<<< MonkeyLogic >>> Successfully initialized video.'))
+logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Video graphics initialization completed successfully.')
 
 % per MS: calculate video frame length for use with movies...
-disp(sprintf('<<< MonkeyLogic >>> Calculating video frame length...'))
+logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Calculating video frame length...')
 numframes = 10;
 flength = zeros(numframes, 2);
 k = 1000;
@@ -497,7 +518,7 @@ for i = 1:numframes,
     flength(i, 2) = k*toc;
 end
 ScreenInfo.FrameLength = mean(mean(diff(flength(2:numframes, :))));
-fprintf('...Average video frame length = %2.3f ms\n', ScreenInfo.FrameLength);
+logger.info('monkeylogic.m', sprintf('...Average video frame length = %2.3f ms', ScreenInfo.FrameLength));
 drawnow;
 
 available_blocks = MLConfig.RunBlocks;
@@ -516,6 +537,8 @@ TrialRecord.TrialErrors = [];
 TrialRecord.ReactionTimes = [];
 TrialRecord.LastTrialAnalogData.EyeSignal = [];
 TrialRecord.LastTrialAnalogData.Joystick = [];
+TrialRecord.LastTrialAnalogData.TouchSignal = [];
+TrialRecord.LastTrialAnalogData.MouseSignal = [];
 TrialRecord.LastTrialCodes.CodeNumbers = [];
 TrialRecord.LastTrialCodes.CodeTimes = [];
 TrialRecord.DataFile = datafile;
@@ -538,7 +561,7 @@ TempScreenInfo = ScreenInfo;
 %TempScreenInfo.BackgroundColor = [0 0 0];
 trialtype = 1;
 
-fprintf('<<< MonkeyLogic >>> Starting initialization trial...\n');
+logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Initialization trial starting...');
 
 disable_cursor;
 disable_syskeys;
@@ -548,7 +571,7 @@ try
         feval(timingfile, TaskObject, TempScreenInfo, DaqInfo, MLConfig.EyeTransform, MLConfig.JoyTransform, BehavioralCodes, TrialRecord, trialtype);
     end
 catch ME
-    fprintf('<<<*** MonkeyLogic ***>>> Initialization Error\n%s\n',getReport(ME));
+    logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Initialization Error\n%s\n',getReport(ME)));
     cd(MLPrefs.Directories.BaseDirectory);
     enable_cursor;
     enable_syskeys;
@@ -561,20 +584,20 @@ enable_cursor;
 enable_syskeys;
 clear TempScreenInfo C ssfile
 close_video(ScreenInfo, 'BuffersOnly');
-disp(sprintf('<<< MonkeyLogic >>> Successfully initialized Timing Files.'))
+logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Successfully initialized Timing Files.'))
 
 if MLConfig.PreloadVideo,
     [preloaded ScreenInfo.PreloadedVideoBuffers] = preload_videos(Conditions,ScreenInfo);
-    fprintf('<<< MonkeyLogic >>> Successfully preloaded video files.\n');
+    logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Successfully preloaded video files');
 else
     preloaded = [];
 end
 
 % Check to see if this run is simply a time-test...
 if thisisonlyatest, 
-    disp('<<< MonkeyLogic >>> Initializing Latency Test...')
+    logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Initializing Latency Test...')
     C(1) = initstim('benchmarkpic.jpg', ScreenInfo);
-    C(2) = initstim('benchmarkmov.avi', ScreenInfo);
+    C(2) = initstim('initializing.avi', ScreenInfo);
     [TaskObject ScreenInfo.ActiveVideoBuffers] = create_taskobjects(C, ScreenInfo, DaqInfo, TrialRecord, MLPrefs.Directories, fidbhv);
     TaskObject = initcontrolscreen(2, ScreenInfo, TaskObject);
     tfile = [MLPrefs.Directories.BaseDirectory 'mltimetest.m'];
@@ -590,7 +613,7 @@ if thisisonlyatest,
         error_escape(ScreenInfo, DaqInfo, fidbhv);
         clear DaqInfo
         save(errorfile);
-        disp('<<<*** MonkeyLogic ***>>> Error running latency test')
+        logger.info('monkeylogic.m', '<<<*** MonkeyLogic ***>>> Error running latency test')
         varargout{1} = [];
         return
     end
@@ -599,7 +622,7 @@ if thisisonlyatest,
     close_daq(DaqInfo);
     fclose(fidbhv);
     rmpath(MLPrefs.Directories.RunTimeDirectory);
-    disp('<<< MonkeyLogic >>>  Done.')
+    logger.info('monkeylogic.m', '<<< MonkeyLogic >>>  Done.')
     return
 end
 
@@ -609,14 +632,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 trialtype = 0;
 ScreenInfo.UsePreProcessedImages = MLConfig.UsePreProcessedImages;
-fprintf('<<< MonkeyLogic >>> BHV File: %s. Started running trials at %s...\n', datafile, datestr(rem(now, 1)))
+logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> BHV File: %s. Started running trials at %s...', datafile, datestr(rem(now, 1))));
 [pname fname] = fileparts(datafile);
 set(findobj('tag', 'mlmonitor'), 'name', sprintf('MonkeyLogic: %s Started running trials at %s  %s', fname, datestr(rem(now, 1)), datestr(date)));
 drawnow;
 if MLConfig.Alerts.Enable,
     success = monkeylogic_alert(2, sprintf('Started running trials at %s %s', datestr(rem(now, 1)), datestr(date)), MLConfig.Alerts);
     if ~success,
-        disp('Warning: Unable to send alerts...')
+        logger.info('monkeylogic.m', 'Warning: Unable to send alerts...')
     end
 end
 
@@ -716,7 +739,7 @@ for trial = 1:MLConfig.MaxTrials,
                     enable_syskeys;
                     mlhelper_stop;
                     monkeylogic_alert(4, 'Error in user-defined Block-Change function', MLConfig.Alerts);
-                    disp('<<<*** MonkeyLogic ***>>> Error in user-defined Block-Change function')
+                    logger.info('monkeylogic.m', '<<<*** MonkeyLogic ***>>> Error in user-defined Block-Change function')
                     error_escape(ScreenInfo, DaqInfo, fidbhv);
                     clear DaqInfo
                     save(errorfile);
@@ -801,7 +824,7 @@ for trial = 1:MLConfig.MaxTrials,
                                 enable_cursor;
                                 enable_syskeys;
                                 monkeylogic_alert(4, 'Block selection error in user-defined function', MLConfig.Alerts);
-                                disp('<<<*** MonkeyLogic ***>>> Block selection error in user-defined function')
+                                logger.info('monkeylogic.m', '<<<*** MonkeyLogic ***>>> Block selection error in user-defined function')
                                 error_escape(ScreenInfo, DaqInfo, fidbhv);
                                 clear DaqInfo
                                 save(errorfile);
@@ -815,7 +838,7 @@ for trial = 1:MLConfig.MaxTrials,
                                 enable_cursor;
                                 enable_syskeys;
                                 monkeylogic_alert(4, 'Error: selected block does not exist', MLConfig.Alerts);
-                                disp('<<<*** MonkeyLogic ***>>> Error: selected block does not exist')
+                                logger.info('monkeylogic.m', '<<<*** MonkeyLogic ***>>> Error: selected block does not exist')
                                 error_escape(ScreenInfo, DaqInfo, fidbhv);
                                 clear DaqInfo
                                 save(errorfile);
@@ -903,7 +926,7 @@ for trial = 1:MLConfig.MaxTrials,
                             enable_cursor;
                             enable_syskeys;
                             mlhelper_stop;
-                            fprintf('<<<*** MonkeyLogic ***>>> Condition selection error in user-defined function\n%s\n',getReport(ME));
+                            logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Condition selection error in user-defined function\n%s\n',getReport(ME)));
                             monkeylogic_alert(4, 'Condition selection error in user-defined function', MLConfig.Alerts);
                             error_escape(ScreenInfo, DaqInfo, fidbhv);
                             clear DaqInfo
@@ -958,7 +981,7 @@ for trial = 1:MLConfig.MaxTrials,
             enable_cursor;
             enable_syskeys;
             mlhelper_stop;
-            fprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME));
+            logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME)));
             monkeylogic_alert(4, 'User-Loop Error: Task Halted', MLConfig.Alerts);
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
@@ -981,7 +1004,7 @@ for trial = 1:MLConfig.MaxTrials,
             enable_cursor;
             enable_syskeys;
             mlhelper_stop;
-            fprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME));
+            logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME)));
             monkeylogic_alert(4, 'Unable to embed user-specified timing script', MLConfig.Alerts);
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
@@ -1097,7 +1120,7 @@ for trial = 1:MLConfig.MaxTrials,
     
     if toc*1000 > iti_time,
         iti_t = round(toc*1000);
-        fprintf('*** Warning: Desired ITI exceeded (ITI ~= %i ms) ***\n', iti_t);
+        logger.info('monkeylogic.m', sprintf('*** Warning: Desired ITI exceeded (ITI ~= %i ms) ***\n', iti_t));
         initcontrolscreen(7, ScreenInfo, sprintf('Desired ITI exceeded (ITI ~= %i ms)', iti_t));
     else
         while toc*1000 < iti_time-TrialData.TrialExitTime, end %use up remaining ITI
@@ -1115,7 +1138,7 @@ for trial = 1:MLConfig.MaxTrials,
         enable_cursor;
         enable_syskeys;
         mlhelper_stop;
-        fprintf('<<<*** MonkeyLogic ***>>> Timing File Execution Error\n%s\n',getReport(ME));
+        logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Timing File Execution Error\n%s\n',getReport(ME)));
         monkeylogic_alert(4, 'Trial Execution Error: Task Halted', MLConfig.Alerts);
         error_escape(ScreenInfo, DaqInfo, fidbhv);
         clear DaqInfo
@@ -1163,6 +1186,8 @@ for trial = 1:MLConfig.MaxTrials,
     WriteData(trial).CodeTimes = {Codes.CodeTimes};
     WriteData(trial).EyeSignal = TrialData.AnalogData.EyeSignal;
     WriteData(trial).Joystick = TrialData.AnalogData.Joystick;
+    WriteData(trial).TouchSignal = TrialData.AnalogData.TouchSignal;
+    WriteData(trial).MouseSignal = TrialData.AnalogData.MouseSignal;
     WriteData(trial).PhotoDiode = TrialData.AnalogData.PhotoDiode;
     WriteData(trial).GeneralAnalog = TrialData.AnalogData.General;
     WriteData(trial).ReactionTime = reactiontime;
@@ -1170,6 +1195,7 @@ for trial = 1:MLConfig.MaxTrials,
     WriteData(trial).RewardRecord = TrialData.RewardRecord;
     WriteData(trial).CycleRate = TrialData.CycleRate;
     WriteData(trial).UserVars = TrialData.UserVars;
+    
     bhv_write(2, fidbhv, WriteData(trial));
     
     lastcond = cond;
@@ -1242,7 +1268,7 @@ for trial = 1:MLConfig.MaxTrials,
     if MLConfig.Alerts.Enable && MLConfig.Alerts.UserCriteria,
         success = monkeylogic_alert(3, TrialRecord, MLConfig.Alerts);
         if ~success,
-            disp(sprintf('Warning: Unable to send user-defined alert...'))
+            logger.info('monkeylogic.m', sprintf('Warning: Unable to send user-defined alert...'))
         end
     end
         
@@ -1315,7 +1341,7 @@ for trial = 1:MLConfig.MaxTrials,
         end
         
         last_message = Instruction.Message;
-        Instruction = parse_remote_command(RemoteCommand, MLConfig.Alerts.WebPage.PassCode);
+        Instruction = parse_remote_command(RemoteCommand, MLConfig.Alerts.WebPage.PassCode, logger);
         if isempty(Instruction.Message),
             Instruction.Message = last_message;
         end
@@ -1346,7 +1372,7 @@ end
 
 %%%%%%%%%%%%%%%%%% END TASKLOOP %%%%%%%%%%%%%%%%%%%%%
 catch ME
-    fprintf('<<<*** MonkeyLogic ***>>> Task Loop Execution Error\n%s\n',getReport(ME));
+    logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Task Loop Execution Error\n%s',getReport(ME)));
     cd(MLPrefs.Directories.BaseDirectory);
     unclip_cursor;
     enable_cursor;
@@ -1406,8 +1432,8 @@ if trial ~= 0 && ~thisisonlyatest,
     RESULT.TotalTrials = trial;
     figtitle = get(gcf, 'name');
     set(gcf, 'name', [figtitle '   Finished at ' RESULT.FinishTime]);
-    disp(sprintf('<<< MonkeyLogic >>> Finished running trials at %s.', RESULT.FinishTime))
-    disp(sprintf('<<< MonkeyLogic >>> Completed %i correct trials over %i total trials.', RESULT.CorrectTrials, RESULT.TotalTrials))
+    logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Finished running trials at %s.', RESULT.FinishTime))
+    logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Completed %i correct trials over %i total trials.', RESULT.CorrectTrials, RESULT.TotalTrials))
     set(findobj('tag', 'mlmessagebox'), 'string', sprintf('Completed %i correct trials over %i total trials.', RESULT.CorrectTrials, RESULT.TotalTrials));
     behaviorsummary('CurrentFile');
 else
@@ -1528,7 +1554,7 @@ if pre && ~gen,
             end
             
         else
-            fprintf('Warning: unable to find preprocessed movie file %s\n', file);
+            logger.info('monkeylogic.m', sprintf('Warning: unable to find preprocessed movie file %s\n', file));
         end
     end
 end
@@ -1687,11 +1713,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [TaskObject, vbuffer, StimulusInfo] = create_taskobjects(C, ScreenInfo, DaqInfo, TrialRecord, mldirectories, fidbhv, varargin)
 global errorfile				%errorfile declared and initialized at the beginning of monkeylogic.m
-
 preloaded = [];
 if ~isempty(varargin),
     preloaded = varargin{1};
 end
+
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
 
 vbuffer = zeros(10000, 1);
 vbufnum = 0;
@@ -1738,8 +1768,8 @@ for obnum = 1:lc, %first check for user-generated images and movies
             fclose(fidbhv); %need to add code to finalize bhv file...
             str = sprintf('*** Error executing "gen" function %s', fname);
             % monkeylogic_alert(4, str, MLConfig.Alerts);
-            disp(['<<< MonkeyLogic >>> ' str]);
-            disp(getReport(ME));
+            logger.info('monkeylogic.m', ['<<< MonkeyLogic >>> ' str]);
+            logger.info('monkeylogic.m', getReport(ME));
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
             save(errorfile);
@@ -1769,7 +1799,7 @@ for obnum = 1:lc, %first check for user-generated images and movies
             imdata = repmat(imdata, [1 1 3]); %grayscale image;
             C(obnum).Type = 'pic';
         else
-            fprintf('*** WARNING *** image data for "gen" object created by %s contains an unexpected number of dimensions', fname);
+            logger.info('monkeylogic.m', sprintf('*** WARNING *** image data for "gen" object created by %s contains an unexpected number of dimensions', fname));
             imdata = repmat(imdata(:, :, 1), [1 1 3]); % band-aid, to allow task execution to continue
             C(obnum).Type = 'pic';
 		end
@@ -1837,7 +1867,7 @@ for obnum = 1:lc, %first check for user-generated images and movies
         yscreenpos = ScreenInfo.Half_ys - round(ScreenInfo.PixelsPerDegree * ypos) - yoffset; %invert so that positive y is above the horizon
         
         if xscreenpos + xis > ScreenInfo.Xsize || yscreenpos + yis > ScreenInfo.Ysize || xscreenpos < 0 || yscreenpos < 0,
-            fprintf('*** MonkeyLogic Error: Image "%s" is placed outside of screen pixel boundaries.\n', C(obnum).Name);
+            logger.info('monkeylogic.m', sprintf('*** MonkeyLogic Error: Image "%s" is placed outside of screen pixel boundaries.\n', C(obnum).Name));
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
             save(['create_taskobjects_' errorfile]);
@@ -2019,6 +2049,11 @@ vbuffer = vbuffer(1:vbufnum);
 function Instruction = parse_remote_command(RemoteCommand, PassCode)
 persistent lastcommandtime
 
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
+
 Instruction.Message = ' ';
 Instruction.Command = ' ';
 Instruction.Value = [];
@@ -2041,7 +2076,7 @@ if length(RemoteCommand) > 1,
     instruction = lower(RemoteCommand(1:f1-1));
     passcode = RemoteCommand(f1+1:f2-1);
     if strcmp(passcode, PassCode),
-        disp('<<<>>> Remote Access Accepted <<<>>>')
+        logger.info('monkeylogic.m', '<<<>>> Remote Access Accepted <<<>>>')
         if ~isempty(strfind(instruction, 'pause')) || ~isempty(strfind(instruction, 'timeout')) || ~isempty(strfind(instruction, 'hold')) || ~isempty(strfind(instruction, 'wait')),
             Instruction.Command = 'p';
             Instruction.Message = 'Pause';
@@ -2123,10 +2158,10 @@ if length(RemoteCommand) > 1,
         else
             Instruction.Message = 'Unknown remote command.';
         end
-        disp(sprintf('...Action: %s', Instruction.Message))
+        logger.info('monkeylogic.m', sprintf('...Action: %s', Instruction.Message))
     else
         Instruction.Message = 'Access Denied.';
-        disp('*** Unauthorized Access Attempted ***')
+        logger.info('monkeylogic.m', '*** Unauthorized Access Attempted ***')
     end
 end
 
@@ -2183,9 +2218,13 @@ set(herror, 'string', errorstring, 'userdata', conderrors);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ScreenInfo = init_video(ScreenInfo)
 
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
 ScreenInfo.IsActive = 0;
 try
-    mlvideo('init');
+    mlvideo('init', ScreenInfo.PixelsPerDegree);
     mlvideo('initdevice', ScreenInfo.Device);
     mlvideo('setmode', ScreenInfo.Device, ScreenInfo.Xsize, ScreenInfo.Ysize, ScreenInfo.BytesPerPixel, ScreenInfo.RefreshRate, ScreenInfo.BufferPages);
     pause(1);
@@ -2194,7 +2233,7 @@ try
     mlvideo('showcursor', ScreenInfo.Device, 0);
 
 catch ME
-    fprintf('Video Initialization Error\n%s\n',getReport(ME));
+    logger.info('monkeylogic.m', sprintf('Video Initialization Error\n%s\n',getReport(ME)));
     mlvideo('showcursor', ScreenInfo.Device, 1);
     mlvideo('restoremode', ScreenInfo.Device);
     mlvideo('releasedevice', ScreenInfo.Device);
@@ -2254,6 +2293,9 @@ ScreenInfo.CursorYsize = yis;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ScreenInfo = close_video(ScreenInfo, varargin)
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 
 for i = 1:length(ScreenInfo.ActiveVideoBuffers),
     mlvideo('releasebuffer', ScreenInfo.Device, ScreenInfo.ActiveVideoBuffers(i));
@@ -2261,7 +2303,7 @@ for i = 1:length(ScreenInfo.ActiveVideoBuffers),
 end
 ScreenInfo.ActiveVideoBuffers(~ScreenInfo.ActiveVideoBuffers) = [];
 if any(ScreenInfo.ActiveVideoBuffers),
-    disp('WARNING: *** Unable to release all active video buffers ***')
+    logger.info('monkeylogic.m', 'WARNING: *** Unable to release all active video buffers ***')
 end
 
 if ~isempty(varargin) && strcmpi(varargin{1}, 'BuffersOnly'),
@@ -2275,7 +2317,7 @@ if isfield(ScreenInfo,'PreloadedVideoBuffers'),
     end
     ScreenInfo.PreloadedVideoBuffers(~ScreenInfo.PreloadedVideoBuffers) = [];
     if any(ScreenInfo.PreloadedVideoBuffers),
-        disp('WARNING: *** Unable to release all active video buffers ***')
+        logger.info('monkeylogic.m', 'WARNING: *** Unable to release all active video buffers ***')
     end
 end
 
@@ -2324,6 +2366,10 @@ clear DaqInfo
 function [ScreenInfo, MLConfig, UserChanges] = check_keyboard(MLConfig, EyeSignalInUse, JoystickInUse, ScreenInfo, DaqInfo, TrialRecord, Instruction)
 global MLHELPER_OFF
 global RFM_TASK
+
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 
 startmenu    = TrialRecord.CurrentTrialNumber == 0;
 escapequeued = 0;
@@ -2620,7 +2666,7 @@ if duration == -1,
 end
 
 if noreward,
-    disp('WARNING: *** No reward output defined ***')
+    logger.info('monkeylogic.m', 'WARNING: *** No reward output defined ***')
     return
 end
 
@@ -2697,6 +2743,7 @@ end
 function disable_cursor
 global MLHELPER_OFF
 if MLHELPER_OFF,
+    %logger.info('monkeylogic.m', 'disable_cursor MLHELPER_OFF');
     return
 end
 thisfig = get(0,'CurrentFigure');
@@ -2705,12 +2752,15 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','custom');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory);
+%fprintf(message);
+system(message);
 
 %%
 function enable_cursor
 global MLHELPER_OFF
 if MLHELPER_OFF,
+    %logger.info('monkeylogic.m', 'enable_cursor MLHELPER_OFF');
     return
 end
 thisfig = get(0,'CurrentFigure');
@@ -2718,7 +2768,9 @@ if ~isempty(thisfig)
     set(thisfig,'Pointer','arrow');
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+%fprintf(message);
+system(message);
 
 %%
 function disable_clicks %#ok<DEFNU>
@@ -2727,7 +2779,9 @@ if MLHELPER_OFF,
     return
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --clicks-disable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --clicks-disable',dirs.BaseDirectory);
+fprintf(message);
+system(message);
 
 %%
 function enable_clicks
@@ -2736,7 +2790,9 @@ if MLHELPER_OFF,
     return
 end
 dirs = getpref('MonkeyLogic', 'Directories');
-system(sprintf('%smlhelper --clicks-enable',dirs.BaseDirectory));
+message = sprintf('%smlhelper --clicks-enable',dirs.BaseDirectory);
+fprintf(message);
+system(message);
 
 %%
 function disable_syskeys

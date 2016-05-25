@@ -64,7 +64,7 @@ std::string Session::GetDeviceInfo (unsigned d)
     return s;
 }
 
-void Session::GetScreenRect (unsigned d, unsigned *x, unsigned *y, unsigned *w, unsigned *h)
+void Session::GetScreenRect (unsigned d, int *x, int *y, int *w, int *h)
 {
     CheckDeviceNumber (d);
     HMONITOR hm = d3d->GetAdapterMonitor (d);
@@ -444,14 +444,82 @@ Session::FocusWindow::~FocusWindow ()
     Release ();
 }
 
+LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	HDC hdc;
+	PAINTSTRUCT ps;
+	RECT *rect = 0;
+	static int clickCounter[4];
+	char buffer[255];
+
+	switch (message)
+	{
+	case WM_CREATE:
+		//MessageBox(hwnd, "hello", "World", MB_OK);
+		break;
+	case WM_MOVE:
+		//GET_X_LPARAM(lParam);
+		//GET_Y_LPARAM(lParam);
+		break;
+	case WM_MOUSEMOVE:
+		break;
+	case WM_NCMOUSEMOVE:
+		break;
+	case WM_WINDOWPOSCHANGED:
+		break;
+	case WM_SIZE:
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		sprintf(buffer, "%i, %i, %i, %i", clickCounter[0], clickCounter[1], clickCounter[2], clickCounter[3]);
+		TextOut(hdc, 0, 0, buffer, strlen(buffer));
+		EndPaint(hwnd, &ps);
+		break;
+	case WM_COMMAND:
+		switch(wParam)
+		{
+		case 0:
+			break;
+		default:
+			break;
+		}
+		break;
+	case WM_RBUTTONDOWN:
+		clickCounter[0]++;
+		InvalidateRect(hwnd, NULL, TRUE);
+		break;
+	case WM_RBUTTONUP:
+		clickCounter[1]++;
+		InvalidateRect(hwnd, NULL, TRUE);
+		break;
+	case WM_LBUTTONDOWN:
+		clickCounter[2]++;
+		InvalidateRect(hwnd, NULL, TRUE);
+		break;
+	case WM_LBUTTONUP:
+		clickCounter[3]++;
+		InvalidateRect(hwnd, NULL, TRUE);
+		break;
+	case WM_DESTROY:
+		break;
+	default:
+		break;
+	}
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
 void Session::FocusWindow::Init ()
 {
     Release ();
+
     std::string title ("XGLToolbox Focus Window");
-    WNDCLASSEX wc =
+//	MessageBox(0,title.c_str(), "XGL", 0);
+
+	WNDCLASSEX wc =
     {
         sizeof (WNDCLASSEX),
         CS_CLASSDC,
+//        WndProc,
         DefWindowProc,
         0L,
         0L,
@@ -465,10 +533,12 @@ void Session::FocusWindow::Init ()
     };
     RegisterClassEx (&wc);
     hwnd = CreateWindow (title.c_str (), title.c_str (),
-        WS_OVERLAPPEDWINDOW, 0, 0, 100, 100,
+        WS_POPUP, 0, 0, 100, 100,
         GetDesktopWindow (), NULL, wc.hInstance, NULL);
     if (hwnd == NULL)
         throw "Could not create application focus window";
+	//else 
+	//	ShowWindow(hwnd, SW_SHOWNORMAL);
 }
 
 void Session::FocusWindow::Release ()
@@ -502,10 +572,14 @@ void Session::Device::Init (D3D &d3d, unsigned d, FocusWindow &focus_window, con
     Release ();
     // Create a device window
     std::string title ("XGL Toolbox Device Window");
-    WNDCLASSEX wc =
+
+//	MessageBox(0,title.c_str(), "XGL", 0);
+
+	WNDCLASSEX wc =
     {
         sizeof (WNDCLASSEX),
         CS_CLASSDC,
+//        WndProc,
         DefWindowProc,
         0L,
         0L,
@@ -520,7 +594,7 @@ void Session::Device::Init (D3D &d3d, unsigned d, FocusWindow &focus_window, con
     RegisterClassEx (&wc);
     // Create the window.
     hwnd = CreateWindow (title.c_str (), title.c_str (),
-        WS_OVERLAPPEDWINDOW, 0, 0, dm.width, dm.height,
+        WS_POPUP, 0, 0, dm.width, dm.height,
         GetDesktopWindow (), NULL, wc.hInstance, NULL);
     if (hwnd == NULL)
         throw "Could not create application device window";
@@ -1136,7 +1210,7 @@ std::string Session::GetDeviceInfo (unsigned d)
     return s;
 }
 
-void Session::GetScreenRect (unsigned d, unsigned *x, unsigned *y, unsigned *w, unsigned *h)
+void Session::GetScreenRect (int d, int *x, int *y, int *w, int *h)
 {
     CheckDeviceNumber (d);
     *x = 0;

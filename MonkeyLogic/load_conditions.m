@@ -17,6 +17,10 @@ function [Conditions, cerror] = load_conditions(varargin)
 % Modified 8/19/08 -WA (to handle non-integer RelativeFrequency values)
 % 
 
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
 cerror = '';
 Conditions = struct;
 
@@ -50,6 +54,7 @@ else
 end
 
 fid = fopen(txtfile);
+logger.info('loadconditions.m', sprintf('<<< MonkeyLogic >>> Loading conditions file %s', txtfile));
 if fid < 1,
     cerror = 'Unable to open Conditions file';
     return
@@ -90,7 +95,7 @@ while i <= length(columns),
     i=i+1;
     if i > length(h)+5,
         cerror = 'Unable to parse conditions file header.';
-        fprintf('Valid columns are "Condition", "Frequency", "Block", "Timing File", "Info", and "TaskObject#1" through TaskObject#N".\n');
+        logger.info('loadconditions.m', sprintf('Valid columns are "Condition", "Frequency", "Block", "Timing File", "Info", and "TaskObject#1" through TaskObject#N".'));
         return
     end
 end
