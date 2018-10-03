@@ -14,6 +14,7 @@ if ~isempty(fig) && ~isempty(varargin),
     fig = [];
 end
     
+numpoints = 30;
 if isempty(fig),
     
     DaqData = varargin{1};
@@ -37,7 +38,6 @@ if isempty(fig),
 
     % Different i/o test types require unique figure windows
     % and coordinates of interior controls.
-
     if subsystype == 1, %Analog Input
         
 
@@ -47,7 +47,7 @@ if isempty(fig),
         ybase = 300;    % y offset of the control label
 
         %initialize the data matrix before creating the subplots
-        numpoints = 300;
+        
         numchannels = length(DaqData.Channel);
 
         v = 1:numpoints;
@@ -63,24 +63,24 @@ if isempty(fig),
         x = [x;x];
         y = [y;y];
         % create first graph (XY Plot)
-        subplot('position', [0.03 0.06 0.33 0.85], 'YGrid','on', 'XGrid','on')
-        set(gca, 'xlim', [-10 10]);
-        set(gca, 'ylim', [-10 10]);
+        subplot('position', [0.03 0.06 0.33 0.85], 'YGrid','on', 'XGrid','on', 'GridColor', [0,0,0])
+        set(gca, 'xlim', [-12 12]);  % add an extra voltage range to visualize clipping
+        set(gca, 'ylim', [-12 12]);  % add an extra voltage range to visualize clipping
         %xlabel(gca, 'Channel 0 Volts');
         %ylabel(gca, 'Channel 1 Volts ');
         title(gca, 'Voltage (XY)') 
-        set(gca, 'nextplot', 'add', 'tag', 'ioplotXY', 'color', [0.2 0.2 0.2]);
+        set(gca, 'nextplot', 'add', 'tag', 'ioplotXY', 'color', [11.0/255.0 102.0/255.0 35.0/255.0]);
         xyData = line(x', y'); %notice that the transpose is critical
         set(xyData, 'markersize', 3, 'tag', 'plotterXY', 'color', [0 1 0]);
 
         % create second graph (yT Plot)
-        subplot('position', [0.37 0.06 0.33 0.85], 'YGrid','on');
-        set(gca, 'ylim', [-10 10]);  % add an extra volt of space
+        subplot('position', [0.37 0.06 0.33 0.85], 'YGrid','on','GridColor', [0,0,0]);
+        set(gca, 'ylim', [-12 12]);  % add an extra voltage range to visualize clipping
         set(gca,'yaxislocation','right');
         xlabel(gca, 'samples');
         ylabel(gca, 'volts');
         title(gca, 'Voltage (yT)') 
-        set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [0.2 0.2 0.2]);
+        set(gca, 'nextplot', 'add', 'tag', 'ioplot', 'xtick', [], 'color', [11.0/255.0 102.0/255.0 35.0/255.0]);
         h = line(x', y'); %notice that the transpose is critical
         %forces all channels to be plotted in the same green color.
         %set(h, 'markersize', 3, 'tag', 'plotter', 'color', [0 1 0]);
@@ -209,9 +209,6 @@ elseif ismember(gcbo, get(fig, 'children')),
             wform = TestData.WaveForm;
             h = findobj(gcf, 'tag', 'plotter');
          
-            numpoints = 300;
-
-            
             hstop = findobj(gcf, 'tag', 'stopiotest');
             set(hstop, 'userdata', 0);
             set(hstop, 'enable', 'on');
